@@ -1,7 +1,7 @@
-@page "/"
+@page "/home"
 @namespace HaveFun.Web
 
-<PageTitle>Have-Fun</PageTitle>
+<PageTitle>Have-Fun Home</PageTitle>
 
 <MudStack Spacing="4">
     <MudPaper Class="pa-6" Elevation="0" Outlined="true">
@@ -17,32 +17,7 @@
     </MudPaper>
 
     <MudGrid Spacing="3">
-        <MudItem xs="12" md="7">
-            <MudPaper Class="pa-4 h-100" Elevation="0" Outlined="true">
-                <MudText Typo="Typo.h6" Class="mb-4">Join Game</MudText>
-
-                <form @onsubmit="JoinAsync" @onsubmit:preventDefault="true">
-                    <MudStack Spacing="1">
-                        <MudTextField @bind-Value="SubmittedName"
-                                      Label="Name"
-                                      Variant="Variant.Outlined"
-                                      Error="@(ValidationError is not null)"
-                                      ErrorText="@ValidationError"
-                                      Immediate="true"
-                                      AutoFocus="true" />
-                        <MudButton ButtonType="ButtonType.Submit"
-                                   Color="Color.Primary"
-                                   Variant="Variant.Filled"
-                                   StartIcon="@Icons.Material.Filled.Login"
-                                   Disabled="@IsJoining">
-                            Join
-                        </MudButton>
-                    </MudStack>
-                </form>
-            </MudPaper>
-        </MudItem>
-
-        <MudItem xs="12" md="5">
+        <MudItem xs="12" md="6">
             <MudPaper Class="pa-4 h-100" Elevation="0" Outlined="true">
                 <MudText Typo="Typo.h6" Class="mb-4">Join URLs</MudText>
 
@@ -63,6 +38,17 @@
                         }
                     </MudStack>
                 </MudStack>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" md="6">
+            <MudPaper Class="pa-4 h-100" Elevation="0" Outlined="true">
+                <MudText Typo="Typo.h6" Class="mb-4">App Status</MudText>
+                <MudList T="string" Dense="true">
+                    <MudListItem Icon="@Icons.Material.Filled.CheckCircle">Blazor InteractiveServer is configured.</MudListItem>
+                    <MudListItem Icon="@Icons.Material.Filled.CheckCircle">@SentenceCount predefined sentences loaded.</MudListItem>
+                    <MudListItem Icon="@Icons.Material.Filled.CheckCircle">No database or cloud service is required.</MudListItem>
+                </MudList>
             </MudPaper>
         </MudItem>
     </MudGrid>

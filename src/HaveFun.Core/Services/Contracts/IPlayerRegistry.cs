@@ -8,5 +8,7 @@ public interface IPlayerRegistry
 
     bool TryGetPlayer(Guid playerId, out PlayerSession? player);
 
+    bool TryGetPlayerByName(string submittedName, out PlayerSession? player);
+
     IReadOnlyList<PlayerSession> GetPlayers();
 }

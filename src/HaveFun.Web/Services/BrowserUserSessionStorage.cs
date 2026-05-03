@@ -3,17 +3,17 @@ using Microsoft.JSInterop;
 
 namespace HaveFun.Web;
 
-public sealed class BrowserPlayerSessionStorage : IPlayerSessionStorage
+public sealed class BrowserUserSessionStorage : IUserSessionStorage
 {
-    private const string StorageKey = "havefun.currentPlayer";
+    private const string StorageKey = "havefun.currentUser";
     private readonly IJSRuntime jsRuntime;
 
-    public BrowserPlayerSessionStorage(IJSRuntime jsRuntime)
+    public BrowserUserSessionStorage(IJSRuntime jsRuntime)
     {
         this.jsRuntime = jsRuntime;
     }
 
-    public async ValueTask<StoredPlayerSession?> GetCurrentPlayerAsync()
+    public async ValueTask<StoredUserSession?> GetCurrentUserAsync()
     {
         var json = await jsRuntime.InvokeAsync<string?>("sessionStorage.getItem", StorageKey);
 
@@ -24,22 +24,22 @@ public sealed class BrowserPlayerSessionStorage : IPlayerSessionStorage
 
         try
         {
-            return JsonSerializer.Deserialize<StoredPlayerSession>(json);
+            return JsonSerializer.Deserialize<StoredUserSession>(json);
         }
         catch (JsonException)
         {
-            await ClearCurrentPlayerAsync();
+            await ClearCurrentUserAsync();
             return null;
         }
     }
 
-    public async ValueTask SaveCurrentPlayerAsync(StoredPlayerSession playerSession)
+    public async ValueTask SaveCurrentUserAsync(StoredUserSession userSession)
     {
-        var json = JsonSerializer.Serialize(playerSession);
+        var json = JsonSerializer.Serialize(userSession);
         await jsRuntime.InvokeVoidAsync("sessionStorage.setItem", StorageKey, json);
     }
 
-    public ValueTask ClearCurrentPlayerAsync()
+    public ValueTask ClearCurrentUserAsync()
     {
         return jsRuntime.InvokeVoidAsync("sessionStorage.removeItem", StorageKey);
     }

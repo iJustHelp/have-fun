@@ -5,9 +5,6 @@ namespace HaveFun.Web;
 
 public partial class Player : ComponentBase
 {
-    [Parameter]
-    public Guid PlayerId { get; set; }
-
     private bool IsSessionChecked { get; set; }
 
     private string? DisplayName { get; set; }
@@ -18,7 +15,7 @@ public partial class Player : ComponentBase
     private IPlayerRegistry PlayerRegistry { get; set; } = default!;
 
     [Inject]
-    private IPlayerSessionStorage PlayerSessionStorage { get; set; } = default!;
+    private IUserSessionStorage UserSessionStorage { get; set; } = default!;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -27,19 +24,19 @@ public partial class Player : ComponentBase
             return;
         }
 
-        if (!PlayerRegistry.TryGetPlayer(PlayerId, out var registeredPlayer) || registeredPlayer is null)
+        var currentUser = await UserSessionStorage.GetCurrentUserAsync();
+
+        if (currentUser?.Role != JoinRole.Player)
         {
-            ErrorMessage = "This player session is no longer active. Join again to continue.";
+            ErrorMessage = "This browser tab is not joined as a player. Join again to continue.";
             IsSessionChecked = true;
             StateHasChanged();
             return;
         }
 
-        var storedPlayer = await PlayerSessionStorage.GetCurrentPlayerAsync();
-
-        if (storedPlayer is null || storedPlayer.PlayerId != PlayerId)
+        if (!PlayerRegistry.TryGetPlayerByName(currentUser.Name, out var registeredPlayer) || registeredPlayer is null)
         {
-            ErrorMessage = "This browser tab is not joined as that player. Join again to continue.";
+            ErrorMessage = "This player session is no longer active. Join again to continue.";
             IsSessionChecked = true;
             StateHasChanged();
             return;

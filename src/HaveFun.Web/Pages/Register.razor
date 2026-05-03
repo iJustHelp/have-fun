@@ -1,0 +1,48 @@
+@page "/"
+@layout RegisterLayout
+@namespace HaveFun.Web
+
+<PageTitle>Join Have-Fun</PageTitle>
+
+<main class="register-page">
+    <section class="register-hero" aria-label="Join Have-Fun">
+        <MudPaper Class="register-panel pa-6" Elevation="8">
+            <MudStack Spacing="4">
+                <MudStack Spacing="1">
+                    <MudText Typo="Typo.h3">Have-Fun</MudText>
+                    <MudText Typo="Typo.subtitle1" Color="Color.Secondary">
+                        Enter your name to join the local game.
+                    </MudText>
+                </MudStack>
+
+                <form @onsubmit="JoinAsync" @onsubmit:preventDefault="true">
+                    <MudStack Spacing="2">
+                        <MudTextField @bind-Value="SubmittedName"
+                                      Label="Name"
+                                      Variant="Variant.Outlined"
+                                      Error="@(ValidationError is not null)"
+                                      ErrorText="@ValidationError"
+                                      Immediate="true"
+                                      AutoFocus="true" />
+                        <MudButton ButtonType="ButtonType.Submit"
+                                   Color="Color.Primary"
+                                   Variant="Variant.Filled"
+                                   Size="Size.Large"
+                                   FullWidth="true"
+                                   StartIcon="@Icons.Material.Filled.Login"
+                                   Disabled="@IsJoining">
+                            Join
+                        </MudButton>
+                    </MudStack>
+                </form>
+
+                @if (LanUrl is not null)
+                {
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                        Join URL: <code>@LanUrl</code>
+                    </MudText>
+                }
+            </MudStack>
+        </MudPaper>
+    </section>
+</main>

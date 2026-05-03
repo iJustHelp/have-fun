@@ -3,40 +3,61 @@
 
 <PageTitle>Master Dashboard</PageTitle>
 
-<MudStack Spacing="4">
-    <MudPaper Class="pa-6" Elevation="0" Outlined="true">
-        <MudStack Spacing="2">
-            <MudText Typo="Typo.h3">Master Dashboard</MudText>
-            <MudText Typo="Typo.subtitle1" Color="Color.Secondary">
-                Dashboard controls arrive in Stage 3.
-            </MudText>
-        </MudStack>
-    </MudPaper>
+@if (!IsSessionChecked)
+{
+    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
+        Checking role
+    </MudAlert>
+}
+else if (ErrorMessage is not null)
+{
+    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined">
+        @ErrorMessage
+    </MudAlert>
+    <MudButton Href="/"
+               Color="Color.Primary"
+               Variant="Variant.Filled"
+               StartIcon="@Icons.Material.Filled.Login">
+        Join
+    </MudButton>
+}
+else
+{
+    <MudStack Spacing="4">
+        <MudPaper Class="pa-6" Elevation="0" Outlined="true">
+            <MudStack Spacing="2">
+                <MudText Typo="Typo.h3">Master Dashboard</MudText>
+                <MudText Typo="Typo.subtitle1" Color="Color.Secondary">
+                    Dashboard controls arrive in Stage 3.
+                </MudText>
+            </MudStack>
+        </MudPaper>
 
-    <MudGrid Spacing="3">
-        <MudItem xs="12" md="6">
-            <MudPaper Class="pa-4 h-100" Elevation="0" Outlined="true">
-                <MudText Typo="Typo.h6" Class="mb-4">Shared LAN URL</MudText>
-                @if (LanUrl is null)
-                {
-                    <MudText Typo="Typo.body2" Color="Color.Secondary">
-                        LAN address was not detected. Use the host computer URL for local testing.
-                    </MudText>
-                }
-                else
-                {
-                    <MudPaper Class="pa-3" Elevation="0" Outlined="true">
-                        <MudText Typo="Typo.body2"><code>@LanUrl</code></MudText>
-                    </MudPaper>
-                }
-            </MudPaper>
-        </MudItem>
+        <MudGrid Spacing="3">
+            <MudItem xs="12" md="6">
+                <MudPaper Class="pa-4 h-100" Elevation="0" Outlined="true">
+                    <MudText Typo="Typo.h6" Class="mb-4">Shared LAN URL</MudText>
+                    @if (LanUrl is null)
+                    {
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+                            LAN address was not detected. Use the host computer URL for local testing.
+                        </MudText>
+                    }
+                    else
+                    {
+                        <MudPaper Class="pa-3" Elevation="0" Outlined="true">
+                            <MudText Typo="Typo.body2"><code>@LanUrl</code></MudText>
+                        </MudPaper>
+                    }
+                </MudPaper>
+            </MudItem>
 
-        <MudItem xs="12" md="6">
-            <MudPaper Class="pa-4 h-100" Elevation="0" Outlined="true">
-                <MudText Typo="Typo.h6" Class="mb-4">Connected Players</MudText>
-                <MudText Typo="Typo.body1">@PlayerCount players joined</MudText>
-            </MudPaper>
-        </MudItem>
-    </MudGrid>
-</MudStack>
+            <MudItem xs="12" md="6">
+                <MudPaper Class="pa-4 h-100" Elevation="0" Outlined="true">
+                    <MudText Typo="Typo.h6" Class="mb-4">Connected Players</MudText>
+                    <MudText Typo="Typo.body1">@PlayerCount players joined</MudText>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    </MudStack>
+}

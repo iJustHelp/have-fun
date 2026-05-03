@@ -1,9 +1,46 @@
+@using HaveFun.Core
 @namespace HaveFun.Web
 
 <MudNavMenu>
-    <MudNavLink Href="/"
-                Match="NavLinkMatch.All"
-                Icon="@Icons.Material.Filled.Home">
-        Home
-    </MudNavLink>
+    @if (currentUser is not null)
+    {
+        <MudNavLink Href="/home"
+                    Match="NavLinkMatch.All"
+                    Icon="@Icons.Material.Filled.Home">
+            Home
+        </MudNavLink>
+
+        @if (currentUser.Role == JoinRole.Master)
+        {
+            <MudNavLink Href="/dashboard"
+                        Icon="@Icons.Material.Filled.Dashboard">
+                Dashboard
+            </MudNavLink>
+        }
+        else if (currentUser.Role == JoinRole.Player)
+        {
+            <MudNavLink Href="/player"
+                        Icon="@Icons.Material.Filled.SportsEsports">
+                Player
+            </MudNavLink>
+        }
+    }
 </MudNavMenu>
+
+@code {
+    private StoredUserSession? currentUser;
+
+    [Inject]
+    private IUserSessionStorage UserSessionStorage { get; set; } = default!;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        currentUser = await UserSessionStorage.GetCurrentUserAsync();
+        StateHasChanged();
+    }
+}

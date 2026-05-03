@@ -1,0 +1,25 @@
+.register-page {
+    min-height: 100vh;
+}
+
+.register-hero {
+    align-items: center;
+    background:
+        linear-gradient(90deg, rgba(7, 11, 32, 0.18), rgba(7, 11, 32, 0.04)),
+        url('/images/register-backdrop.svg') center / cover no-repeat;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 32px;
+}
+
+.register-panel {
+    max-width: 420px;
+    width: min(100%, 420px);
+}
+
+@media (max-width: 640px) {
+    .register-hero {
+        padding: 16px;
+    }
+}

@@ -4,7 +4,7 @@ public sealed class PlayerRegistry : IPlayerRegistry
 {
     private readonly object syncRoot = new();
     private readonly Dictionary<Guid, PlayerSession> playersById = [];
-    private readonly HashSet<string> normalizedPlayerNames = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, Guid> playerIdsByName = new(StringComparer.OrdinalIgnoreCase);
 
     public JoinResult RegisterPlayer(string submittedName)
     {
@@ -17,7 +17,7 @@ public sealed class PlayerRegistry : IPlayerRegistry
 
         lock (syncRoot)
         {
-            if (normalizedPlayerNames.Contains(displayName))
+            if (playerIdsByName.ContainsKey(displayName))
             {
                 return JoinResult.Failed("That player name is already in use.", displayName);
             }
@@ -30,7 +30,7 @@ public sealed class PlayerRegistry : IPlayerRegistry
             };
 
             playersById.Add(player.Id, player);
-            normalizedPlayerNames.Add(displayName);
+            playerIdsByName.Add(displayName, player.Id);
 
             return JoinResult.PlayerJoined(player);
         }
@@ -47,7 +47,7 @@ public sealed class PlayerRegistry : IPlayerRegistry
 
         lock (syncRoot)
         {
-            return normalizedPlayerNames.Contains(displayName);
+            return playerIdsByName.ContainsKey(displayName);
         }
     }
 
@@ -55,6 +55,28 @@ public sealed class PlayerRegistry : IPlayerRegistry
     {
         lock (syncRoot)
         {
+            return playersById.TryGetValue(playerId, out player);
+        }
+    }
+
+    public bool TryGetPlayerByName(string submittedName, out PlayerSession? player)
+    {
+        var displayName = submittedName.Trim();
+
+        if (string.IsNullOrWhiteSpace(displayName))
+        {
+            player = null;
+            return false;
+        }
+
+        lock (syncRoot)
+        {
+            if (!playerIdsByName.TryGetValue(displayName, out var playerId))
+            {
+                player = null;
+                return false;
+            }
+
             return playersById.TryGetValue(playerId, out player);
         }
     }
