@@ -1,0 +1,43 @@
+@page "/player/{PlayerId:guid}"
+@namespace HaveFun.Web
+
+<PageTitle>Player</PageTitle>
+
+<MudStack Spacing="4">
+    @if (!IsSessionChecked)
+    {
+        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
+            Checking player session
+        </MudAlert>
+    }
+    else if (ErrorMessage is not null)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined">
+            @ErrorMessage
+        </MudAlert>
+        <MudButton Href="/"
+                   Color="Color.Primary"
+                   Variant="Variant.Filled"
+                   StartIcon="@Icons.Material.Filled.Home">
+            Back to join
+        </MudButton>
+    }
+    else
+    {
+        <MudPaper Class="pa-6" Elevation="0" Outlined="true">
+            <MudStack Spacing="2">
+                <MudText Typo="Typo.h3">@DisplayName</MudText>
+                <MudText Typo="Typo.subtitle1" Color="Color.Secondary">
+                    Waiting for the master to start a round.
+                </MudText>
+            </MudStack>
+        </MudPaper>
+
+        <MudPaper Class="pa-4" Elevation="0" Outlined="true">
+            <MudText Typo="Typo.h6">Player Screen</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                Live round state arrives in Stage 4.
+            </MudText>
+        </MudPaper>
+    }
+</MudStack>

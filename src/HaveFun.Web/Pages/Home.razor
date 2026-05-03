@@ -17,7 +17,32 @@
     </MudPaper>
 
     <MudGrid Spacing="3">
-        <MudItem xs="12" md="6">
+        <MudItem xs="12" md="7">
+            <MudPaper Class="pa-4 h-100" Elevation="0" Outlined="true">
+                <MudText Typo="Typo.h6" Class="mb-4">Join Game</MudText>
+
+                <form @onsubmit="JoinAsync" @onsubmit:preventDefault="true">
+                    <MudStack Spacing="1">
+                        <MudTextField @bind-Value="SubmittedName"
+                                      Label="Name"
+                                      Variant="Variant.Outlined"
+                                      Error="@(ValidationError is not null)"
+                                      ErrorText="@ValidationError"
+                                      Immediate="true"
+                                      AutoFocus="true" />
+                        <MudButton ButtonType="ButtonType.Submit"
+                                   Color="Color.Primary"
+                                   Variant="Variant.Filled"
+                                   StartIcon="@Icons.Material.Filled.Login"
+                                   Disabled="@IsJoining">
+                            Join
+                        </MudButton>
+                    </MudStack>
+                </form>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" md="5">
             <MudPaper Class="pa-4 h-100" Elevation="0" Outlined="true">
                 <MudText Typo="Typo.h6" Class="mb-4">Join URLs</MudText>
 
@@ -37,33 +62,12 @@
                             </MudPaper>
                         }
                     </MudStack>
-
-                    <MudStack Spacing="1">
-                        <MudText Typo="Typo.subtitle2">Host computer only</MudText>
-                        <MudPaper Class="pa-3" Elevation="0" Outlined="true">
-                            <MudText Typo="Typo.body2"><code>@LocalhostUrl</code></MudText>
-                        </MudPaper>
-                    </MudStack>
                 </MudStack>
-            </MudPaper>
-        </MudItem>
-
-        <MudItem xs="12" md="6">
-            <MudPaper Class="pa-4 h-100" Elevation="0" Outlined="true">
-                <MudText Typo="Typo.h6" Class="mb-4">Stage 1 Status</MudText>
-                <MudList T="string" Dense="true">
-                    <MudListItem Icon="@Icons.Material.Filled.CheckCircle">Blazor InteractiveServer is configured.</MudListItem>
-                    <MudListItem Icon="@Icons.Material.Filled.CheckCircle">@SentenceCount predefined sentences loaded.</MudListItem>
-                    <MudListItem Icon="@Icons.Material.Filled.CheckCircle">No database or cloud service is required.</MudListItem>
-                </MudList>
             </MudPaper>
         </MudItem>
     </MudGrid>
 
-    <MudPaper Class="pa-4" Elevation="0" Outlined="true">
-        <MudText Typo="Typo.h6">Name entry comes next</MudText>
-        <MudText Typo="Typo.body2" Color="Color.Secondary">
-            Stage 2 will add the shared name input here and route the configured master name to the dashboard.
-        </MudText>
-    </MudPaper>
+    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
+        @SentenceCount predefined sentences are loaded. No database or cloud service is required.
+    </MudAlert>
 </MudStack>
