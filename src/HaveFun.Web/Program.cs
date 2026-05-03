@@ -24,7 +24,7 @@ builder.Services.AddSingleton<ISentenceLibrary>(_ =>
 });
 builder.Services.AddSingleton<IPlayerRegistry, PlayerRegistry>();
 builder.Services.AddSingleton<IJoinUrlProvider, JoinUrlProvider>();
-builder.Services.AddScoped<IUserSessionStorage, BrowserUserSessionStorage>();
+builder.Services.AddScoped<IUserSessionStorage, UserSessionStorage>();
 
 var app = builder.Build();
 
