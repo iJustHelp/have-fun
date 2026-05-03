@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace HaveFun.Core.Sentences;
+namespace HaveFun.Core;
 
 public static class SentenceFileLoader
 {

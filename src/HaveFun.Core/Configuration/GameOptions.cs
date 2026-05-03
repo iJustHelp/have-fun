@@ -1,4 +1,4 @@
-namespace HaveFun.Core.Configuration;
+namespace HaveFun.Core;
 
 public sealed class GameOptions
 {

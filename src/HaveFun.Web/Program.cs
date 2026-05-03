@@ -1,6 +1,4 @@
-using HaveFun.Core.Configuration;
-using HaveFun.Core.Sentences;
-using HaveFun.Web.Components;
+using HaveFun.Core;
 using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -40,7 +38,7 @@ app.UseHttpsRedirection();
 app.UseAntiforgery();
 
 app.MapStaticAssets();
-app.MapRazorComponents<App>()
+app.MapRazorComponents<HaveFun.Web.App>()
     .AddInteractiveServerRenderMode();
 
 app.Run();

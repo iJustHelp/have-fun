@@ -1,4 +1,4 @@
-namespace HaveFun.Core.Sentences;
+namespace HaveFun.Core;
 
 public interface ISentenceLibrary
 {
