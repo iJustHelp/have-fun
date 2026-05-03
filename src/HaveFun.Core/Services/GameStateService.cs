@@ -5,6 +5,8 @@ public sealed class GameStateService : IGameStateService
     private readonly object syncRoot = new();
     private CurrentRound? currentRound;
 
+    public event Action<CurrentRound>? CurrentRoundChanged;
+
     public CurrentRound? CurrentRound
     {
         get
@@ -28,11 +30,15 @@ public sealed class GameStateService : IGameStateService
             throw new ArgumentException("Sentence time limit must be greater than zero.", nameof(sentence));
         }
 
+        var originalWords = SplitWords(sentence.Text);
+        var shuffledWords = ShuffleWords(originalWords);
         var round = new CurrentRound
         {
             Id = Guid.NewGuid(),
             SentenceText = sentence.Text,
             TimeLimitInSeconds = sentence.TimeLimitInSeconds,
+            OriginalWords = originalWords,
+            ShuffledWords = shuffledWords,
             Status = RoundStatus.Started,
             StartedAt = DateTimeOffset.UtcNow
         };
@@ -42,6 +48,28 @@ public sealed class GameStateService : IGameStateService
             currentRound = round;
         }
 
+        CurrentRoundChanged?.Invoke(round);
+
         return round;
+    }
+
+    private static IReadOnlyList<string> SplitWords(string sentenceText)
+    {
+        return sentenceText
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .ToArray();
+    }
+
+    private static IReadOnlyList<string> ShuffleWords(IReadOnlyList<string> words)
+    {
+        var shuffledWords = words.ToArray();
+
+        for (var index = shuffledWords.Length - 1; index > 0; index--)
+        {
+            var swapIndex = Random.Shared.Next(index + 1);
+            (shuffledWords[index], shuffledWords[swapIndex]) = (shuffledWords[swapIndex], shuffledWords[index]);
+        }
+
+        return shuffledWords;
     }
 }

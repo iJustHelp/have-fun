@@ -8,6 +8,10 @@ public sealed record CurrentRound
 
     public required int TimeLimitInSeconds { get; init; }
 
+    public required IReadOnlyList<string> OriginalWords { get; init; }
+
+    public required IReadOnlyList<string> ShuffledWords { get; init; }
+
     public required RoundStatus Status { get; init; }
 
     public DateTimeOffset? StartedAt { get; init; }

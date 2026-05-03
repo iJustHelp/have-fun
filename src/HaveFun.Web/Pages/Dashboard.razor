@@ -67,6 +67,9 @@ else
                         <MudText Typo="Typo.caption" Color="Color.Secondary">
                             @CurrentRound.TimeLimitInSeconds seconds
                         </MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block">
+                            @CurrentRound.ShuffledWords.Count shuffled words ready
+                        </MudText>
                     }
                 </MudPaper>
             </MudItem>
