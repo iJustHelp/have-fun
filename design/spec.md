@@ -187,7 +187,7 @@ Recommended shape:
 Rules:
 
 - `text` must be non-empty.
-- `timeLimitInSeconds` limit time when player must finish text.
+- `timeLimitInSeconds` limits how long a player has to finish the text.
 - Sentences are loaded when the server starts.
 
 ### In-Memory State
@@ -216,6 +216,138 @@ Restart behavior:
 - The app must provide a join URL usable by other devices on the same LAN.
 - The URL should use the host computer's LAN IP address when possible.
 - If LAN IP detection is unavailable, the app should still run on localhost for testing.
+
+## Tech Stack 
+- All code should be in src folder 
+- App should use Blazor with InteractiveServer render mode. 
+- Solution name is `HaveFun` has 2 projects
+  - `HaveFun.Web` - UI
+  - `HaveFun.Core` - backend
+
+## Implementation Stages
+
+### Stage 1: App Shell and Configuration
+
+Build the runnable local web app foundation.
+
+Included:
+
+- Server runs locally on Windows and Mac.
+- Browser client opens from the server URL.
+- `appsettings.json` defines `Game:MasterName`.
+- Sentence JSON file is loaded on server startup.
+- App can show the host URL and local fallback URL.
+
+Done when:
+
+- The app starts without a database.
+- The first page loads in a browser.
+- Master name and predefined sentences are available in memory.
+
+### Stage 2: Name Entry and Role Routing
+
+Build the first-page join experience.
+
+Included:
+
+- First page shows one name input and a join button.
+- Submitted names are trimmed and required.
+- Entering the configured master name opens the Master Dashboard.
+- Entering any other name joins as a Player.
+- Player names must be unique case-insensitively.
+- Duplicate player names show a validation error.
+
+Done when:
+
+- Master and players can enter through the same first page.
+- The dashboard cannot be opened by normal player names.
+- Duplicate player names are rejected.
+
+### Stage 3: Master Dashboard Basics
+
+Build the dashboard without round play yet.
+
+Included:
+
+- Dashboard shows the shared LAN URL.
+- Dashboard shows the sentence selector.
+- Dashboard shows connected players.
+- Dashboard has a start round button.
+- Dashboard shows round status.
+
+Done when:
+
+- Game Master can see available sentences.
+- Game Master can see joined players.
+- Game Master can start a selected round.
+
+### Stage 4: Player Waiting and Round Start
+
+Connect players to live round state.
+
+Included:
+
+- Players see a waiting state before a round starts.
+- Starting a round clears previous submissions.
+- Server creates a new round id.
+- Server stores selected sentence, shuffled words, and start time.
+- Players receive shuffled words for the current round.
+
+Done when:
+
+- Starting a round updates all joined player screens.
+- Each player sees the same shuffled word set for the round.
+
+### Stage 5: Word Scramble Gameplay
+
+Build the player interaction loop.
+
+Included:
+
+- Player clicks available words to build a collected sentence.
+- Clicked words move out of the available word list.
+- Player can see collected text while playing.
+- Player submits after selecting all words.
+- Submitted players cannot edit their result for that round.
+- Spent time is recorded from round start to submission.
+
+Done when:
+
+- A player can complete and submit a sentence.
+- The server records submitted sentence and spent time.
+
+### Stage 6: Results, Correctness, and Ranking
+
+Finish the competitive dashboard.
+
+Included:
+
+- Server calculates correctness by words in the correct position.
+- Dashboard shows correct sentence, player sentence, spent time, correctness, and rank.
+- Ranking sorts by highest correctness first, then shortest spent time.
+- Dashboard updates as each player submits.
+
+Done when:
+
+- Game Master can identify the winner.
+- Results are sortable or shown in ranked order.
+
+### Stage 7: Repeat Rounds and V1 Polish
+
+Make the app comfortable for repeated play.
+
+Included:
+
+- Game Master can start another sentence without restarting the server.
+- New rounds clear previous submissions.
+- Player screens return to active round or waiting state as needed.
+- Empty, waiting, duplicate-name, submitted, and completed states are clear.
+- Restarting the server resets all state.
+
+Done when:
+
+- The full party-game loop works for multiple rounds.
+- V1 acceptance criteria are satisfied.
 
 ## Acceptance Criteria
 
