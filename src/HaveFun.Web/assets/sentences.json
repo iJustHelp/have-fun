@@ -1,0 +1,10 @@
+[
+  {
+    "text": "The quick brown fox jumps over the lazy dog",
+    "timeLimitInSeconds": 30
+  },
+  {
+    "text": "Friends play games together on the same local network",
+    "timeLimitInSeconds": 45
+  }
+]

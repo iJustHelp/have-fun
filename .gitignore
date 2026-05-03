@@ -1,0 +1,84 @@
+# Build results
+bin/
+obj/
+[Bb]uild/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+arm/
+arm64/
+
+# .NET publish and packaging
+publish/
+artifacts/
+*.nupkg
+*.snupkg
+*.symbols.nupkg
+
+# ASP.NET / Blazor generated files
+*.StaticWebAssets.xml
+*.staticwebassets.runtime.json
+*.staticwebassets.build.json
+*.staticwebassets.pack.json
+*.razor.g.cs
+*.g.cs
+*.g.i.cs
+*.generated.cs
+*.AssemblyInfo.cs
+*.RazorAssemblyInfo.cs
+scopedcss/
+
+# User-specific project files
+*.user
+*.rsuser
+*.suo
+*.userosscache
+*.sln.docstates
+*.csproj.user
+
+# Visual Studio / Rider / VS Code
+.vs/
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+
+# Test results and coverage
+TestResults/
+coverage/
+coverage*/
+*.coverage
+*.coveragexml
+*.trx
+*.opencover.xml
+*.cobertura.xml
+
+# Logs and runtime files
+*.log
+logs/
+*.tmp
+*.temp
+*.pid
+
+# Local development secrets
+secrets.json
+appsettings.Local.json
+appsettings.*.Local.json
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Node/frontend tooling if added later
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+dist/
+vite.config.ts.timestamp-*
+vite.config.js.timestamp-*
