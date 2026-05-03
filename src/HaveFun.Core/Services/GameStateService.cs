@@ -1,6 +1,6 @@
 namespace HaveFun.Core;
 
-public sealed class GameState : IGameState
+public sealed class GameStateService : IGameStateService
 {
     private readonly object syncRoot = new();
     private CurrentRound? currentRound;

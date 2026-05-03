@@ -48,6 +48,7 @@ design/                        Product spec, stage plans, and task notes
 #### HaveFun.Core project
 
 - Put reusable services in a `Services` folder.
+- Add Service suffix to each service and its interface
 - Put service interfaces in `Services/Contracts`.
 - Put shared models in a `Models` folder.
 - Put configuration/options models in a clear configuration folder.

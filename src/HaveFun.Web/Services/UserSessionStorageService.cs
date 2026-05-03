@@ -3,12 +3,12 @@ using Microsoft.JSInterop;
 
 namespace HaveFun.Web;
 
-public sealed class UserSessionStorage : IUserSessionStorage
+public sealed class UserSessionStorageService : IUserSessionStorageService
 {
     private const string StorageKey = "havefun.currentUser";
     private readonly IJSRuntime jsRuntime;
 
-    public UserSessionStorage(IJSRuntime jsRuntime)
+    public UserSessionStorageService(IJSRuntime jsRuntime)
     {
         this.jsRuntime = jsRuntime;
     }

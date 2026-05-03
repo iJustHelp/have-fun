@@ -1,6 +1,6 @@
 namespace HaveFun.Core;
 
-public interface IPlayerRegistry
+public interface IPlayerRegistryService
 {
     JoinResult RegisterPlayer(string submittedName);
 

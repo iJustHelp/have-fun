@@ -31,7 +31,7 @@
     private StoredUserSession? currentUser;
 
     [Inject]
-    private IUserSessionStorage UserSessionStorage { get; set; } = default!;
+    private IUserSessionStorageService UserSessionStorage { get; set; } = default!;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

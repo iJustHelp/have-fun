@@ -1,6 +1,6 @@
 namespace HaveFun.Web;
 
-public interface IUserSessionStorage
+public interface IUserSessionStorageService
 {
     ValueTask<StoredUserSession?> GetCurrentUserAsync();
 

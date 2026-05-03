@@ -2,7 +2,7 @@ using System.Text.Json;
 
 namespace HaveFun.Core;
 
-public static class SentenceFileLoader
+public static class SentenceFileLoaderService
 {
     private static readonly JsonSerializerOptions SerializerOptions = new()
     {

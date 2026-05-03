@@ -12,10 +12,10 @@ public partial class Player : ComponentBase
     private string? ErrorMessage { get; set; }
 
     [Inject]
-    private IPlayerRegistry PlayerRegistry { get; set; } = default!;
+    private IPlayerRegistryService PlayerRegistry { get; set; } = default!;
 
     [Inject]
-    private IUserSessionStorage UserSessionStorage { get; set; } = default!;
+    private IUserSessionStorageService UserSessionStorage { get; set; } = default!;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

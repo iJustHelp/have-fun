@@ -4,7 +4,7 @@ using System.Net.Sockets;
 
 namespace HaveFun.Web;
 
-public sealed class JoinUrlProvider : IJoinUrlProvider
+public sealed class JoinUrlProviderService : IJoinUrlProviderService
 {
     public JoinUrls GetJoinUrls(Uri currentUri)
     {

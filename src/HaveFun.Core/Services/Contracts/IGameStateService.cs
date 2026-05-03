@@ -1,6 +1,6 @@
 namespace HaveFun.Core;
 
-public interface IGameState
+public interface IGameStateService
 {
     CurrentRound? CurrentRound { get; }
 

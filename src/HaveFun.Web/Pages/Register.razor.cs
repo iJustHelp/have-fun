@@ -18,16 +18,16 @@ public partial class Register : ComponentBase
     private NavigationManager NavigationManager { get; set; } = default!;
 
     [Inject]
-    private IJoinUrlProvider JoinUrlProvider { get; set; } = default!;
+    private IJoinUrlProviderService JoinUrlProvider { get; set; } = default!;
 
     [Inject]
     private IOptions<GameOptions> GameOptions { get; set; } = default!;
 
     [Inject]
-    private IPlayerRegistry PlayerRegistry { get; set; } = default!;
+    private IPlayerRegistryService PlayerRegistry { get; set; } = default!;
 
     [Inject]
-    private IUserSessionStorage UserSessionStorage { get; set; } = default!;
+    private IUserSessionStorageService UserSessionStorage { get; set; } = default!;
 
     protected override void OnInitialized()
     {

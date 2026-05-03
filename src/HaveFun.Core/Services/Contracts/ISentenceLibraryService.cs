@@ -1,6 +1,6 @@
 namespace HaveFun.Core;
 
-public interface ISentenceLibrary
+public interface ISentenceLibraryService
 {
     IReadOnlyList<SentenceDefinition> Sentences { get; }
 }

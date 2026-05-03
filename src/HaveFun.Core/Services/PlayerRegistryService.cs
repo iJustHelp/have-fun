@@ -1,6 +1,6 @@
 namespace HaveFun.Core;
 
-public sealed class PlayerRegistry : IPlayerRegistry
+public sealed class PlayerRegistryService : IPlayerRegistryService
 {
     private readonly object syncRoot = new();
     private readonly Dictionary<Guid, PlayerSession> playersById = [];

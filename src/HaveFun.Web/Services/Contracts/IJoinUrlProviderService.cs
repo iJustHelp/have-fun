@@ -1,6 +1,6 @@
 namespace HaveFun.Web;
 
-public interface IJoinUrlProvider
+public interface IJoinUrlProviderService
 {
     JoinUrls GetJoinUrls(Uri currentUri);
 }
