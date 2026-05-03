@@ -23,6 +23,7 @@ builder.Services.AddSingleton<ISentenceLibrary>(_ =>
     return new InMemorySentenceLibrary(sentences);
 });
 builder.Services.AddSingleton<IPlayerRegistry, PlayerRegistry>();
+builder.Services.AddSingleton<IGameState, GameState>();
 builder.Services.AddSingleton<IJoinUrlProvider, JoinUrlProvider>();
 builder.Services.AddScoped<IUserSessionStorage, UserSessionStorage>();
 

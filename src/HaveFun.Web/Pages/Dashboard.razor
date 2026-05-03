@@ -28,13 +28,13 @@ else
             <MudStack Spacing="2">
                 <MudText Typo="Typo.h3">Master Dashboard</MudText>
                 <MudText Typo="Typo.subtitle1" Color="Color.Secondary">
-                    Dashboard controls arrive in Stage 3.
+                    Welcome, @MasterName.
                 </MudText>
             </MudStack>
         </MudPaper>
 
         <MudGrid Spacing="3">
-            <MudItem xs="12" md="6">
+            <MudItem xs="12" md="4">
                 <MudPaper Class="pa-4 h-100" Elevation="0" Outlined="true">
                     <MudText Typo="Typo.h6" Class="mb-4">Shared LAN URL</MudText>
                     @if (LanUrl is null)
@@ -52,12 +52,34 @@ else
                 </MudPaper>
             </MudItem>
 
-            <MudItem xs="12" md="6">
+            <MudItem xs="12" md="4">
                 <MudPaper Class="pa-4 h-100" Elevation="0" Outlined="true">
-                    <MudText Typo="Typo.h6" Class="mb-4">Connected Players</MudText>
+                    <MudText Typo="Typo.h6" Class="mb-4">Round Status</MudText>
+                    <MudChip T="string" Color="@RoundStatusColor" Variant="Variant.Outlined">
+                        @RoundStatusText
+                    </MudChip>
+                    @if (CurrentRound is not null)
+                    {
+                        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-3">
+                            @CurrentRound.SentenceText
+                        </MudText>
+                    }
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudPaper Class="pa-4 h-100" Elevation="0" Outlined="true">
+                    <MudText Typo="Typo.h6" Class="mb-4">Players</MudText>
                     <MudText Typo="Typo.body1">@PlayerCount players joined</MudText>
                 </MudPaper>
             </MudItem>
         </MudGrid>
+
+        <MudPaper Class="pa-4" Elevation="0" Outlined="true">
+            <MudText Typo="Typo.h6">Dashboard Controls</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                Sentence selection and round start controls arrive next in Stage 3.
+            </MudText>
+        </MudPaper>
     </MudStack>
 }
