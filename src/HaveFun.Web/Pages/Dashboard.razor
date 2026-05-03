@@ -1,4 +1,5 @@
 @page "/dashboard"
+@using HaveFun.Core
 @namespace HaveFun.Web
 
 <PageTitle>Master Dashboard</PageTitle>
@@ -63,23 +64,96 @@ else
                         <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-3">
                             @CurrentRound.SentenceText
                         </MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                            @CurrentRound.TimeLimitInSeconds seconds
+                        </MudText>
                     }
                 </MudPaper>
             </MudItem>
 
             <MudItem xs="12" md="4">
                 <MudPaper Class="pa-4 h-100" Elevation="0" Outlined="true">
-                    <MudText Typo="Typo.h6" Class="mb-4">Players</MudText>
-                    <MudText Typo="Typo.body1">@PlayerCount players joined</MudText>
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-4">
+                        <MudText Typo="Typo.h6">Players</MudText>
+                        <MudIconButton Icon="@Icons.Material.Filled.Refresh"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       OnClick="RefreshPlayers"
+                                       aria-label="Refresh players" />
+                    </MudStack>
+
+                    @if (Players.Count == 0)
+                    {
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+                            No players have joined yet.
+                        </MudText>
+                    }
+                    else
+                    {
+                        <MudList T="PlayerSession" Dense="true">
+                            @foreach (var player in Players)
+                            {
+                                <MudListItem Icon="@Icons.Material.Filled.Person">
+                                    @player.DisplayName
+                                </MudListItem>
+                            }
+                        </MudList>
+                    }
                 </MudPaper>
             </MudItem>
         </MudGrid>
 
         <MudPaper Class="pa-4" Elevation="0" Outlined="true">
-            <MudText Typo="Typo.h6">Dashboard Controls</MudText>
-            <MudText Typo="Typo.body2" Color="Color.Secondary">
-                Sentence selection and round start controls arrive next in Stage 3.
-            </MudText>
+            <MudGrid Spacing="3">
+                <MudItem xs="12" md="5">
+                    <MudSelect T="int"
+                               Label="Sentence"
+                               Variant="Variant.Outlined"
+                               Value="@SelectedSentenceIndex"
+                               ValueChanged="SelectSentence">
+                        <MudSelectItem T="int" Value="-1" Disabled="true">
+                            Choose a sentence
+                        </MudSelectItem>
+                        @for (var index = 0; index < Sentences.Count; index++)
+                        {
+                            var sentenceIndex = index;
+                            var sentence = Sentences[sentenceIndex];
+
+                            <MudSelectItem T="int" Value="@sentenceIndex">
+                                @GetSentenceLabel(sentence)
+                            </MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+
+                <MudItem xs="12" md="5">
+                    <MudText Typo="Typo.h6">Selected Sentence</MudText>
+                    @if (SelectedSentence is null)
+                    {
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+                            Select a predefined sentence to prepare a round.
+                        </MudText>
+                    }
+                    else
+                    {
+                        <MudText Typo="Typo.body1">@SelectedSentence.Text</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                            @SelectedSentence.TimeLimitInSeconds seconds
+                        </MudText>
+                    }
+                </MudItem>
+
+                <MudItem xs="12" md="2" Class="d-flex align-end">
+                    <MudButton Color="Color.Primary"
+                               Variant="Variant.Filled"
+                               FullWidth="true"
+                               StartIcon="@Icons.Material.Filled.PlayArrow"
+                               Disabled="@(SelectedSentence is null)"
+                               OnClick="StartRound">
+                        Start
+                    </MudButton>
+                </MudItem>
+            </MudGrid>
         </MudPaper>
     </MudStack>
 }

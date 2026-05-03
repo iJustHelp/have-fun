@@ -14,7 +14,15 @@ public partial class Dashboard : ComponentBase
 
     private string MasterName { get; set; } = "Master";
 
-    private int PlayerCount { get; set; }
+    private IReadOnlyList<PlayerSession> Players { get; set; } = [];
+
+    private IReadOnlyList<SentenceDefinition> Sentences { get; set; } = [];
+
+    private int SelectedSentenceIndex { get; set; } = -1;
+
+    private SentenceDefinition? SelectedSentence => SelectedSentenceIndex >= 0 && SelectedSentenceIndex < Sentences.Count
+        ? Sentences[SelectedSentenceIndex]
+        : null;
 
     private CurrentRound? CurrentRound { get; set; }
 
@@ -32,6 +40,9 @@ public partial class Dashboard : ComponentBase
     private IPlayerRegistryService PlayerRegistry { get; set; } = default!;
 
     [Inject]
+    private ISentenceLibraryService SentenceLibrary { get; set; } = default!;
+
+    [Inject]
     private IGameStateService GameState { get; set; } = default!;
 
     [Inject]
@@ -42,7 +53,8 @@ public partial class Dashboard : ComponentBase
         var urls = JoinUrlProvider.GetJoinUrls(new Uri(NavigationManager.BaseUri));
 
         LanUrl = urls.LanUrl ?? urls.LocalhostUrl;
-        PlayerCount = PlayerRegistry.GetPlayers().Count;
+        Sentences = SentenceLibrary.Sentences;
+        RefreshPlayers();
         CurrentRound = GameState.CurrentRound;
     }
 
@@ -66,5 +78,34 @@ public partial class Dashboard : ComponentBase
 
         IsSessionChecked = true;
         StateHasChanged();
+    }
+
+    private void SelectSentence(int sentenceIndex)
+    {
+        SelectedSentenceIndex = sentenceIndex;
+    }
+
+    private void StartRound()
+    {
+        if (SelectedSentence is null)
+        {
+            return;
+        }
+
+        CurrentRound = GameState.StartRound(SelectedSentence);
+    }
+
+    private void RefreshPlayers()
+    {
+        Players = PlayerRegistry.GetPlayers();
+    }
+
+    private static string GetSentenceLabel(SentenceDefinition sentence)
+    {
+        const int maxLength = 64;
+
+        return sentence.Text.Length <= maxLength
+            ? sentence.Text
+            : $"{sentence.Text[..maxLength]}...";
     }
 }
