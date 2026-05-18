@@ -10,14 +10,14 @@
             Home
         </MudNavLink>
 
-        @if (currentUser.Role == JoinRole.Master)
+        @if (currentUser.Role == UserRole.Master)
         {
             <MudNavLink Href="/dashboard"
                         Icon="@Icons.Material.Filled.Dashboard">
                 Dashboard
             </MudNavLink>
         }
-        else if (currentUser.Role == JoinRole.Player)
+        else if (currentUser.Role == UserRole.Player)
         {
             <MudNavLink Href="/player"
                         Icon="@Icons.Material.Filled.SportsEsports">

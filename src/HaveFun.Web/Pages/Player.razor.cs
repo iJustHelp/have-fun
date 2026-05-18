@@ -52,7 +52,7 @@ public partial class Player : ComponentBase, IAsyncDisposable
 
         var currentUser = await UserSessionStorageService.GetCurrentUserAsync();
 
-        if (currentUser?.Role != JoinRole.Player)
+        if (currentUser?.Role != UserRole.Player)
         {
             ErrorMessage = "This browser tab is not joined as a player. Join again to continue.";
             IsSessionChecked = true;

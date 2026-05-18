@@ -1,6 +1,6 @@
 namespace HaveFun.Core;
 
-public enum JoinRole
+public enum UserRole
 {
     Master,
     Player

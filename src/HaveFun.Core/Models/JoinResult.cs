@@ -4,7 +4,7 @@ public sealed record JoinResult
 {
     private JoinResult(
         bool isSuccess,
-        JoinRole? role,
+        UserRole? role,
         Guid? playerId,
         string displayName,
         string? validationError)
@@ -18,7 +18,7 @@ public sealed record JoinResult
 
     public bool IsSuccess { get; }
 
-    public JoinRole? Role { get; }
+    public UserRole? Role { get; }
 
     public Guid? PlayerId { get; }
 
@@ -28,12 +28,12 @@ public sealed record JoinResult
 
     public static JoinResult PlayerJoined(PlayerSession player)
     {
-        return new JoinResult(true, JoinRole.Player, player.Id, player.DisplayName, null);
+        return new JoinResult(true, UserRole.Player, player.Id, player.DisplayName, null);
     }
 
     public static JoinResult MasterJoined(string displayName)
     {
-        return new JoinResult(true, JoinRole.Master, null, displayName, null);
+        return new JoinResult(true, UserRole.Master, null, displayName, null);
     }
 
     public static JoinResult Failed(string validationError, string displayName = "")

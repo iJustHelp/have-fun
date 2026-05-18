@@ -81,7 +81,7 @@ public partial class Dashboard : ComponentBase, IAsyncDisposable
 
         var currentUser = await SessionStorageService.GetCurrentUserAsync();
 
-        if (currentUser?.Role != JoinRole.Master)
+        if (currentUser?.Role != UserRole.Master)
         {
             ErrorMessage = "Join as the configured master to open the dashboard.";
         }

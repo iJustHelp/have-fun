@@ -4,5 +4,5 @@ public sealed record SessionStorageModel
 {
     public required string Name { get; init; }
 
-    public required JoinRole Role { get; init; }
+    public required UserRole Role { get; init; }
 }

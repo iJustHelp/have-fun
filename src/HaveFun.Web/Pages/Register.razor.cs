@@ -55,9 +55,9 @@ public partial class Register : ComponentBase
             await UserSessionStorageService.SaveCurrentUserAsync(new SessionStorageModel
             {
                 Name = submittedName,
-                Role = JoinRole.Master,
+                Role = UserRole.Master,
             });
-            NavigationManager.NavigateTo("/dashboard");
+            NavigationManager.NavigateTo("/home");
             return;
         }
 
@@ -73,7 +73,7 @@ public partial class Register : ComponentBase
         await UserSessionStorageService.SaveCurrentUserAsync(new SessionStorageModel
         {
             Name = result.DisplayName,
-            Role = JoinRole.Player,
+            Role = UserRole.Player,
         });
 
         NavigationManager.NavigateTo("/player");
