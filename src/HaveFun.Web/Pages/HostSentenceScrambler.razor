@@ -18,8 +18,8 @@ else if (ErrorMessage is not null)
     <MudButton Href="/"
                Color="Color.Primary"
                Variant="Variant.Filled"
-               StartIcon="@Icons.Material.Filled.Login">
-        Join
+               StartIcon="@Icons.Material.Filled.Home">
+        Home
     </MudButton>
 }
 else
@@ -29,171 +29,42 @@ else
             <MudStack Spacing="2">
                 <MudText Typo="Typo.h5">Sentence Scrambler Game</MudText>
                 <MudText Typo="Typo.subtitle1" Color="Color.Secondary">
-                    Rearrange sentences below to make a correct sentence.
+                    Choose a sentence file, start the round, and players will arrange the shuffled words into the correct sentence.
                 </MudText>
             </MudStack>
         </MudPaper>
 
-        <MudGrid Spacing="3">
-            <MudItem xs="12" md="4">
-                <MudPaper Class="pa-4 h-100" Elevation="0" Outlined="true">
-                    <MudText Typo="Typo.h6" Class="mb-4">Player Registration URL</MudText>
-                    @if (LanUrl is null)
-                    {
-                        <MudText Typo="Typo.body2" Color="Color.Secondary">
-                            LAN address was not detected. Use the host computer URL for local testing.
-                        </MudText>
-                    }
-                    else
-                    {
-                        <MudPaper Class="pa-3" Elevation="0" Outlined="true">
-                            <MudText Typo="Typo.body2"><code>@LanUrl</code></MudText>
-                        </MudPaper>
-                    }
-                </MudPaper>
-            </MudItem>
-
-            <MudItem xs="12" md="4">
-                <MudPaper Class="pa-4 h-100" Elevation="0" Outlined="true">
-                    <MudText Typo="Typo.h6" Class="mb-4">Round Status</MudText>
-                    <MudChip T="string" Color="@RoundStatusColor" Variant="Variant.Outlined">
-                        @RoundStatusText
-                    </MudChip>
-                    @if (CurrentRound is not null)
-                    {
-                        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-3">
-                            @CurrentRound.SentenceText
-                        </MudText>
-                        <MudText Typo="Typo.caption" Color="Color.Secondary">
-                            @CurrentRound.TimeLimitInSeconds seconds
-                        </MudText>
-                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block">
-                            @CurrentRound.ShuffledSentences.Count shuffled sentences ready
-                        </MudText>
-                    }
-                </MudPaper>
-            </MudItem>
-
-            <MudItem xs="12" md="4">
-                <MudPaper Class="pa-4 h-100" Elevation="0" Outlined="true">
-                    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-4">
-                        <MudText Typo="Typo.h6">Players</MudText>
-                        <MudIconButton Icon="@Icons.Material.Filled.Refresh"
-                                       Color="Color.Primary"
-                                       Size="Size.Small"
-                                       OnClick="RefreshPlayers"
-                                       aria-label="Refresh players" />
-                    </MudStack>
-
-                    @if (Players.Count == 0)
-                    {
-                        <MudText Typo="Typo.body2" Color="Color.Secondary">
-                            No players have joined yet.
-                        </MudText>
-                    }
-                    else
-                    {
-                        <MudList T="PlayerSession" Dense="true">
-                            @foreach (var player in Players)
-                            {
-                                <MudListItem Icon="@Icons.Material.Filled.Person">
-                                    @player.DisplayName
-                                </MudListItem>
-                            }
-                        </MudList>
-                    }
-
-                    <MudDivider Class="my-3" />
-                    <MudText Typo="Typo.subtitle2">Submissions</MudText>
-                    @if (CurrentRound is null)
-                    {
-                        <MudText Typo="Typo.body2" Color="Color.Secondary">
-                            No active round.
-                        </MudText>
-                    }
-                    else
-                    {
-                        <MudText Typo="Typo.body2" Color="Color.Secondary">
-                            @SubmittedPlayerRoundStates.Count of @Players.Count submitted
-                        </MudText>
-
-                        @if (SubmittedPlayerRoundStates.Count > 0)
-                        {
-                            <MudList T="PlayerRoundState" Dense="true">
-                                @foreach (var submission in SubmittedPlayerRoundStates)
-                                {
-                                    <MudListItem Icon="@Icons.Material.Filled.CheckCircle">
-                                        @submission.PlayerName
-                                    </MudListItem>
-                                }
-                            </MudList>
-                        }
-                    }
-                </MudPaper>
-            </MudItem>
-        </MudGrid>
+        @if (FileLoadError is not null)
+        {
+            <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+                @FileLoadError
+            </MudAlert>
+        }
 
         <MudPaper Class="pa-4" Elevation="0" Outlined="true">
             <MudGrid Spacing="3">
-                <MudItem xs="12" md="3">
+                <MudItem xs="12" md="8">
                     <MudSelect T="string"
-                               Label="Game"
+                               Label="Sentence file"
                                Variant="Variant.Outlined"
-                               Value="@SelectedGame"
-                               ValueChanged="@((string value) => SelectedGame = value)">
-                        @foreach (var game in AvailableGames)
+                               Value="@SelectedFileName"
+                               ValueChanged="SelectSentenceFile"
+                               Disabled="@(SentenceFiles.Count == 0)">
+                        @foreach (var file in SentenceFiles)
                         {
-                            <MudSelectItem T="string" Value="@game">
-                                @game
+                            <MudSelectItem T="string" Value="@file.FileName">
+                                @file.FileName
                             </MudSelectItem>
                         }
                     </MudSelect>
                 </MudItem>
 
-                <MudItem xs="12" md="4">
-                    <MudSelect T="int"
-                               Label="Sentence"
-                               Variant="Variant.Outlined"
-                               Value="@SelectedSentenceIndex"
-                               ValueChanged="SelectSentence">
-                        <MudSelectItem T="int" Value="-1" Disabled="true">
-                            Choose a sentence
-                        </MudSelectItem>
-                        @for (var index = 0; index < Sentences.Count; index++)
-                        {
-                            var sentenceIndex = index;
-                            var sentence = Sentences[sentenceIndex];
-
-                            <MudSelectItem T="int" Value="@sentenceIndex">
-                                @GetSentenceLabel(sentence)
-                            </MudSelectItem>
-                        }
-                    </MudSelect>
-                </MudItem>
-
-                <MudItem xs="12" md="3">
-                    <MudText Typo="Typo.h6">Selected Sentence</MudText>
-                    @if (SelectedSentence is null)
-                    {
-                        <MudText Typo="Typo.body2" Color="Color.Secondary">
-                            Select a predefined sentence to prepare a round.
-                        </MudText>
-                    }
-                    else
-                    {
-                        <MudText Typo="Typo.body1">@SelectedSentence.Text</MudText>
-                        <MudText Typo="Typo.caption" Color="Color.Secondary">
-                            @SelectedSentence.TimeLimitInSeconds seconds
-                        </MudText>
-                    }
-                </MudItem>
-
-                <MudItem xs="12" md="2" Class="d-flex align-end">
+                <MudItem xs="12" md="4" Class="d-flex align-end">
                     <MudButton Color="Color.Primary"
                                Variant="Variant.Filled"
                                FullWidth="true"
                                StartIcon="@Icons.Material.Filled.PlayArrow"
-                               Disabled="@(SelectedSentence is null)"
+                               Disabled="@(!CanStart)"
                                OnClick="StartRound">
                         Start
                     </MudButton>
@@ -204,57 +75,34 @@ else
         <MudPaper Class="pa-4" Elevation="0" Outlined="true">
             <MudStack Spacing="3">
                 <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
-                    <MudText Typo="Typo.h6">Results</MudText>
-                    @if (CurrentRoundResults?.Results.Count > 0)
-                    {
-                        <MudChip T="string" Color="Color.Success" Variant="Variant.Outlined">
-                            @CurrentRoundResults.Results.Count ranked
-                        </MudChip>
-                    }
+                    <MudText Typo="Typo.h6">Players</MudText>
+                    <MudChip T="string" Color="Color.Primary" Variant="Variant.Outlined">
+                        @Players.Count player@(Players.Count == 1 ? string.Empty : "s")
+                    </MudChip>
                 </MudStack>
 
-                @if (CurrentRoundResults is null)
+                @if (Players.Count == 0)
                 {
                     <MudText Typo="Typo.body2" Color="Color.Secondary">
-                        Start a round to see ranked results.
+                        No players have registered yet.
                     </MudText>
                 }
                 else
                 {
-                    <MudPaper Class="pa-3" Elevation="0" Outlined="true">
-                        <MudText Typo="Typo.subtitle2">Correct Sentence</MudText>
-                        <MudText Typo="Typo.body1">@CurrentRoundResults.CorrectSentence</MudText>
-                    </MudPaper>
-
-                    @if (CurrentRoundResults.Results.Count == 0)
-                    {
-                        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
-                            No player submissions yet.
-                        </MudAlert>
-                    }
-                    else
-                    {
-                        <MudTable T="PlayerResult"
-                                  Items="@CurrentRoundResults.Results"
-                                  Dense="true"
-                                  Hover="true"
-                                  Elevation="0">
-                            <HeaderContent>
-                                <MudTh>Rank</MudTh>
-                                <MudTh>Player</MudTh>
-                                <MudTh>Submitted Sentence</MudTh>
-                                <MudTh>Correctness</MudTh>
-                                <MudTh>Spent Time</MudTh>
-                            </HeaderContent>
-                            <RowTemplate>
-                                <MudTd DataLabel="Rank">@context.Rank</MudTd>
-                                <MudTd DataLabel="Player">@context.PlayerName</MudTd>
-                                <MudTd DataLabel="Submitted Sentence">@context.SubmittedSentence</MudTd>
-                                <MudTd DataLabel="Correctness">@context.CorrectnessDisplay</MudTd>
-                                <MudTd DataLabel="Spent Time">@FormatSpentTime(context.SpentTime)</MudTd>
-                            </RowTemplate>
-                        </MudTable>
-                    }
+                    <MudTable T="PlayerSession"
+                              Items="@Players"
+                              Dense="true"
+                              Hover="true"
+                              Elevation="0">
+                        <HeaderContent>
+                            <MudTh>Name</MudTh>
+                            <MudTh>Joined</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="Name">@context.DisplayName</MudTd>
+                            <MudTd DataLabel="Joined">@context.JoinedAt.ToLocalTime().ToString("g")</MudTd>
+                        </RowTemplate>
+                    </MudTable>
                 }
             </MudStack>
         </MudPaper>

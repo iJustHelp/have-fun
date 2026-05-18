@@ -9,13 +9,17 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddMudServices();
 
-builder.Services.AddSingleton<ISentenceLibraryService>(_ =>
+var sentenceScramblerOptions = new SentenceScramblerOptions
 {
-    var sentenceFilePath = Path.Combine(builder.Environment.ContentRootPath, "assets", "sentences.json");
-    var sentences = SentenceFileLoaderService.Load(sentenceFilePath);
+    SentenceScramblerPath = builder.Configuration["Game:SentenceScramblerPath"]
+        ?? Path.Combine("assets", "sentence-scrambler")
+};
+var sentenceScramblerPath = Path.IsPathRooted(sentenceScramblerOptions.SentenceScramblerPath)
+    ? sentenceScramblerOptions.SentenceScramblerPath
+    : Path.Combine(builder.Environment.ContentRootPath, sentenceScramblerOptions.SentenceScramblerPath);
 
-    return new InMemorySentenceLibraryService(sentences);
-});
+builder.Services.AddSingleton(sentenceScramblerOptions);
+builder.Services.AddSingleton<ISentenceFileService>(_ => new SentenceFileService(sentenceScramblerPath));
 
 builder.Services.AddCoreServices();
 

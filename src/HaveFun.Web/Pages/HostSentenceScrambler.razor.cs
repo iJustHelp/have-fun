@@ -1,6 +1,5 @@
 using HaveFun.Core;
 using Microsoft.AspNetCore.Components;
-using MudBlazor;
 
 namespace HaveFun.Web;
 
@@ -10,47 +9,21 @@ public partial class HostSentenceScrambler : ComponentBase, IAsyncDisposable
 
     private string? ErrorMessage { get; set; }
 
-    private string? LanUrl { get; set; }
+    private string? FileLoadError { get; set; }
 
-    private string HostName { get; set; } = "Host";
+    private IReadOnlyList<SentenceFileOption> SentenceFiles { get; set; } = [];
+
+    private string? SelectedFileName { get; set; }
+
+    private bool CanStart => !string.IsNullOrWhiteSpace(SelectedFileName);
 
     private IReadOnlyList<PlayerSession> Players { get; set; } = [];
-
-    private IReadOnlyList<PlayerRoundState> SubmittedPlayerRoundStates { get; set; } = [];
-
-    private RoundResults? CurrentRoundResults { get; set; }
-
-    private IReadOnlyList<SentenceDefinition> Sentences { get; set; } = [];
-
-    private string SelectedGame { get; set; } = SentenceScrambleGameName;
-
-    private static IReadOnlyList<string> AvailableGames { get; } = [SentenceScrambleGameName];
-
-    private const string SentenceScrambleGameName = "Sentence Scramble";
-
-    private int SelectedSentenceIndex { get; set; } = -1;
-
-    private SentenceDefinition? SelectedSentence => SelectedSentenceIndex >= 0 && SelectedSentenceIndex < Sentences.Count
-        ? Sentences[SelectedSentenceIndex]
-        : null;
-
-    private CurrentRound? CurrentRound { get; set; }
-
-    private string RoundStatusText => CurrentRound?.Status.ToString() ?? RoundStatus.NotStarted.ToString();
-
-    private Color RoundStatusColor => CurrentRound?.Status == RoundStatus.Started ? Color.Success : Color.Default;
-
-    [Inject]
-    private NavigationManager NavigationManager { get; set; } = default!;
-
-    [Inject]
-    private IUrlService UrlService { get; set; } = default!;
 
     [Inject]
     private IPlayerRegistryService PlayerRegistry { get; set; } = default!;
 
     [Inject]
-    private ISentenceLibraryService SentenceLibrary { get; set; } = default!;
+    private ISentenceFileService SentenceFileService { get; set; } = default!;
 
     [Inject]
     private IGameStateService GameState { get; set; } = default!;
@@ -60,22 +33,9 @@ public partial class HostSentenceScrambler : ComponentBase, IAsyncDisposable
 
     protected override void OnInitialized()
     {
-        var urls = UrlService.GetLanBaseUrl(NavigationManager.BaseUri);
-
-        LanUrl = BuildRegisterUrl(urls ?? NavigationManager.BaseUri);
-        Sentences = SentenceLibrary.Sentences;
         RefreshPlayers();
-        RefreshSubmissionProgress();
-        CurrentRound = GameState.CurrentRound;
-        GameState.CurrentRoundChanged += HandleCurrentRoundChanged;
-        GameState.PlayerRoundStateChanged += HandlePlayerRoundStateChanged;
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        GameState.CurrentRoundChanged -= HandleCurrentRoundChanged;
-        GameState.PlayerRoundStateChanged -= HandlePlayerRoundStateChanged;
-        await ValueTask.CompletedTask;
+        LoadSentenceFiles();
+        PlayerRegistry.PlayersChanged += HandlePlayersChanged;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -91,29 +51,59 @@ public partial class HostSentenceScrambler : ComponentBase, IAsyncDisposable
         {
             ErrorMessage = "Open the host Home page before using Host Sentence Scrambler.";
         }
-        else
-        {
-            HostName = currentUser.Name;
-        }
 
         IsSessionChecked = true;
         StateHasChanged();
     }
 
-    private void SelectSentence(int sentenceIndex)
+    public async ValueTask DisposeAsync()
     {
-        SelectedSentenceIndex = sentenceIndex;
+        PlayerRegistry.PlayersChanged -= HandlePlayersChanged;
+        await ValueTask.CompletedTask;
+    }
+
+    private void SelectSentenceFile(string fileName)
+    {
+        SelectedFileName = fileName;
+        FileLoadError = null;
     }
 
     private void StartRound()
     {
-        if (SelectedSentence is null)
+        if (string.IsNullOrWhiteSpace(SelectedFileName))
         {
             return;
         }
 
-        CurrentRound = GameState.StartRound(SelectedSentence);
-        RefreshSubmissionProgress();
+        try
+        {
+            var sentences = SentenceFileService.LoadSentences(SelectedFileName);
+            GameState.StartRound(sentences[0]);
+            FileLoadError = null;
+        }
+        catch (InvalidOperationException exception)
+        {
+            FileLoadError = exception.Message;
+        }
+        catch (ArgumentException exception)
+        {
+            FileLoadError = exception.Message;
+        }
+    }
+
+    private void LoadSentenceFiles()
+    {
+        try
+        {
+            SentenceFiles = SentenceFileService.GetSentenceFiles();
+            FileLoadError = null;
+        }
+        catch (InvalidOperationException exception)
+        {
+            SentenceFiles = [];
+            SelectedFileName = null;
+            FileLoadError = exception.Message;
+        }
     }
 
     private void RefreshPlayers()
@@ -121,52 +111,12 @@ public partial class HostSentenceScrambler : ComponentBase, IAsyncDisposable
         Players = PlayerRegistry.GetPlayers();
     }
 
-    private void RefreshSubmissionProgress()
-    {
-        SubmittedPlayerRoundStates = GameState.GetSubmittedPlayerRoundStates();
-        CurrentRoundResults = GameState.GetCurrentRoundResults();
-    }
-
-    private void HandleCurrentRoundChanged(CurrentRound round)
+    private void HandlePlayersChanged()
     {
         _ = InvokeAsync(() =>
         {
-            CurrentRound = round;
-            RefreshSubmissionProgress();
+            RefreshPlayers();
             StateHasChanged();
         });
-    }
-
-    private void HandlePlayerRoundStateChanged(PlayerRoundState playerRoundState)
-    {
-        if (!playerRoundState.IsSubmitted)
-        {
-            return;
-        }
-
-        _ = InvokeAsync(() =>
-        {
-            RefreshSubmissionProgress();
-            StateHasChanged();
-        });
-    }
-
-    private static string GetSentenceLabel(SentenceDefinition sentence)
-    {
-        const int maxLength = 64;
-
-        return sentence.Text.Length <= maxLength
-            ? sentence.Text
-            : $"{sentence.Text[..maxLength]}...";
-    }
-
-    private static string FormatSpentTime(TimeSpan spentTime)
-    {
-        return $"{(int)spentTime.TotalMinutes:00}:{spentTime.Seconds:00}";
-    }
-
-    private static string BuildRegisterUrl(string baseUrl)
-    {
-        return new Uri(new Uri(baseUrl), "register").ToString();
     }
 }

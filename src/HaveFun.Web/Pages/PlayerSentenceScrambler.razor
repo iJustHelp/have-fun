@@ -29,23 +29,12 @@
             <MudStack Spacing="2">
                 <MudText Typo="Typo.h5">Sentence Scrambler Game</MudText>
                 <MudText Typo="Typo.subtitle1" Color="Color.Secondary">
-                    Rearrange available sentences below to make a correct sentence.
+                    Rule: rearrange the available words to make a correct sentence.
                 </MudText>
             </MudStack>
         </MudPaper>
 
         <MudGrid Spacing="3">
-            <MudItem xs="12" md="4">
-                <MudPaper Class="pa-4 h-100" Elevation="0" Outlined="true">
-                    <MudText Typo="Typo.h6" Class="mb-4">Round Status</MudText>
-                    <MudChip T="string" Color="@RoundStatusColor" Variant="Variant.Outlined">
-                        @CurrentRound.Status
-                    </MudChip>
-                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-3">
-                        @CurrentRound.TimeLimitInSeconds seconds
-                    </MudText>
-                </MudPaper>
-            </MudItem>
 
             <MudItem xs="12" md="4">
                 <MudPaper Class="pa-4 h-100" Elevation="0" Outlined="true">
