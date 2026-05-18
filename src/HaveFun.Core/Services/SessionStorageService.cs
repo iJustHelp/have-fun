@@ -13,6 +13,8 @@ public sealed class SessionStorageService : ISessionStorageService
         this.jsRuntime = jsRuntime;
     }
 
+    public event Action? CurrentUserChanged;
+
     public async ValueTask<SessionStorageModel?> GetCurrentUserAsync()
     {
         var json = await jsRuntime.InvokeAsync<string?>("sessionStorage.getItem", SessionStorageKey);
@@ -37,10 +39,12 @@ public sealed class SessionStorageService : ISessionStorageService
     {
         var json = JsonSerializer.Serialize(sessionStorage);
         await jsRuntime.InvokeVoidAsync("sessionStorage.setItem", SessionStorageKey, json);
+        CurrentUserChanged?.Invoke();
     }
 
-    public ValueTask ClearCurrentUserAsync()
+    public async ValueTask ClearCurrentUserAsync()
     {
-        return jsRuntime.InvokeVoidAsync("sessionStorage.removeItem", SessionStorageKey);
+        await jsRuntime.InvokeVoidAsync("sessionStorage.removeItem", SessionStorageKey);
+        CurrentUserChanged?.Invoke();
     }
 }
