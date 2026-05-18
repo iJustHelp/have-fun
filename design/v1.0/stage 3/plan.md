@@ -1,9 +1,3 @@
-# Create Stage 3 Plan
-
-## Summary
-
-Create `design/v1.0/stage 3/plan.md` from the Stage 3 BRD. Stage 3 moves player management to Home, makes Waiting Room a simple waiting-only page, and moves Word Scramble gameplay into its own player page.
-
 ## Key Changes
 
 - Add a registered players grid to Home showing all current players.

@@ -11,149 +11,22 @@
             Checking player session
         </MudAlert>
     }
-    else if (ErrorMessage is not null)
-    {
-        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined">
-            @ErrorMessage
-        </MudAlert>
-        <MudButton Href="/register"
-                   Color="Color.Primary"
-                   Variant="Variant.Filled"
-                   StartIcon="@Icons.Material.Filled.Login">
-            Register
-        </MudButton>
-    }
     else
     {
         <MudPaper Class="pa-6" Elevation="0" Outlined="true">
             <MudStack Spacing="2">
                 <MudText Typo="Typo.h3">@DisplayName</MudText>
-                @if (CurrentRound is null)
-                {
-                    <MudText Typo="Typo.subtitle1" Color="Color.Secondary">
-                        Waiting for the host to start Word Scramble.
-                    </MudText>
-                }
-                else
-                {
-                    <MudText Typo="Typo.subtitle1" Color="Color.Secondary">
-                        Round started
-                    </MudText>
-                }
+                <MudText Typo="Typo.subtitle1" Color="Color.Secondary">
+                    Waiting for the host to start Word Scramble.
+                </MudText>
             </MudStack>
         </MudPaper>
 
-        @if (CurrentRound is null)
-        {
-            <MudPaper Class="pa-4" Elevation="0" Outlined="true">
-                <MudText Typo="Typo.h6">Waiting Room</MudText>
-                <MudText Typo="Typo.body2" Color="Color.Secondary">
-                    Stay on this screen. Word Scramble will appear here when the host starts a round.
-                </MudText>
-            </MudPaper>
-        }
-        else
-        {
-            <MudGrid Spacing="3">
-                <MudItem xs="12" md="4">
-                    <MudPaper Class="pa-4 h-100" Elevation="0" Outlined="true">
-                        <MudText Typo="Typo.h6" Class="mb-4">Round Status</MudText>
-                        <MudChip T="string" Color="@RoundStatusColor" Variant="Variant.Outlined">
-                            @CurrentRound.Status
-                        </MudChip>
-                        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-3">
-                            @CurrentRound.TimeLimitInSeconds seconds
-                        </MudText>
-                    </MudPaper>
-                </MudItem>
-
-                <MudItem xs="12" md="4">
-                    <MudPaper Class="pa-4 h-100" Elevation="0" Outlined="true">
-                        <MudText Typo="Typo.h6" Class="mb-4">Timer</MudText>
-                        <MudText Typo="Typo.h4">@RemainingTimeText</MudText>
-                        @if (IsTimerExpired)
-                        {
-                            <MudText Typo="Typo.body2" Color="Color.Error">
-                                Time is up
-                            </MudText>
-                        }
-                    </MudPaper>
-                </MudItem>
-
-                <MudItem xs="12" md="4">
-                    <MudPaper Class="pa-4 h-100" Elevation="0" Outlined="true">
-                        <MudText Typo="Typo.h6" Class="mb-4">Words</MudText>
-                        <MudText Typo="Typo.body2" Color="Color.Secondary">
-                            @AvailableWordCount available
-                        </MudText>
-                    </MudPaper>
-                </MudItem>
-            </MudGrid>
-
-            <MudPaper Class="pa-4" Elevation="0" Outlined="true">
-                <MudText Typo="Typo.h6" Class="mb-4">Collected Sentence</MudText>
-                @if (PlayerRoundState is null || PlayerRoundState.CollectedWords.Count == 0)
-                {
-                    <MudText Typo="Typo.body2" Color="Color.Secondary">
-                        Click words below to build your sentence.
-                    </MudText>
-                }
-                else
-                {
-                    <MudStack Row="true" Spacing="2" Class="flex-wrap">
-                        @foreach (var word in PlayerRoundState.CollectedWords)
-                        {
-                            <MudChip T="string" Color="Color.Secondary" Variant="Variant.Filled">
-                                @word.Text
-                            </MudChip>
-                        }
-                    </MudStack>
-                }
-            </MudPaper>
-
-            @if (PlayerRoundState?.IsSubmitted == true)
-            {
-                <MudAlert Severity="Severity.Success" Variant="Variant.Outlined">
-                    Submitted: @PlayerRoundState.SubmittedSentence
-                    @if (PlayerRoundState.SpentTime is not null)
-                    {
-                        <span> (@FormatSpentTime(PlayerRoundState.SpentTime.Value))</span>
-                    }
-                </MudAlert>
-            }
-            else
-            {
-                <MudPaper Class="pa-4" Elevation="0" Outlined="true">
-                    <MudText Typo="Typo.h6" Class="mb-4">Available Words</MudText>
-                    @if (PlayerRoundState is null || PlayerRoundState.AvailableWords.Count == 0)
-                    {
-                        <MudText Typo="Typo.body2" Color="Color.Secondary">
-                            All words are selected. Submit when ready.
-                        </MudText>
-                    }
-                    else
-                    {
-                        <MudStack Row="true" Spacing="2" Class="flex-wrap">
-                            @foreach (var word in PlayerRoundState.AvailableWords)
-                            {
-                                <MudButton Color="Color.Primary"
-                                           Variant="Variant.Outlined"
-                                           OnClick="@(() => SelectWord(word.Id))">
-                                    @word.Text
-                                </MudButton>
-                            }
-                        </MudStack>
-                    }
-                </MudPaper>
-
-                <MudButton Color="Color.Primary"
-                           Variant="Variant.Filled"
-                           StartIcon="@Icons.Material.Filled.Check"
-                           Disabled="@(!CanSubmit)"
-                           OnClick="SubmitRound">
-                    Submit
-                </MudButton>
-            }
-        }
+        <MudPaper Class="pa-4" Elevation="0" Outlined="true">
+            <MudText Typo="Typo.h6">Waiting Room</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                Stay on this screen. The game will open here when the host starts a round.
+            </MudText>
+        </MudPaper>
     }
 </MudStack>

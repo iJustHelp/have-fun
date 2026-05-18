@@ -3,13 +3,15 @@ using Microsoft.AspNetCore.Components;
 
 namespace HaveFun.Web;
 
-public partial class Home : ComponentBase
+public partial class Home : ComponentBase, IAsyncDisposable
 {
     private string RegisterUrl { get; set; } = string.Empty;
 
     private string? QrCodeDataUri { get; set; }
 
     private string? QrCodeError { get; set; }
+
+    private IReadOnlyList<PlayerSession> Players { get; set; } = [];
 
     [Inject]
     private NavigationManager NavigationManager { get; set; } = default!;
@@ -21,6 +23,9 @@ public partial class Home : ComponentBase
     private IQrCodeService QrCodeService { get; set; } = default!;
 
     [Inject]
+    private IPlayerRegistryService PlayerRegistry { get; set; } = default!;
+
+    [Inject]
     private ISessionStorageService UserSessionStorageService { get; set; } = default!;
 
     protected override void OnInitialized()
@@ -30,6 +35,14 @@ public partial class Home : ComponentBase
 
         RegisterUrl = BuildRegisterUrl(baseUrl);
         CreateQrCode();
+        RefreshPlayers();
+        PlayerRegistry.PlayersChanged += HandlePlayersChanged;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        PlayerRegistry.PlayersChanged -= HandlePlayersChanged;
+        await ValueTask.CompletedTask;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -46,7 +59,7 @@ public partial class Home : ComponentBase
             await UserSessionStorageService.SaveCurrentUserAsync(new SessionStorageModel
             {
                 Name = "Host",
-                Role = HaveFun.Core.Role.Host,
+                Role = Role.Host,
             });
         }
     }
@@ -68,5 +81,27 @@ public partial class Home : ComponentBase
             QrCodeDataUri = null;
             QrCodeError = "The player registration URL is too long to display as a QR code.";
         }
+    }
+
+    private void RemovePlayer(Guid playerId)
+    {
+        if (PlayerRegistry.RemovePlayer(playerId))
+        {
+            RefreshPlayers();
+        }
+    }
+
+    private void RefreshPlayers()
+    {
+        Players = PlayerRegistry.GetPlayers();
+    }
+
+    private void HandlePlayersChanged()
+    {
+        _ = InvokeAsync(() =>
+        {
+            RefreshPlayers();
+            StateHasChanged();
+        });
     }
 }

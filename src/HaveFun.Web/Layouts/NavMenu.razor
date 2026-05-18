@@ -12,9 +12,10 @@
 
         @if (currentUser.Role == Role.Host)
         {
-            <MudNavLink Href="/dashboard"
-                        Icon="@Icons.Material.Filled.Dashboard">
-                Dashboard
+            <MudDivider Class="my-2" />
+            <MudNavLink Href="/word-scramble"
+                        Icon="@Icons.Material.Filled.Spellcheck">
+                Word Scramble
             </MudNavLink>
         }
     }
