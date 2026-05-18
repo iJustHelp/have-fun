@@ -2,65 +2,43 @@
 @page "/home"
 @namespace HaveFun.Web
 
-<PageTitle>Have-Fun Home</PageTitle>
+<PageTitle>Have Fun</PageTitle>
 
 <MudStack Spacing="4">
-    <MudPaper Class="pa-6" Elevation="0" Outlined="true">
-        <MudStack Spacing="2">
-            <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Dense="true">
-                Local server running
-            </MudAlert>
-            <MudText Typo="Typo.h3">Have-Fun</MudText>
-            <MudText Typo="Typo.subtitle1" Color="Color.Secondary">
-                Host a browser game for friends on the same local network.
-            </MudText>
-            <MudButton Href="/dashboard"
-                       Color="Color.Primary"
-                       Variant="Variant.Filled"
-                       StartIcon="@Icons.Material.Filled.Dashboard">
-                Open Dashboard
-            </MudButton>
-        </MudStack>
-    </MudPaper>
-
     <MudGrid Spacing="3">
         <MudItem xs="12" md="6">
-            <MudPaper Class="pa-4 h-100" Elevation="0" Outlined="true">
-                <MudText Typo="Typo.h6" Class="mb-4">Player Registration</MudText>
-
-                <MudStack Spacing="3">
-                    <MudStack Spacing="1">
-                        <MudText Typo="Typo.subtitle2">Register from another device</MudText>
-                        @if (LanUrl is null)
-                        {
-                            <MudText Typo="Typo.body2" Color="Color.Secondary">
-                                LAN address was not detected. Check this computer's network connection.
-                            </MudText>
-                        }
-                        else
-                        {
-                            <MudPaper Class="pa-3" Elevation="0" Outlined="true">
-                                <MudText Typo="Typo.body2"><code>@RegisterUrl</code></MudText>
-                            </MudPaper>
-                        }
-                    </MudStack>
+            <MudPaper Class="pa-4 h-100" Elevation="1" Style="min-height: 18rem;">
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.h6" Color="Color.Secondary">
+                        Please enter this URL in your browser address bar:
+                    </MudText>
+                    <MudText Typo="Typo.h5" Style="overflow-wrap: anywhere;">
+                        @RegisterUrl
+                    </MudText>
                 </MudStack>
             </MudPaper>
         </MudItem>
 
         <MudItem xs="12" md="6">
-            <MudPaper Class="pa-4 h-100" Elevation="0" Outlined="true">
-                <MudText Typo="Typo.h6" Class="mb-4">App Status</MudText>
-                <MudList T="string" Dense="true">
-                    <MudListItem Icon="@Icons.Material.Filled.CheckCircle">Blazor InteractiveServer is configured.</MudListItem>
-                    <MudListItem Icon="@Icons.Material.Filled.CheckCircle">@SentenceCount predefined sentences loaded.</MudListItem>
-                    <MudListItem Icon="@Icons.Material.Filled.CheckCircle">No database or cloud service is required.</MudListItem>
-                </MudList>
+            <MudPaper Class="pa-4 h-100" Elevation="1" Style="min-height: 18rem;">
+                <MudStack Spacing="2" AlignItems="AlignItems.Center">
+                    <MudText Typo="Typo.h6" Color="Color.Secondary">
+                        Or scan the QR code below with your mobile device:
+                    </MudText>
+                    @if (QrCodeDataUri is not null)
+                    {
+                        <img src="@QrCodeDataUri"
+                             style="width: min(100%, 18rem); aspect-ratio: 1; image-rendering: pixelated;"
+                             alt="QR code for the player registration URL" />
+                    }
+                    else
+                    {
+                        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+                            @QrCodeError
+                        </MudAlert>
+                    }
+                </MudStack>
             </MudPaper>
         </MudItem>
     </MudGrid>
-
-    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
-        @SentenceCount predefined sentences are loaded. No database or cloud service is required.
-    </MudAlert>
 </MudStack>
