@@ -21,7 +21,7 @@ public sealed class GameStateService : IGameStateService
         }
     }
 
-    public CurrentRound StartRound(SentenceDefinition sentence)
+    public CurrentRound StartRound(SentenceDefinition sentence, IReadOnlyList<string> expectedPlayerNames)
     {
         if (string.IsNullOrWhiteSpace(sentence.Text))
         {
@@ -35,6 +35,11 @@ public sealed class GameStateService : IGameStateService
 
         var originalSentences = SplitSentences(sentence.Text);
         var shuffledSentences = ShuffleSentences(originalSentences);
+        var normalizedExpectedPlayerNames = expectedPlayerNames
+            .Select(NormalizePlayerName)
+            .Where(playerName => !string.IsNullOrWhiteSpace(playerName))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
         var round = new CurrentRound
         {
             Id = Guid.NewGuid(),
@@ -42,6 +47,7 @@ public sealed class GameStateService : IGameStateService
             TimeLimitInSeconds = sentence.TimeLimitInSeconds,
             OriginalSentences = originalSentences,
             ShuffledSentences = shuffledSentences,
+            ExpectedPlayerNames = normalizedExpectedPlayerNames,
             Status = RoundStatus.Started,
             StartedAt = DateTimeOffset.UtcNow
         };
@@ -55,6 +61,34 @@ public sealed class GameStateService : IGameStateService
         CurrentRoundChanged?.Invoke(round);
 
         return round;
+    }
+
+    public CurrentRound? CompleteCurrentRound()
+    {
+        CurrentRound? completedRound;
+
+        lock (syncRoot)
+        {
+            if (currentRound is null)
+            {
+                return null;
+            }
+
+            if (currentRound.Status == RoundStatus.Completed)
+            {
+                return currentRound;
+            }
+
+            completedRound = currentRound with
+            {
+                Status = RoundStatus.Completed,
+                CompletedAt = DateTimeOffset.UtcNow
+            };
+            currentRound = completedRound;
+        }
+
+        CurrentRoundChanged?.Invoke(completedRound);
+        return completedRound;
     }
 
     public PlayerRoundState? GetPlayerRoundState(string playerName)
@@ -183,6 +217,11 @@ public sealed class GameStateService : IGameStateService
                 return null;
             }
 
+            if (currentRound.Status == RoundStatus.Completed)
+            {
+                return GetOrCreatePlayerRoundStateUnsafe(currentRound, normalizedName);
+            }
+
             var playerRoundState = GetOrCreatePlayerRoundStateUnsafe(currentRound, normalizedName);
 
             if (playerRoundState.IsSubmitted)
@@ -208,6 +247,7 @@ public sealed class GameStateService : IGameStateService
         }
 
         PlayerRoundStateChanged?.Invoke(updatedState);
+        CompleteIfAllExpectedPlayersSubmitted();
 
         return updatedState;
     }
@@ -312,6 +352,43 @@ public sealed class GameStateService : IGameStateService
         }
 
         return correctnessCount;
+    }
+
+    private void CompleteIfAllExpectedPlayersSubmitted()
+    {
+        CurrentRound? completedRound = null;
+
+        lock (syncRoot)
+        {
+            if (currentRound is null ||
+                currentRound.Status == RoundStatus.Completed ||
+                currentRound.ExpectedPlayerNames.Count == 0)
+            {
+                return;
+            }
+
+            var submittedNames = playerRoundStates.Values
+                .Where(playerRoundState => playerRoundState.RoundId == currentRound.Id && playerRoundState.IsSubmitted)
+                .Select(playerRoundState => playerRoundState.PlayerName)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            var allExpectedPlayersSubmitted = currentRound.ExpectedPlayerNames
+                .All(submittedNames.Contains);
+
+            if (!allExpectedPlayersSubmitted)
+            {
+                return;
+            }
+
+            completedRound = currentRound with
+            {
+                Status = RoundStatus.Completed,
+                CompletedAt = DateTimeOffset.UtcNow
+            };
+            currentRound = completedRound;
+        }
+
+        CurrentRoundChanged?.Invoke(completedRound);
     }
 
     private PlayerRoundState? GetPlayerRoundStateUnsafe(Guid roundId, string playerName)

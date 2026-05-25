@@ -28,7 +28,7 @@ public partial class PlayerSentenceScrambler : ComponentBase, IAsyncDisposable
 
     private int AvailableSentenceCount => PlayerRoundState?.AvailableSentences.Count ?? CurrentRound?.ShuffledSentences.Count ?? 0;
 
-    private bool CanSubmit => PlayerRoundState?.CanSubmit == true;
+    private bool CanSubmit => CurrentRound?.Status == RoundStatus.Started && PlayerRoundState?.CanSubmit == true;
 
     private bool IsTimerExpired => CurrentRound is not null && RemainingTime == TimeSpan.Zero;
 
@@ -75,7 +75,7 @@ public partial class PlayerSentenceScrambler : ComponentBase, IAsyncDisposable
 
         CurrentRound = GameState.CurrentRound;
 
-        if (CurrentRound is null)
+        if (CurrentRound?.Status != RoundStatus.Started)
         {
             NavigationManager.NavigateTo("/waiting-room", replace: true);
             return;
@@ -122,7 +122,7 @@ public partial class PlayerSentenceScrambler : ComponentBase, IAsyncDisposable
 
     private void SelectSentence(Guid sentenceId)
     {
-        if (PlayerName is null)
+        if (PlayerName is null || CurrentRound?.Status != RoundStatus.Started)
         {
             return;
         }
@@ -132,7 +132,7 @@ public partial class PlayerSentenceScrambler : ComponentBase, IAsyncDisposable
 
     private void SubmitRound()
     {
-        if (PlayerName is null)
+        if (PlayerName is null || CurrentRound?.Status != RoundStatus.Started)
         {
             return;
         }
@@ -144,7 +144,7 @@ public partial class PlayerSentenceScrambler : ComponentBase, IAsyncDisposable
     {
         StopTimer();
 
-        if (CurrentRound is null)
+        if (CurrentRound?.Status != RoundStatus.Started)
         {
             RemainingTime = TimeSpan.Zero;
             return;

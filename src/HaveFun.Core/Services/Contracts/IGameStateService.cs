@@ -8,7 +8,9 @@ public interface IGameStateService
 
     CurrentRound? CurrentRound { get; }
 
-    CurrentRound StartRound(SentenceDefinition sentence);
+    CurrentRound StartRound(SentenceDefinition sentence, IReadOnlyList<string> expectedPlayerNames);
+
+    CurrentRound? CompleteCurrentRound();
 
     PlayerRoundState? GetPlayerRoundState(string playerName);
 

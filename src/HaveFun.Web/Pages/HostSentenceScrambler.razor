@@ -29,7 +29,7 @@ else
             <MudStack Spacing="2">
                 <MudText Typo="Typo.h5">Sentence Scrambler Game</MudText>
                 <MudText Typo="Typo.subtitle1" Color="Color.Secondary">
-                    Choose a sentence file, start the round, and players will arrange the shuffled words into the correct sentence.
+                    Rule: choose a file, start each sentence, and players arrange the shuffled words into the correct sentence.
                 </MudText>
             </MudStack>
         </MudPaper>
@@ -43,13 +43,13 @@ else
 
         <MudPaper Class="pa-4" Elevation="0" Outlined="true">
             <MudGrid Spacing="3">
-                <MudItem xs="12" md="8">
+                <MudItem xs="12" md="5">
                     <MudSelect T="string"
                                Label="Sentence file"
                                Variant="Variant.Outlined"
                                Value="@SelectedFileName"
                                ValueChanged="SelectSentenceFile"
-                               Disabled="@(SentenceFiles.Count == 0)">
+                               Disabled="@(SentenceFiles.Count == 0 || IsRoundActive)">
                         @foreach (var file in SentenceFiles)
                         {
                             <MudSelectItem T="string" Value="@file.FileName">
@@ -59,7 +59,33 @@ else
                     </MudSelect>
                 </MudItem>
 
-                <MudItem xs="12" md="4" Class="d-flex align-end">
+                <MudItem xs="12" md="2">
+                    <MudNumericField T="int"
+                                     Label="Time"
+                                     Variant="Variant.Outlined"
+                                     Min="1"
+                                     @bind-Value="TimeLimitInSeconds"
+                                     Disabled="@IsRoundActive"
+                                     Adornment="Adornment.End"
+                                     AdornmentText="sec" />
+                </MudItem>
+
+                <MudItem xs="12" md="3">
+                    <MudPaper Class="pa-3 h-100" Elevation="0" Outlined="true">
+                        <MudText Typo="Typo.subtitle2">Sentence</MudText>
+                        <MudText Typo="Typo.h6">
+                            @(CurrentSentenceNumber == 0 ? "-" : CurrentSentenceNumber) of @(TotalSentenceCount == 0 ? "-" : TotalSentenceCount)
+                        </MudText>
+                        @if (IsRoundActive)
+                        {
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                @RemainingTimeText remaining
+                            </MudText>
+                        }
+                    </MudPaper>
+                </MudItem>
+
+                <MudItem xs="12" md="2" Class="d-flex align-end">
                     <MudButton Color="Color.Primary"
                                Variant="Variant.Filled"
                                FullWidth="true"
@@ -71,6 +97,20 @@ else
                 </MudItem>
             </MudGrid>
         </MudPaper>
+
+        @if (CurrentRound?.IsCompleted == true)
+        {
+            <MudAlert Severity="Severity.Success" Variant="Variant.Outlined">
+                Correct sentence: @CurrentRound.SentenceText
+            </MudAlert>
+        }
+
+        @if (IsFileComplete)
+        {
+            <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                File complete.
+            </MudAlert>
+        }
 
         <MudPaper Class="pa-4" Elevation="0" Outlined="true">
             <MudStack Spacing="3">
@@ -89,18 +129,34 @@ else
                 }
                 else
                 {
-                    <MudTable T="PlayerSession"
-                              Items="@Players"
+                    <MudTable T="HostPlayerResultRow"
+                              Items="@PlayerResults"
                               Dense="true"
                               Hover="true"
                               Elevation="0">
                         <HeaderContent>
-                            <MudTh>Name</MudTh>
-                            <MudTh>Joined</MudTh>
+                            <MudTh>
+                                <MudTableSortLabel T="HostPlayerResultRow" SortBy="@(row => row.PlayerName)">
+                                    Player
+                                </MudTableSortLabel>
+                            </MudTh>
+                            <MudTh>
+                                <MudTableSortLabel T="HostPlayerResultRow" SortBy="@(row => row.TimeBeforeSubmitSeconds)">
+                                    Time before submit
+                                </MudTableSortLabel>
+                            </MudTh>
+                            <MudTh>Submitted sentence</MudTh>
+                            <MudTh>
+                                <MudTableSortLabel T="HostPlayerResultRow" SortBy="@(row => row.Score ?? -1)">
+                                    Score
+                                </MudTableSortLabel>
+                            </MudTh>
                         </HeaderContent>
                         <RowTemplate>
-                            <MudTd DataLabel="Name">@context.DisplayName</MudTd>
-                            <MudTd DataLabel="Joined">@context.JoinedAt.ToLocalTime().ToString("g")</MudTd>
+                            <MudTd DataLabel="Player">@context.PlayerName</MudTd>
+                            <MudTd DataLabel="Time before submit">@FormatTimeBeforeSubmit(context.TimeBeforeSubmit)</MudTd>
+                            <MudTd DataLabel="Submitted sentence">@(context.SubmittedSentence ?? string.Empty)</MudTd>
+                            <MudTd DataLabel="Score">@FormatScore(context.Score, context.TotalScore)</MudTd>
                         </RowTemplate>
                     </MudTable>
                 }

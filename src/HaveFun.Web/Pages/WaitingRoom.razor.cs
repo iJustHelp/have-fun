@@ -44,7 +44,7 @@ public partial class WaitingRoom : ComponentBase, IAsyncDisposable
             return;
         }
 
-        if (GameState.CurrentRound is not null)
+        if (GameState.CurrentRound?.Status == RoundStatus.Started)
         {
             NavigationManager.NavigateTo("/player-sentence-scrambler", replace: true);
             return;
