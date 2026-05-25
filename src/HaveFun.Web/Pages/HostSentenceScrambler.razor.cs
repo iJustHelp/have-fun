@@ -14,7 +14,7 @@ public partial class HostSentenceScrambler : ComponentBase, IAsyncDisposable
     private IReadOnlyList<string> SentenceLines { get; set; } = [];
     private string? SelectedFileName { get; set; }
     private int TimeLimitInSeconds { get; set; } = 30;
-    private int CurrentSentenceIndex { get; set; } = -1;
+    private int CurrentSentenceIndex { get; set; } = 0;
     private int CurrentSentenceNumber => CurrentSentenceIndex >= 0 ? CurrentSentenceIndex + 1 : 0;
     private int TotalSentenceCount => SentenceLines.Count;
     private bool IsFileComplete => TotalSentenceCount > 0 && CurrentSentenceIndex >= TotalSentenceCount - 1 && CurrentRound?.IsCompleted == true;
@@ -131,6 +131,8 @@ public partial class HostSentenceScrambler : ComponentBase, IAsyncDisposable
         try
         {
             SentenceFiles = SentenceFileService.GetSentenceFiles();
+            SelectedFileName = SentenceFiles.FirstOrDefault()?.FileName;
+            LoadSelectedSentenceLines();
             FileLoadError = null;
         }
         catch (InvalidOperationException exception)
