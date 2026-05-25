@@ -14,9 +14,32 @@ public partial class HostSentenceScrambler : ComponentBase, IAsyncDisposable
     private IReadOnlyList<string> SentenceLines { get; set; } = [];
     private string? SelectedFileName { get; set; }
     private int TimeLimitInSeconds { get; set; } = 30;
-    private int CurrentSentenceIndex { get; set; } = 0;
+    private int CurrentSentenceIndex { get; set; } = -1;
     private int CurrentSentenceNumber => CurrentSentenceIndex >= 0 ? CurrentSentenceIndex + 1 : 0;
     private int TotalSentenceCount => SentenceLines.Count;
+    private int DisplaySentenceNumber
+    {
+        get
+        {
+            if (TotalSentenceCount == 0)
+            {
+                return 0;
+            }
+
+            if (IsRoundActive)
+            {
+                return CurrentSentenceNumber;
+            }
+
+            if (CurrentRound?.IsCompleted == true)
+            {
+                return Math.Min(CurrentSentenceNumber + 1, TotalSentenceCount);
+            }
+
+            return CurrentSentenceNumber == 0 ? 1 : CurrentSentenceNumber;
+        }
+    }
+
     private bool IsFileComplete => TotalSentenceCount > 0 && CurrentSentenceIndex >= TotalSentenceCount - 1 && CurrentRound?.IsCompleted == true;
     private bool IsRoundActive => CurrentRound?.Status == RoundStatus.Started;
     private bool CanStart => !string.IsNullOrWhiteSpace(SelectedFileName) &&

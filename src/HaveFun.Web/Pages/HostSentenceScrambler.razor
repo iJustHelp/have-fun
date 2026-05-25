@@ -61,7 +61,7 @@ else
 
                 <MudItem xs="12">
                     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="4">
-                        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-2">
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">
                             Timeout  the current sentence in seconds
                         </MudText>
                         <MudNumericField T="int"
@@ -80,7 +80,7 @@ else
                             </MudChip>
                         }
                         <MudItem>
-                            <MudText Typo="Typo.body2" Color="Color.Primary">Sentence of @(CurrentSentenceNumber) of @(TotalSentenceCount)</MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Primary">Sentence of @(DisplaySentenceNumber) of @(TotalSentenceCount)</MudText>
                         </MudItem>
                         <MudButton Color="Color.Primary"
                                    Variant="Variant.Filled"
@@ -97,7 +97,8 @@ else
         @if (CurrentRound?.IsCompleted == true)
         {
             <MudAlert Severity="Severity.Success" Variant="Variant.Outlined">
-                Correct sentence: @CurrentRound.SentenceText
+                <MudText>Correct sentence:</MudText>
+                <MudText Typo="Typo.h5" Color="Color.Primary">@CurrentRound.SentenceText</MudText>
             </MudAlert>
         }
 
@@ -134,7 +135,10 @@ else
                                     Time before submit
                                 </MudTableSortLabel>
                             </MudTh>
-                            <MudTh>Submitted sentence</MudTh>
+                            @if (CurrentRound?.IsCompleted == true)
+                            {
+                                <MudTh>Submitted sentence</MudTh>
+                            }
                             <MudTh>
                                 <MudTableSortLabel T="HostPlayerResultRow" SortBy="@(row => row.Score ?? -1)">
                                     Score
@@ -144,7 +148,10 @@ else
                         <RowTemplate>
                             <MudTd DataLabel="Player">@context.PlayerName</MudTd>
                             <MudTd DataLabel="Time before submit">@FormatTimeBeforeSubmit(context.TimeBeforeSubmit)</MudTd>
-                            <MudTd DataLabel="Submitted sentence">@(context.SubmittedSentence ?? string.Empty)</MudTd>
+                            @if (CurrentRound?.IsCompleted == true)
+                            {
+                                <MudTd DataLabel="Submitted sentence">@(context.SubmittedSentence ?? string.Empty)</MudTd>
+                            }
                             <MudTd DataLabel="Score">@FormatScore(context.Score, context.TotalScore)</MudTd>
                         </RowTemplate>
                     </MudTable>
