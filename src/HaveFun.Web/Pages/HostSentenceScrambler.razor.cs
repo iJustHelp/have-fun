@@ -202,18 +202,23 @@ public partial class HostSentenceScrambler : ComponentBase, IAsyncDisposable
         var roundResults = GameState.GetCurrentRoundResults();
         var resultsByPlayerName = roundResults?.Results.ToDictionary(result => result.PlayerName, StringComparer.OrdinalIgnoreCase)
             ?? [];
+        var totalScoresByPlayerName = GameState.GetPlayerTotalScores()
+            .ToDictionary(playerTotalScore => playerTotalScore.PlayerName, StringComparer.OrdinalIgnoreCase);
 
         PlayerResults = Players
             .Select(player =>
             {
                 resultsByPlayerName.TryGetValue(player.DisplayName, out var result);
+                totalScoresByPlayerName.TryGetValue(player.DisplayName, out var totalScore);
                 return new HostPlayerResultRow
                 {
                     PlayerName = player.DisplayName,
                     TimeBeforeSubmit = result is null ? null : TimeSpan.FromSeconds(CurrentRound?.TimeLimitInSeconds ?? 0) - result.SpentTime,
                     SubmittedSentence = result?.SubmittedSentence,
                     Score = result?.CorrectnessCount,
-                    TotalScore = result?.TotalSentenceCount
+                    TotalScore = result?.TotalSentenceCount,
+                    AggregateScore = totalScore?.Score,
+                    AggregateTotalScore = totalScore?.TotalScore
                 };
             })
             .ToArray();
@@ -360,5 +365,20 @@ public partial class HostSentenceScrambler : ComponentBase, IAsyncDisposable
         public int? Score { get; init; }
 
         public int? TotalScore { get; init; }
+
+        public double ScoreSortValue => CalculateScoreSortValue(Score, TotalScore);
+
+        public int? AggregateScore { get; init; }
+
+        public int? AggregateTotalScore { get; init; }
+
+        public double AggregateScoreSortValue => CalculateScoreSortValue(AggregateScore, AggregateTotalScore);
+
+        private static double CalculateScoreSortValue(int? score, int? totalScore)
+        {
+            return score is null || totalScore is null || totalScore == 0
+                ? -1
+                : (double)score.Value / totalScore.Value;
+        }
     }
 }

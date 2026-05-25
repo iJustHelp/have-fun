@@ -123,6 +123,7 @@ else
                               Items="@PlayerResults"
                               Dense="true"
                               Hover="true"
+                              AllowUnsorted="false"
                               Elevation="0">
                         <HeaderContent>
                             <MudTh>
@@ -140,8 +141,13 @@ else
                                 <MudTh>Submitted sentence</MudTh>
                             }
                             <MudTh>
-                                <MudTableSortLabel T="HostPlayerResultRow" SortBy="@(row => row.Score ?? -1)">
+                                <MudTableSortLabel T="HostPlayerResultRow" SortBy="@(row => row.ScoreSortValue)">
                                     Score
+                                </MudTableSortLabel>
+                            </MudTh>
+                            <MudTh>
+                                <MudTableSortLabel T="HostPlayerResultRow" SortBy="@(row => row.AggregateScoreSortValue)">
+                                    Total Score
                                 </MudTableSortLabel>
                             </MudTh>
                         </HeaderContent>
@@ -153,6 +159,7 @@ else
                                 <MudTd DataLabel="Submitted sentence">@(context.SubmittedSentence ?? string.Empty)</MudTd>
                             }
                             <MudTd DataLabel="Score">@FormatScore(context.Score, context.TotalScore)</MudTd>
+                            <MudTd DataLabel="Total Score">@FormatScore(context.AggregateScore, context.AggregateTotalScore)</MudTd>
                         </RowTemplate>
                     </MudTable>
                 }

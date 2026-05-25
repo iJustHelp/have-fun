@@ -4,6 +4,8 @@ public sealed class GameStateService : IGameStateService
 {
     private readonly object syncRoot = new();
     private readonly Dictionary<PlayerRoundKey, PlayerRoundState> playerRoundStates = [];
+    private readonly Dictionary<string, PlayerTotalScore> playerTotalScores = new(StringComparer.OrdinalIgnoreCase);
+    private readonly HashSet<Guid> totaledRoundIds = [];
     private CurrentRound? currentRound;
 
     public event Action<CurrentRound>? CurrentRoundChanged;
@@ -85,6 +87,7 @@ public sealed class GameStateService : IGameStateService
                 CompletedAt = DateTimeOffset.UtcNow
             };
             currentRound = completedRound;
+            RecordTotalScoresUnsafe(completedRound);
         }
 
         CurrentRoundChanged?.Invoke(completedRound);
@@ -317,6 +320,16 @@ public sealed class GameStateService : IGameStateService
         }
     }
 
+    public IReadOnlyList<PlayerTotalScore> GetPlayerTotalScores()
+    {
+        lock (syncRoot)
+        {
+            return playerTotalScores.Values
+                .OrderBy(playerTotalScore => playerTotalScore.PlayerName, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+        }
+    }
+
     private static IReadOnlyList<string> SplitSentences(string sentenceText)
     {
         return sentenceText
@@ -386,6 +399,7 @@ public sealed class GameStateService : IGameStateService
                 CompletedAt = DateTimeOffset.UtcNow
             };
             currentRound = completedRound;
+            RecordTotalScoresUnsafe(completedRound);
         }
 
         CurrentRoundChanged?.Invoke(completedRound);
@@ -424,6 +438,42 @@ public sealed class GameStateService : IGameStateService
         playerRoundStates.Add(key, playerRoundState);
 
         return playerRoundState;
+    }
+
+    private void RecordTotalScoresUnsafe(CurrentRound round)
+    {
+        if (!totaledRoundIds.Add(round.Id))
+        {
+            return;
+        }
+
+        var submittedScores = playerRoundStates.Values
+            .Where(playerRoundState =>
+                playerRoundState.RoundId == round.Id &&
+                playerRoundState.IsSubmitted &&
+                playerRoundState.SubmittedSentence is not null)
+            .ToDictionary(
+                playerRoundState => playerRoundState.PlayerName,
+                playerRoundState => CalculateCorrectness(round.OriginalSentences, playerRoundState.SubmittedSentence!),
+                StringComparer.OrdinalIgnoreCase);
+
+        var playerNames = round.ExpectedPlayerNames
+            .Concat(submittedScores.Keys)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        foreach (var playerName in playerNames)
+        {
+            submittedScores.TryGetValue(playerName, out var score);
+            playerTotalScores.TryGetValue(playerName, out var existingScore);
+
+            playerTotalScores[playerName] = new PlayerTotalScore
+            {
+                PlayerName = playerName,
+                Score = (existingScore?.Score ?? 0) + score,
+                TotalScore = (existingScore?.TotalScore ?? 0) + round.OriginalSentences.Count
+            };
+        }
     }
 
     private static string NormalizePlayerName(string playerName)
