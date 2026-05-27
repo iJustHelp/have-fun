@@ -1,6 +1,6 @@
 namespace HaveFun.Core;
 
-public sealed record SentenceTile
+public sealed record WordTile
 {
     public required Guid Id { get; init; }
 

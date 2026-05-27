@@ -26,9 +26,13 @@ public partial class PlayerSentenceScrambler : ComponentBase, IAsyncDisposable
 
     private string RemainingTimeText => $"{(int)RemainingTime.TotalMinutes:00}:{RemainingTime.Seconds:00}";
 
-    private int AvailableSentenceCount => PlayerRoundState?.AvailableSentences.Count ?? CurrentRound?.ShuffledSentences.Count ?? 0;
+    private int AvailableSentenceCount => PlayerRoundState?.AvailableWords.Count ?? CurrentRound?.ShuffledSentences.Count ?? 0;
 
     private bool CanSubmit => CurrentRound?.Status == RoundStatus.Started && PlayerRoundState?.CanSubmit == true;
+
+    private bool CanReturnSentences => CurrentRound?.Status == RoundStatus.Started && PlayerRoundState?.IsSubmitted == false;
+
+    private bool IsCollectedSentenceIncomplete => PlayerRoundState?.CollectedWords.Count > 0 && PlayerRoundState.AvailableWords.Count > 0;
 
     private bool IsTimerExpired => CurrentRound is not null && RemainingTime == TimeSpan.Zero;
 
@@ -45,6 +49,9 @@ public partial class PlayerSentenceScrambler : ComponentBase, IAsyncDisposable
 
     [Inject]
     private IGameStateService GameState { get; set; } = default!;
+
+    [Inject]
+    private IDialogService DialogService { get; set; } = default!;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -120,21 +127,45 @@ public partial class PlayerSentenceScrambler : ComponentBase, IAsyncDisposable
         });
     }
 
-    private void SelectSentence(Guid sentenceId)
+    private void SelectWord(Guid wordId)
     {
         if (PlayerName is null || CurrentRound?.Status != RoundStatus.Started)
         {
             return;
         }
 
-        PlayerRoundState = GameState.SelectSentence(PlayerName, sentenceId);
+        PlayerRoundState = GameState.SelectWord(PlayerName, wordId);
     }
 
-    private void SubmitRound()
+    private void ReturnWord(Guid wordId)
     {
         if (PlayerName is null || CurrentRound?.Status != RoundStatus.Started)
         {
             return;
+        }
+
+        PlayerRoundState = GameState.ReturnWord(PlayerName, wordId);
+    }
+
+    private async Task SubmitRound()
+    {
+        if (PlayerName is null || CurrentRound?.Status != RoundStatus.Started)
+        {
+            return;
+        }
+
+        if (IsCollectedSentenceIncomplete)
+        {
+            var confirmed = await DialogService.ShowMessageBoxAsync(
+                "Submit incomplete sentence?",
+                "You still have words available. Submit this sentence anyway?",
+                yesText: "Submit",
+                cancelText: "Keep editing");
+
+            if (confirmed != true)
+            {
+                return;
+            }
         }
 
         PlayerRoundState = GameState.SubmitPlayerRound(PlayerName);

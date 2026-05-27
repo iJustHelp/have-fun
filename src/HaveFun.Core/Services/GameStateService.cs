@@ -138,14 +138,14 @@ public sealed class GameStateService : IGameStateService
             {
                 PlayerName = normalizedName,
                 RoundId = currentRound.Id,
-                AvailableSentences = currentRound.ShuffledSentences
-                    .Select(sentence => new SentenceTile
+                AvailableWords = currentRound.ShuffledSentences
+                    .Select(sentence => new WordTile
                     {
                         Id = Guid.NewGuid(),
                         Text = sentence
                     })
                     .ToArray(),
-                CollectedSentences = []
+                CollectedWords = []
             };
 
             playerRoundStates.Add(key, playerRoundState);
@@ -154,7 +154,7 @@ public sealed class GameStateService : IGameStateService
         }
     }
 
-    public PlayerRoundState? SelectSentence(string playerName, Guid sentenceId)
+    public PlayerRoundState? SelectWord(string playerName, Guid wordId)
     {
         var normalizedName = NormalizePlayerName(playerName);
         PlayerRoundState? updatedState;
@@ -178,7 +178,7 @@ public sealed class GameStateService : IGameStateService
                 return playerRoundState;
             }
 
-            var selectedSentence = playerRoundState.AvailableSentences.FirstOrDefault(sentence => sentence.Id == sentenceId);
+            var selectedSentence = playerRoundState.AvailableWords.FirstOrDefault(sentence => sentence.Id == wordId);
 
             if (selectedSentence is null)
             {
@@ -187,11 +187,60 @@ public sealed class GameStateService : IGameStateService
 
             updatedState = playerRoundState with
             {
-                AvailableSentences = playerRoundState.AvailableSentences
-                    .Where(sentence => sentence.Id != sentenceId)
+                AvailableWords = playerRoundState.AvailableWords
+                    .Where(sentence => sentence.Id != wordId)
                     .ToArray(),
-                CollectedSentences = playerRoundState.CollectedSentences
+                CollectedWords = playerRoundState.CollectedWords
                     .Append(selectedSentence)
+                    .ToArray()
+            };
+
+            playerRoundStates[new PlayerRoundKey(currentRound.Id, normalizedName)] = updatedState;
+        }
+
+        PlayerRoundStateChanged?.Invoke(updatedState);
+
+        return updatedState;
+    }
+
+    public PlayerRoundState? ReturnWord(string playerName, Guid wordId)
+    {
+        var normalizedName = NormalizePlayerName(playerName);
+        PlayerRoundState? updatedState;
+
+        if (string.IsNullOrWhiteSpace(normalizedName))
+        {
+            return null;
+        }
+
+        lock (syncRoot)
+        {
+            if (currentRound is null)
+            {
+                return null;
+            }
+
+            var playerRoundState = GetOrCreatePlayerRoundStateUnsafe(currentRound, normalizedName);
+
+            if (playerRoundState.IsSubmitted)
+            {
+                return playerRoundState;
+            }
+
+            var returnedWord = playerRoundState.CollectedWords.FirstOrDefault(word => word.Id == wordId);
+
+            if (returnedWord is null)
+            {
+                return playerRoundState;
+            }
+
+            updatedState = playerRoundState with
+            {
+                AvailableWords = playerRoundState.AvailableWords
+                    .Append(returnedWord)
+                    .ToArray(),
+                CollectedWords = playerRoundState.CollectedWords
+                    .Where(word => word.Id != wordId)
                     .ToArray()
             };
 
@@ -425,14 +474,14 @@ public sealed class GameStateService : IGameStateService
         {
             PlayerName = playerName,
             RoundId = round.Id,
-            AvailableSentences = round.ShuffledSentences
-                .Select(sentence => new SentenceTile
+            AvailableWords = round.ShuffledSentences
+                .Select(sentence => new WordTile
                 {
                     Id = Guid.NewGuid(),
                     Text = sentence
                 })
                 .ToArray(),
-            CollectedSentences = []
+            CollectedWords = []
         };
 
         playerRoundStates.Add(key, playerRoundState);

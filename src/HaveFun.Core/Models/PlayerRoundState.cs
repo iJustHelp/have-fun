@@ -6,9 +6,9 @@ public sealed record PlayerRoundState
 
     public required Guid RoundId { get; init; }
 
-    public required IReadOnlyList<SentenceTile> AvailableSentences { get; init; }
+    public required IReadOnlyList<WordTile> AvailableWords { get; init; }
 
-    public required IReadOnlyList<SentenceTile> CollectedSentences { get; init; }
+    public required IReadOnlyList<WordTile> CollectedWords { get; init; }
 
     public bool IsSubmitted { get; init; }
 
@@ -18,7 +18,7 @@ public sealed record PlayerRoundState
 
     public TimeSpan? SpentTime { get; init; }
 
-    public string CollectedSentence => string.Join(' ', CollectedSentences.Select(sentence => sentence.Text));
+    public string CollectedSentence => string.Join(' ', CollectedWords.Select(sentence => sentence.Text));
 
-    public bool CanSubmit => !IsSubmitted && AvailableSentences.Count == 0 && CollectedSentences.Count > 0;
+    public bool CanSubmit => !IsSubmitted && CollectedWords.Count > 0;
 }
