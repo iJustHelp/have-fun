@@ -8,17 +8,21 @@ public interface IGameStateService
 
     CurrentRound? CurrentRound { get; }
 
-    CurrentRound StartRound(SentenceDefinition sentence);
+    CurrentRound StartRound(SentenceDefinition sentence, IReadOnlyList<string> expectedPlayerNames);
+
+    CurrentRound? CompleteCurrentRound();
 
     PlayerRoundState? GetPlayerRoundState(string playerName);
 
     PlayerRoundState? GetOrCreatePlayerRoundState(string playerName);
 
-    PlayerRoundState? SelectWord(string playerName, Guid wordId);
+    PlayerRoundState? SelectSentence(string playerName, Guid sentenceId);
 
     PlayerRoundState? SubmitPlayerRound(string playerName);
 
     IReadOnlyList<PlayerRoundState> GetSubmittedPlayerRoundStates();
 
     RoundResults? GetCurrentRoundResults();
+
+    IReadOnlyList<PlayerTotalScore> GetPlayerTotalScores();
 }

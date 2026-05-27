@@ -1,4 +1,5 @@
 @namespace HaveFun.Web
+@implements IAsyncDisposable
 @inject ISessionStorageService UserSessionStorageService
 
 <MudNavMenu>
@@ -10,18 +11,12 @@
             Home
         </MudNavLink>
 
-        @if (currentUser.Role == UserRole.Master)
+        @if (currentUser.Role == Role.Host)
         {
-            <MudNavLink Href="/dashboard"
-                        Icon="@Icons.Material.Filled.Dashboard">
-                Dashboard
-            </MudNavLink>
-        }
-        else if (currentUser.Role == UserRole.Player)
-        {
-            <MudNavLink Href="/player"
-                        Icon="@Icons.Material.Filled.SportsEsports">
-                Player
+            <MudDivider Class="my-2" />
+            <MudNavLink Href="/host-sentence-scrambler"
+                        Icon="@Icons.Material.Filled.Spellcheck">
+                Sentence Scramble
             </MudNavLink>
         }
     }
@@ -30,6 +25,11 @@
 @code {
     private SessionStorageModel? currentUser;
 
+    protected override void OnInitialized()
+    {
+        UserSessionStorageService.CurrentUserChanged += HandleCurrentUserChanged;
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender)
@@ -37,6 +37,22 @@
             return;
         }
 
+        await LoadCurrentUserAsync();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        UserSessionStorageService.CurrentUserChanged -= HandleCurrentUserChanged;
+        await ValueTask.CompletedTask;
+    }
+
+    private void HandleCurrentUserChanged()
+    {
+        _ = InvokeAsync(LoadCurrentUserAsync);
+    }
+
+    private async Task LoadCurrentUserAsync()
+    {
         currentUser = await UserSessionStorageService.GetCurrentUserAsync();
         StateHasChanged();
     }

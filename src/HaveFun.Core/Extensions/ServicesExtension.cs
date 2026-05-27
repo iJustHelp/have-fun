@@ -9,6 +9,7 @@ public static class ServicesExtension
         services.AddSingleton<IPlayerRegistryService, PlayerRegistryService>();
         services.AddSingleton<IGameStateService, GameStateService>();
         services.AddSingleton<IUrlService, UrlService>();
+        services.AddSingleton<IQrCodeService, QrCodeService>();
         services.AddScoped<ISessionStorageService, SessionStorageService>();
 
         return services;

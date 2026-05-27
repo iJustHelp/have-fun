@@ -6,6 +6,10 @@ public sealed class PlayerRegistryService : IPlayerRegistryService
     private readonly Dictionary<Guid, PlayerSession> playersById = [];
     private readonly Dictionary<string, Guid> playerIdsByName = new(StringComparer.OrdinalIgnoreCase);
 
+    public event Action? PlayersChanged;
+
+    public event Action<PlayerSession>? PlayerRemoved;
+
     public JoinResult RegisterPlayer(string submittedName)
     {
         var displayName = submittedName.Trim();
@@ -15,6 +19,8 @@ public sealed class PlayerRegistryService : IPlayerRegistryService
             return JoinResult.Failed("Name is required.");
         }
 
+        PlayerSession player;
+
         lock (syncRoot)
         {
             if (playerIdsByName.ContainsKey(displayName))
@@ -22,7 +28,7 @@ public sealed class PlayerRegistryService : IPlayerRegistryService
                 return JoinResult.Failed("That player name is already in use.", displayName);
             }
 
-            var player = new PlayerSession
+            player = new PlayerSession
             {
                 Id = Guid.NewGuid(),
                 DisplayName = displayName,
@@ -31,9 +37,29 @@ public sealed class PlayerRegistryService : IPlayerRegistryService
 
             playersById.Add(player.Id, player);
             playerIdsByName.Add(displayName, player.Id);
-
-            return JoinResult.PlayerJoined(player);
         }
+
+        PlayersChanged?.Invoke();
+        return JoinResult.PlayerJoined(player);
+    }
+
+    public bool RemovePlayer(Guid playerId)
+    {
+        PlayerSession? removedPlayer;
+
+        lock (syncRoot)
+        {
+            if (!playersById.Remove(playerId, out removedPlayer))
+            {
+                return false;
+            }
+
+            playerIdsByName.Remove(removedPlayer.DisplayName);
+        }
+
+        PlayersChanged?.Invoke();
+        PlayerRemoved?.Invoke(removedPlayer);
+        return true;
     }
 
     public bool IsPlayerNameTaken(string submittedName)

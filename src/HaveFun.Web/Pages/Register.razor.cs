@@ -1,6 +1,5 @@
 using HaveFun.Core;
 using Microsoft.AspNetCore.Components;
-using Microsoft.Extensions.Options;
 
 namespace HaveFun.Web;
 
@@ -18,9 +17,6 @@ public partial class Register : ComponentBase
     private IUrlService UrlService { get; set; } = default!;
 
     [Inject]
-    private IOptions<GameOptions> GameOptions { get; set; } = default!;
-
-    [Inject]
     private IPlayerRegistryService PlayerRegistry { get; set; } = default!;
 
     [Inject]
@@ -28,7 +24,8 @@ public partial class Register : ComponentBase
 
     protected override void OnInitialized()
     {
-        _lanUrl = UrlService.GetLanBaseUrl(NavigationManager.BaseUri) ?? NavigationManager.BaseUri;
+        var baseUrl = UrlService.GetLanBaseUrl(NavigationManager.BaseUri) ?? NavigationManager.BaseUri;
+        _lanUrl = BuildRegisterUrl(baseUrl);
     }
 
     private async Task JoinAsync()
@@ -50,17 +47,6 @@ public partial class Register : ComponentBase
             return;
         }
 
-        if (submittedName.Equals(GameOptions.Value.MasterName.Trim(), StringComparison.OrdinalIgnoreCase))
-        {
-            await UserSessionStorageService.SaveCurrentUserAsync(new SessionStorageModel
-            {
-                Name = submittedName,
-                Role = UserRole.Master,
-            });
-            NavigationManager.NavigateTo("/home");
-            return;
-        }
-
         var result = PlayerRegistry.RegisterPlayer(submittedName);
 
         if (!result.IsSuccess)
@@ -73,9 +59,14 @@ public partial class Register : ComponentBase
         await UserSessionStorageService.SaveCurrentUserAsync(new SessionStorageModel
         {
             Name = result.DisplayName,
-            Role = UserRole.Player,
+            Role = Role.Player,
         });
 
-        NavigationManager.NavigateTo("/player");
+        NavigationManager.NavigateTo("/waiting-room");
+    }
+
+    private static string BuildRegisterUrl(string baseUrl)
+    {
+        return new Uri(new Uri(baseUrl), "register").ToString();
     }
 }

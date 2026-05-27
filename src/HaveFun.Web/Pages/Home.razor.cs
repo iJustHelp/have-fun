@@ -3,13 +3,15 @@ using Microsoft.AspNetCore.Components;
 
 namespace HaveFun.Web;
 
-public partial class Home : ComponentBase
+public partial class Home : ComponentBase, IAsyncDisposable
 {
-    private string LocalhostUrl { get; set; } = string.Empty;
+    private string RegisterUrl { get; set; } = string.Empty;
 
-    private string? LanUrl { get; set; }
+    private string? QrCodeDataUri { get; set; }
 
-    private int SentenceCount { get; set; }
+    private string? QrCodeError { get; set; }
+
+    private IReadOnlyList<PlayerSession> Players { get; set; } = [];
 
     [Inject]
     private NavigationManager NavigationManager { get; set; } = default!;
@@ -18,7 +20,10 @@ public partial class Home : ComponentBase
     private IUrlService UrlService { get; set; } = default!;
 
     [Inject]
-    private ISentenceLibraryService SentenceLibrary { get; set; } = default!;
+    private IQrCodeService QrCodeService { get; set; } = default!;
+
+    [Inject]
+    private IPlayerRegistryService PlayerRegistry { get; set; } = default!;
 
     [Inject]
     private ISessionStorageService UserSessionStorageService { get; set; } = default!;
@@ -26,10 +31,18 @@ public partial class Home : ComponentBase
     protected override void OnInitialized()
     {
         var urls = UrlService.GetLanBaseUrl(NavigationManager.BaseUri);
+        var baseUrl = urls ?? NavigationManager.BaseUri;
 
-        LocalhostUrl = urls ?? NavigationManager.BaseUri;
-        LanUrl = urls ?? NavigationManager.BaseUri;
-        SentenceCount = SentenceLibrary.Sentences.Count;
+        RegisterUrl = BuildRegisterUrl(baseUrl);
+        CreateQrCode();
+        RefreshPlayers();
+        PlayerRegistry.PlayersChanged += HandlePlayersChanged;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        PlayerRegistry.PlayersChanged -= HandlePlayersChanged;
+        await ValueTask.CompletedTask;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -43,7 +56,52 @@ public partial class Home : ComponentBase
 
         if (currentUser is null)
         {
-            NavigationManager.NavigateTo("/");
+            await UserSessionStorageService.SaveCurrentUserAsync(new SessionStorageModel
+            {
+                Name = "Host",
+                Role = Role.Host,
+            });
         }
+    }
+
+    private static string BuildRegisterUrl(string baseUrl)
+    {
+        return new Uri(new Uri(baseUrl), "register").ToString();
+    }
+
+    private void CreateQrCode()
+    {
+        try
+        {
+            QrCodeDataUri = QrCodeService.CreateSvgDataUri(RegisterUrl);
+            QrCodeError = null;
+        }
+        catch (InvalidOperationException)
+        {
+            QrCodeDataUri = null;
+            QrCodeError = "The player registration URL is too long to display as a QR code.";
+        }
+    }
+
+    private void RemovePlayer(Guid playerId)
+    {
+        if (PlayerRegistry.RemovePlayer(playerId))
+        {
+            RefreshPlayers();
+        }
+    }
+
+    private void RefreshPlayers()
+    {
+        Players = PlayerRegistry.GetPlayers();
+    }
+
+    private void HandlePlayersChanged()
+    {
+        _ = InvokeAsync(() =>
+        {
+            RefreshPlayers();
+            StateHasChanged();
+        });
     }
 }

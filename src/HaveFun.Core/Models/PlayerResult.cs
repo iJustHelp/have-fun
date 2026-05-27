@@ -10,11 +10,11 @@ public sealed record PlayerResult
 
     public required int CorrectnessCount { get; init; }
 
-    public required int TotalWordCount { get; init; }
+    public required int TotalSentenceCount { get; init; }
 
     public required TimeSpan SpentTime { get; init; }
 
     public required DateTimeOffset SubmittedAt { get; init; }
 
-    public string CorrectnessDisplay => $"{CorrectnessCount} / {TotalWordCount}";
+    public string CorrectnessDisplay => $"{CorrectnessCount} / {TotalSentenceCount}";
 }

@@ -8,11 +8,17 @@ public sealed record CurrentRound
 
     public required int TimeLimitInSeconds { get; init; }
 
-    public required IReadOnlyList<string> OriginalWords { get; init; }
+    public required IReadOnlyList<string> OriginalSentences { get; init; }
 
-    public required IReadOnlyList<string> ShuffledWords { get; init; }
+    public required IReadOnlyList<string> ShuffledSentences { get; init; }
+
+    public required IReadOnlyList<string> ExpectedPlayerNames { get; init; }
 
     public required RoundStatus Status { get; init; }
 
     public DateTimeOffset? StartedAt { get; init; }
+
+    public DateTimeOffset? CompletedAt { get; init; }
+
+    public bool IsCompleted => Status == RoundStatus.Completed;
 }

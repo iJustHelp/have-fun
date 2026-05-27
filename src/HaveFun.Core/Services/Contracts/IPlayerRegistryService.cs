@@ -2,7 +2,13 @@ namespace HaveFun.Core;
 
 public interface IPlayerRegistryService
 {
+    event Action? PlayersChanged;
+
+    event Action<PlayerSession>? PlayerRemoved;
+
     JoinResult RegisterPlayer(string submittedName);
+
+    bool RemovePlayer(Guid playerId);
 
     bool IsPlayerNameTaken(string submittedName);
 

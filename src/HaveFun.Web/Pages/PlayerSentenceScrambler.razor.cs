@@ -4,7 +4,7 @@ using MudBlazor;
 
 namespace HaveFun.Web;
 
-public partial class Player : ComponentBase, IAsyncDisposable
+public partial class PlayerSentenceScrambler : ComponentBase, IAsyncDisposable
 {
     private CancellationTokenSource? timerCancellation;
 
@@ -26,13 +26,16 @@ public partial class Player : ComponentBase, IAsyncDisposable
 
     private string RemainingTimeText => $"{(int)RemainingTime.TotalMinutes:00}:{RemainingTime.Seconds:00}";
 
-    private int AvailableWordCount => PlayerRoundState?.AvailableWords.Count ?? CurrentRound?.ShuffledWords.Count ?? 0;
+    private int AvailableSentenceCount => PlayerRoundState?.AvailableSentences.Count ?? CurrentRound?.ShuffledSentences.Count ?? 0;
 
-    private bool CanSubmit => PlayerRoundState?.CanSubmit == true;
+    private bool CanSubmit => CurrentRound?.Status == RoundStatus.Started && PlayerRoundState?.CanSubmit == true;
 
     private bool IsTimerExpired => CurrentRound is not null && RemainingTime == TimeSpan.Zero;
 
     private Color RoundStatusColor => CurrentRound?.Status == RoundStatus.Started ? Color.Success : Color.Default;
+
+    [Inject]
+    private NavigationManager NavigationManager { get; set; } = default!;
 
     [Inject]
     private IPlayerRegistryService PlayerRegistry { get; set; } = default!;
@@ -52,26 +55,36 @@ public partial class Player : ComponentBase, IAsyncDisposable
 
         var currentUser = await UserSessionStorageService.GetCurrentUserAsync();
 
-        if (currentUser?.Role != UserRole.Player)
+        if (currentUser?.Role == Role.Host)
         {
-            ErrorMessage = "This browser tab is not joined as a player. Join again to continue.";
-            IsSessionChecked = true;
-            StateHasChanged();
+            NavigationManager.NavigateTo("/host-sentence-scrambler", replace: true);
+            return;
+        }
+
+        if (currentUser?.Role != Role.Player)
+        {
+            await RedirectToRegisterAsync();
             return;
         }
 
         if (!PlayerRegistry.TryGetPlayerByName(currentUser.Name, out var registeredPlayer) || registeredPlayer is null)
         {
-            ErrorMessage = "This player session is no longer active. Join again to continue.";
-            IsSessionChecked = true;
-            StateHasChanged();
+            await RedirectToRegisterAsync();
+            return;
+        }
+
+        CurrentRound = GameState.CurrentRound;
+
+        if (CurrentRound?.Status != RoundStatus.Started)
+        {
+            NavigationManager.NavigateTo("/waiting-room", replace: true);
             return;
         }
 
         DisplayName = registeredPlayer.DisplayName;
         PlayerName = registeredPlayer.DisplayName;
-        CurrentRound = GameState.CurrentRound;
         RefreshPlayerRoundState();
+        PlayerRegistry.PlayerRemoved += HandlePlayerRemoved;
         GameState.CurrentRoundChanged += HandleCurrentRoundChanged;
         StartTimerIfRoundIsActive();
         IsSessionChecked = true;
@@ -80,9 +93,20 @@ public partial class Player : ComponentBase, IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        PlayerRegistry.PlayerRemoved -= HandlePlayerRemoved;
         GameState.CurrentRoundChanged -= HandleCurrentRoundChanged;
         StopTimer();
         await ValueTask.CompletedTask;
+    }
+
+    private void HandlePlayerRemoved(PlayerSession player)
+    {
+        if (!string.Equals(PlayerName, player.DisplayName, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        _ = InvokeAsync(RedirectToRegisterAsync);
     }
 
     private void HandleCurrentRoundChanged(CurrentRound round)
@@ -96,19 +120,19 @@ public partial class Player : ComponentBase, IAsyncDisposable
         });
     }
 
-    private void SelectWord(Guid wordId)
+    private void SelectSentence(Guid sentenceId)
     {
-        if (PlayerName is null)
+        if (PlayerName is null || CurrentRound?.Status != RoundStatus.Started)
         {
             return;
         }
 
-        PlayerRoundState = GameState.SelectWord(PlayerName, wordId);
+        PlayerRoundState = GameState.SelectSentence(PlayerName, sentenceId);
     }
 
     private void SubmitRound()
     {
-        if (PlayerName is null)
+        if (PlayerName is null || CurrentRound?.Status != RoundStatus.Started)
         {
             return;
         }
@@ -120,7 +144,7 @@ public partial class Player : ComponentBase, IAsyncDisposable
     {
         StopTimer();
 
-        if (CurrentRound is null)
+        if (CurrentRound?.Status != RoundStatus.Started)
         {
             RemainingTime = TimeSpan.Zero;
             return;
@@ -191,6 +215,12 @@ public partial class Player : ComponentBase, IAsyncDisposable
         }
 
         PlayerRoundState = GameState.GetOrCreatePlayerRoundState(PlayerName);
+    }
+
+    private async Task RedirectToRegisterAsync()
+    {
+        await UserSessionStorageService.ClearCurrentUserAsync();
+        NavigationManager.NavigateTo("/register", replace: true);
     }
 
     private static string FormatSpentTime(TimeSpan spentTime)
