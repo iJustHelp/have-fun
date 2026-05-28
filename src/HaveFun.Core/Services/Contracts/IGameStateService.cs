@@ -16,7 +16,9 @@ public interface IGameStateService
 
     PlayerRoundState? GetOrCreatePlayerRoundState(string playerName);
 
-    PlayerRoundState? SelectSentence(string playerName, Guid sentenceId);
+    PlayerRoundState? SelectWord(string playerName, Guid wordId);
+
+    PlayerRoundState? ReturnWord(string playerName, Guid wordId);
 
     PlayerRoundState? SubmitPlayerRound(string playerName);
 

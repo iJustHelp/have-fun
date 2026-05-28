@@ -33,48 +33,35 @@
                 </MudText>
             </MudStack>
         </MudPaper>
-
-        <MudGrid Spacing="3">
-
-            <MudItem xs="12" md="4">
-                <MudPaper Class="pa-4 h-100" Elevation="0" Outlined="true">
-                    <MudText Typo="Typo.h6" Class="mb-4">Timer</MudText>
-                    <MudText Typo="Typo.h4">@RemainingTimeText</MudText>
-                    @if (IsTimerExpired)
-                    {
-                        <MudText Typo="Typo.body2" Color="Color.Error">
-                            Time is up
-                        </MudText>
-                    }
-                </MudPaper>
-            </MudItem>
-
-            <MudItem xs="12" md="4">
-                <MudPaper Class="pa-4 h-100" Elevation="0" Outlined="true">
-                    <MudText Typo="Typo.h6" Class="mb-4">Sentences</MudText>
-                    <MudText Typo="Typo.body2" Color="Color.Secondary">
-                        @AvailableSentenceCount available
-                    </MudText>
-                </MudPaper>
-            </MudItem>
-        </MudGrid>
-
+        
+        <MudItem>
+            <MudChip T="string"
+                     Color="Color.Secondary"
+                     Variant="Variant.Outlined"
+                     Icon="@Icons.Material.Filled.Timer">
+                @RemainingTimeText remaining
+            </MudChip>
+        </MudItem>
+        
         <MudPaper Class="pa-4" Elevation="0" Outlined="true">
-            <MudText Typo="Typo.h6" Class="mb-4">Collected Sentence</MudText>
-            @if (PlayerRoundState is null || PlayerRoundState.CollectedSentences.Count == 0)
+            <MudText Typo="Typo.h6" Class="mb-4">Your Sentence</MudText>
+            @if (PlayerRoundState is null || PlayerRoundState.CollectedWords.Count == 0)
             {
                 <MudText Typo="Typo.body2" Color="Color.Secondary">
-                    Click sentences below to build your sentence.
+                    Click words below to build your sentence.
                 </MudText>
             }
             else
             {
                 <MudStack Row="true" Spacing="2" Class="flex-wrap">
-                    @foreach (var sentence in PlayerRoundState.CollectedSentences)
+                    @foreach (var word in PlayerRoundState.CollectedWords)
                     {
-                        <MudChip T="string" Color="Color.Secondary" Variant="Variant.Filled">
-                            @sentence.Text
-                        </MudChip>
+                        <MudButton Color="Color.Secondary"
+                                   Variant="Variant.Outlined"
+                                   Style="text-transform: none;"
+                                   OnClick="@(() => ReturnWord(word.Id))">
+                            @word.Text
+                        </MudButton>
                     }
                 </MudStack>
             }
@@ -93,22 +80,23 @@
         else
         {
             <MudPaper Class="pa-4" Elevation="0" Outlined="true">
-                <MudText Typo="Typo.h6" Class="mb-4">Available Sentences</MudText>
-                @if (PlayerRoundState is null || PlayerRoundState.AvailableSentences.Count == 0)
+                <MudText Typo="Typo.h6" Class="mb-4">Available Words</MudText>
+                @if (PlayerRoundState is null || PlayerRoundState.AvailableWords.Count == 0)
                 {
                     <MudText Typo="Typo.body2" Color="Color.Secondary">
-                        All sentences are selected. Submit when ready.
+                        All words are selected. Submit when ready.
                     </MudText>
                 }
                 else
                 {
                     <MudStack Row="true" Spacing="2" Class="flex-wrap">
-                        @foreach (var sentence in PlayerRoundState.AvailableSentences)
+                        @foreach (var word in PlayerRoundState.AvailableWords)
                         {
                             <MudButton Color="Color.Primary"
                                        Variant="Variant.Outlined"
-                                       OnClick="@(() => SelectSentence(sentence.Id))">
-                                @sentence.Text
+                                       Style="text-transform: none;"
+                                       OnClick="@(() => SelectWord(word.Id))">
+                                @word.Text
                             </MudButton>
                         }
                     </MudStack>

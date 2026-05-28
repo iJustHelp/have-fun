@@ -215,6 +215,7 @@ public partial class HostSentenceScrambler : ComponentBase, IAsyncDisposable
                     PlayerName = player.DisplayName,
                     TimeBeforeSubmit = result is null ? null : TimeSpan.FromSeconds(CurrentRound?.TimeLimitInSeconds ?? 0) - result.SpentTime,
                     SubmittedSentence = result?.SubmittedSentence,
+                    SubmittedWords = BuildSubmittedWords(result?.SubmittedSentence, CurrentRound?.OriginalSentences),
                     Score = result?.CorrectnessCount,
                     TotalScore = result?.TotalSentenceCount,
                     AggregateScore = totalScore?.Score,
@@ -352,6 +353,41 @@ public partial class HostSentenceScrambler : ComponentBase, IAsyncDisposable
         return score is null || totalScore is null ? string.Empty : $"{score} / {totalScore}";
     }
 
+    private static string GetSubmittedWordStyle(bool isCorrect)
+    {
+        return isCorrect
+            ? "background-color: #dcfce7; color: #166534; border-radius: 4px; padding: 0 4px; font-weight: 600;"
+            : string.Empty;
+    }
+
+    private static IReadOnlyList<SubmittedWordPart> BuildSubmittedWords(
+        string? submittedSentence,
+        IReadOnlyList<string>? correctWords)
+    {
+        if (string.IsNullOrWhiteSpace(submittedSentence))
+        {
+            return [];
+        }
+
+        var submittedWords = SplitWords(submittedSentence);
+        correctWords ??= [];
+
+        return submittedWords
+            .Select((word, index) => new SubmittedWordPart
+            {
+                Text = word,
+                IsCorrect = index < correctWords.Count && word == correctWords[index]
+            })
+            .ToArray();
+    }
+
+    private static IReadOnlyList<string> SplitWords(string sentence)
+    {
+        return sentence
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .ToArray();
+    }
+
     private sealed record HostPlayerResultRow
     {
         public required string PlayerName { get; init; }
@@ -361,6 +397,8 @@ public partial class HostSentenceScrambler : ComponentBase, IAsyncDisposable
         public double TimeBeforeSubmitSeconds => TimeBeforeSubmit?.TotalSeconds ?? -1;
 
         public string? SubmittedSentence { get; init; }
+
+        public IReadOnlyList<SubmittedWordPart> SubmittedWords { get; init; } = [];
 
         public int? Score { get; init; }
 
@@ -380,5 +418,12 @@ public partial class HostSentenceScrambler : ComponentBase, IAsyncDisposable
                 ? -1
                 : (double)score.Value / totalScore.Value;
         }
+    }
+
+    private sealed record SubmittedWordPart
+    {
+        public required string Text { get; init; }
+
+        public required bool IsCorrect { get; init; }
     }
 }

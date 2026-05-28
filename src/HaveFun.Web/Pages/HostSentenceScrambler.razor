@@ -156,7 +156,14 @@ else
                             <MudTd DataLabel="Time before submit">@FormatTimeBeforeSubmit(context.TimeBeforeSubmit)</MudTd>
                             @if (CurrentRound?.IsCompleted == true)
                             {
-                                <MudTd DataLabel="Submitted sentence">@(context.SubmittedSentence ?? string.Empty)</MudTd>
+                                <MudTd DataLabel="Submitted sentence">
+                                    <MudStack Row="true" Spacing="1" Class="flex-wrap">
+                                        @foreach (var word in context.SubmittedWords)
+                                        {
+                                            <span style="@GetSubmittedWordStyle(word.IsCorrect)">@word.Text</span>
+                                        }
+                                    </MudStack>
+                                </MudTd>
                             }
                             <MudTd DataLabel="Score">@FormatScore(context.Score, context.TotalScore)</MudTd>
                             <MudTd DataLabel="Total Score">@FormatScore(context.AggregateScore, context.AggregateTotalScore)</MudTd>
