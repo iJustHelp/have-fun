@@ -12,7 +12,8 @@ Have-Fun is a local LAN party-game web app for friends playing from browsers on 
 
 ## Implementation
 
-Have-Fun is a Blazor Web App using server-side interactive rendering. Pages are rendered for two local roles:
+Have-Fun is a Blazor Web App using server-side interactive rendering.   
+Pages are rendered for two local roles:
 
 - Host pages create and control rounds, share the join link, and show live results.
 - Player pages handle registration, waiting for a round, playing, and submission state.
