@@ -21,55 +21,6 @@ flowchart LR
     Core --> SentenceFiles
 ```
 
-## Application Layers
-
-```mermaid
-flowchart TB
-    subgraph Web["HaveFun.Web"]
-        Program["Program.cs\nDI, config, middleware,\nRazor components"]
-        Pages["Pages\nHome, Register,\nWaitingRoom, HostSentenceScrambler,\nPlayerSentenceScrambler"]
-        Components["Components\nPlayerGameBoard"]
-        Layouts["Layouts\nMain, Register,\nNav, Reconnect"]
-        Assets["Web assets\napp.css, images,\nsentence-scrambler txt files"]
-    end
-
-    subgraph Core["HaveFun.Core"]
-        Models["Models\nPlayerSession, CurrentRound,\nPlayerRoundState, Results,\nScores"]
-        Contracts["Service contracts\nIGameStateService,\nIPlayerRegistryService,\nISessionStorageService,\nIUrlService, IQrCodeService,\nISentenceFileService"]
-        Services["Services\nGameStateService,\nPlayerRegistryService,\nSessionStorageService,\nUrlService,\nQrCodeService,\nSentenceFileService"]
-    end
-
-    Program --> Pages
-    Program --> Components
-    Program --> Layouts
-    Program --> Services
-    Pages --> Components
-    Pages --> Contracts
-    Components --> Models
-    Services --> Models
-    Services --> Assets
-```
-
-## Runtime Services
-
-```mermaid
-flowchart LR
-    DI["ASP.NET Core DI"]
-    GameState["IGameStateService\nSingleton\ncurrent round, player round state,\nresults, total scores"]
-    Registry["IPlayerRegistryService\nSingleton\nregistered players"]
-    SentenceFiles["ISentenceFileService\nSingleton\nloads configured .txt files"]
-    Urls["IUrlService\nSingleton\nLAN/register URL"]
-    Qr["IQrCodeService\nSingleton\nregistration QR code"]
-    Session["ISessionStorageService\nScoped\nbrowser sessionStorage interop"]
-
-    DI --> GameState
-    DI --> Registry
-    DI --> SentenceFiles
-    DI --> Urls
-    DI --> Qr
-    DI --> Session
-```
-
 ## Entity Relationships
 
 These are in-memory records and service-owned collections, not database tables. Relationships that use player names are logical links, not foreign keys.
