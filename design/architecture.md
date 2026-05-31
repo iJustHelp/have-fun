@@ -6,18 +6,37 @@ Have-Fun is a local LAN party-game Blazor Web App. The web host serves the UI, k
 
 ```mermaid
 flowchart LR
-    HostBrowser["Host Browser\n/ and /host-sentence-scrambler"]
-    PlayerBrowser["Player Browsers\n/register, /waiting-room,\n/player-sentence-scrambler"]
-    WebApp["HaveFun.Web\nASP.NET Core Blazor Web App\nInteractive Server"]
+    HostBrowser["Host Browser"]
+    PlayerBrowser["Player Browsers"]
     Core["HaveFun.Core\nIn-memory models and services"]
     SessionStorage["Browser sessionStorage\nrole + display name"]
     SentenceFiles["Sentence files\nassets/sentence-scrambler/*.txt"]
 
-    HostBrowser <--> WebApp
-    PlayerBrowser <--> WebApp
+    subgraph WebApp["HaveFun.Web\nASP.NET Core Blazor Web App\nInteractive Server"]
+        subgraph HostPages["Host pages"]
+            HomePage["Home\n/"]
+            HostGamePage["Host Sentence Scrambler\n/host-sentence-scrambler"]
+        end
+
+        subgraph PlayerPages["Player pages"]
+            RegisterPage["Register\n/register"]
+            WaitingRoomPage["Waiting Room\n/waiting-room"]
+            PlayerGamePage["Player Sentence Scrambler\n/player-sentence-scrambler"]
+        end
+    end
+
+    HostBrowser <--> HomePage
+    HostBrowser <--> HostGamePage
+    PlayerBrowser <--> RegisterPage
+    PlayerBrowser <--> WaitingRoomPage
+    PlayerBrowser <--> PlayerGamePage
     HostBrowser <--> SessionStorage
     PlayerBrowser <--> SessionStorage
-    WebApp --> Core
+    HomePage --> Core
+    HostGamePage --> Core
+    RegisterPage --> Core
+    WaitingRoomPage --> Core
+    PlayerGamePage --> Core
     Core --> SentenceFiles
 ```
 
@@ -52,12 +71,6 @@ sequenceDiagram
     H->>W: Open /
     W->>S: Save Host session
     W->>H: Show register URL, QR code, players
-
-    P->>W: Open /register
-    P->>W: Submit display name
-    W->>R: Register player
-    W->>S: Save Player session
-    W->>P: Navigate to waiting room
 
     H->>W: Open /host-sentence-scrambler
     W->>F: List .txt sentence files
