@@ -70,6 +70,96 @@ flowchart LR
     DI --> Session
 ```
 
+## Entity Relationships
+
+These are in-memory records and service-owned collections, not database tables. Relationships that use player names are logical links, not foreign keys.
+
+```mermaid
+erDiagram
+    PLAYER_SESSION {
+        Guid Id
+        string DisplayName
+        DateTimeOffset JoinedAt
+    }
+
+    SESSION_STORAGE_MODEL {
+        string Name
+        Role Role
+    }
+
+    SENTENCE_FILE_OPTION {
+        string FileName
+    }
+
+    SENTENCE_DEFINITION {
+        string Text
+        int TimeLimitInSeconds
+    }
+
+    CURRENT_ROUND {
+        Guid Id
+        string SentenceText
+        int TimeLimitInSeconds
+        string OriginalSentences
+        string ShuffledSentences
+        string ExpectedPlayerNames
+        RoundStatus Status
+        DateTimeOffset StartedAt
+        DateTimeOffset CompletedAt
+        bool IsCompleted
+    }
+
+    PLAYER_ROUND_STATE {
+        string PlayerName
+        Guid RoundId
+        bool IsSubmitted
+        string SubmittedSentence
+        DateTimeOffset SubmittedAt
+        TimeSpan SpentTime
+        string CollectedSentence
+        bool CanSubmit
+    }
+
+    WORD_TILE {
+        Guid Id
+        string Text
+    }
+
+    ROUND_RESULTS {
+        Guid RoundId
+        string CorrectSentence
+    }
+
+    PLAYER_RESULT {
+        int Rank
+        string PlayerName
+        string SubmittedSentence
+        int CorrectnessCount
+        int TotalSentenceCount
+        TimeSpan SpentTime
+        DateTimeOffset SubmittedAt
+        string CorrectnessDisplay
+    }
+
+    PLAYER_TOTAL_SCORE {
+        string PlayerName
+        int Score
+        int TotalScore
+        string ScoreDisplay
+    }
+
+    SESSION_STORAGE_MODEL }o--o| PLAYER_SESSION : "identifies player browser"
+    SENTENCE_FILE_OPTION ||--o{ SENTENCE_DEFINITION : "loads lines as"
+    SENTENCE_DEFINITION ||--o{ CURRENT_ROUND : "starts"
+    CURRENT_ROUND ||--o{ PLAYER_ROUND_STATE : "tracks"
+    PLAYER_SESSION ||--o{ PLAYER_ROUND_STATE : "plays"
+    PLAYER_ROUND_STATE ||--o{ WORD_TILE : "available words"
+    PLAYER_ROUND_STATE ||--o{ WORD_TILE : "collected words"
+    CURRENT_ROUND ||--o| ROUND_RESULTS : "produces"
+    ROUND_RESULTS ||--o{ PLAYER_RESULT : "contains"
+    PLAYER_SESSION ||--o{ PLAYER_TOTAL_SCORE : "accumulates"
+```
+
 ## Main Flow
 
 ```mermaid
