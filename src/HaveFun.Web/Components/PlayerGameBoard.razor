@@ -34,7 +34,7 @@
                 <MudButton Color="Color.Secondary"
                            Variant="Variant.Outlined"
                            Style="text-transform: none;"
-                           OnClick="@(() => ReturnWordAsync(word.Id))">
+                           OnClick="@(() => ReturnItem(word.Id))">
                     @word.Text
                 </MudButton>
             }
@@ -70,7 +70,7 @@ else
                     <MudButton Color="Color.Primary"
                                Variant="Variant.Outlined"
                                Style="text-transform: none;"
-                               OnClick="@(() => SelectWordAsync(word.Id))">
+                               OnClick="@(() => SelectItem(word.Id))">
                         @word.Text
                     </MudButton>
                 }
@@ -85,50 +85,4 @@ else
                OnClick="SubmitAsync">
         Submit
     </MudButton>
-}
-
-@code {
-    [Parameter]
-    public string Title { get; set; } = string.Empty;
-
-    [Parameter]
-    public string Rules { get; set; } = string.Empty;
-
-    [Parameter]
-    public PlayerRoundState? PlayerRoundState { get; set; }
-
-    [Parameter]
-    public string RemainingTimeText { get; set; } = string.Empty;
-
-    [Parameter]
-    public bool CanSubmit { get; set; }
-
-    [Parameter]
-    public EventCallback<Guid> OnSelectWord { get; set; }
-
-    [Parameter]
-    public EventCallback<Guid> OnReturnWord { get; set; }
-
-    [Parameter]
-    public EventCallback OnSubmit { get; set; }
-
-    private Task SelectWordAsync(Guid wordId)
-    {
-        return OnSelectWord.InvokeAsync(wordId);
-    }
-
-    private Task ReturnWordAsync(Guid wordId)
-    {
-        return OnReturnWord.InvokeAsync(wordId);
-    }
-
-    private Task SubmitAsync()
-    {
-        return OnSubmit.InvokeAsync();
-    }
-
-    private static string FormatSpentTime(TimeSpan spentTime)
-    {
-        return $"{(int)spentTime.TotalMinutes:00}:{spentTime.Seconds:00}";
-    }
 }

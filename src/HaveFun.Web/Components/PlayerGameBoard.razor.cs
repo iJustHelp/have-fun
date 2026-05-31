@@ -1,0 +1,51 @@
+using HaveFun.Core;
+using Microsoft.AspNetCore.Components;
+
+namespace HaveFun.Web;
+
+public partial class PlayerGameBoard
+{
+    [Parameter]
+    public string Title { get; set; } = string.Empty;
+
+    [Parameter]
+    public string Rules { get; set; } = string.Empty;
+
+    [Parameter]
+    public PlayerRoundState? PlayerRoundState { get; set; }
+
+    [Parameter]
+    public string RemainingTimeText { get; set; } = string.Empty;
+
+    [Parameter]
+    public bool CanSubmit { get; set; }
+
+    [Parameter]
+    public Action<Guid>? OnSelectItem { get; set; }
+
+    [Parameter]
+    public Action<Guid>? OnReturnItem { get; set; }
+
+    [Parameter]
+    public Func<Task>? OnSubmit { get; set; }
+
+    private void SelectItem(Guid wordId)
+    {
+        OnSelectItem?.Invoke(wordId);
+    }
+
+    private void ReturnItem(Guid wordId)
+    {
+        OnReturnItem?.Invoke(wordId);
+    }
+
+    private Task SubmitAsync()
+    {
+        return OnSubmit?.Invoke() ?? Task.CompletedTask;
+    }
+
+    private static string FormatSpentTime(TimeSpan spentTime)
+    {
+        return $"{(int)spentTime.TotalMinutes:00}:{spentTime.Seconds:00}";
+    }
+}
