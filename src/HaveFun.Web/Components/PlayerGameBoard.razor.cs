@@ -12,7 +12,19 @@ public partial class PlayerGameBoard
     public string Rules { get; set; } = string.Empty;
 
     [Parameter]
-    public PlayerRoundState? PlayerRoundState { get; set; }
+    public IReadOnlyList<Tile> AvailableTiles { get; set; } = [];
+
+    [Parameter]
+    public IReadOnlyList<Tile> SelectedTiles { get; set; } = [];
+
+    [Parameter]
+    public bool IsSubmitted { get; set; }
+
+    [Parameter]
+    public string? SubmittedText { get; set; }
+
+    [Parameter]
+    public TimeSpan? SpentTime { get; set; }
 
     [Parameter]
     public string RemainingTimeText { get; set; } = string.Empty;
