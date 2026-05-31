@@ -2,27 +2,27 @@ namespace HaveFun.Core;
 
 public sealed class SentenceFileService : ISentenceFileService
 {
-    private readonly string folderPath;
+    private readonly string _folderPath;
 
     public SentenceFileService(string folderPath)
     {
-        this.folderPath = folderPath;
+        _folderPath = folderPath;
     }
 
     public IReadOnlyList<SentenceFileOption> GetSentenceFiles()
     {
-        if (string.IsNullOrWhiteSpace(folderPath))
+        if (string.IsNullOrWhiteSpace(_folderPath))
         {
             throw new InvalidOperationException("SentenceScramblerPath is required.");
         }
 
-        if (!Directory.Exists(folderPath))
+        if (!Directory.Exists(_folderPath))
         {
-            throw new InvalidOperationException($"SentenceScramblerPath folder was not found: {folderPath}");
+            throw new InvalidOperationException($"SentenceScramblerPath folder was not found: {_folderPath}");
         }
 
         var files = Directory
-            .EnumerateFiles(folderPath, "*.txt", SearchOption.TopDirectoryOnly)
+            .EnumerateFiles(_folderPath, "*.txt", SearchOption.TopDirectoryOnly)
             .Select(Path.GetFileName)
             .Where(fileName => !string.IsNullOrWhiteSpace(fileName))
             .OrderBy(fileName => fileName, StringComparer.OrdinalIgnoreCase)
@@ -34,7 +34,7 @@ public sealed class SentenceFileService : ISentenceFileService
 
         if (files.Length == 0)
         {
-            throw new InvalidOperationException($"SentenceScramblerPath folder contains no .txt files: {folderPath}");
+            throw new InvalidOperationException($"SentenceScramblerPath folder contains no .txt files: {_folderPath}");
         }
 
         return files;
@@ -55,7 +55,7 @@ public sealed class SentenceFileService : ISentenceFileService
             throw new InvalidOperationException($"Sentence file was not found in SentenceScramblerPath: {fileName}");
         }
 
-        var filePath = Path.Combine(folderPath, sentenceFile.FileName);
+        var filePath = Path.Combine(_folderPath, sentenceFile.FileName);
         var sentences = File.ReadLines(filePath)
             .Select(line => line.Trim())
             .Where(line => !string.IsNullOrWhiteSpace(line))

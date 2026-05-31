@@ -2,11 +2,17 @@ namespace HaveFun.Core;
 
 public sealed class GameStateService : IGameStateService
 {
-    private readonly object syncRoot = new();
-    private readonly Dictionary<PlayerRoundKey, PlayerRoundState> playerRoundStates = [];
-    private readonly Dictionary<string, PlayerTotalScore> playerTotalScores = new(StringComparer.OrdinalIgnoreCase);
-    private readonly HashSet<Guid> totaledRoundIds = [];
-    private CurrentRound? currentRound;
+    private readonly ITileCollectionService _tileCollectionService;
+    private readonly object _syncRoot = new();
+    private readonly Dictionary<PlayerRoundKey, PlayerRoundState> _playerRoundStates = [];
+    private readonly Dictionary<string, PlayerTotalScore> _playerTotalScores = new(StringComparer.OrdinalIgnoreCase);
+    private readonly HashSet<Guid> _totaledRoundIds = [];
+    private CurrentRound? _currentRound;
+
+    public GameStateService(ITileCollectionService tileCollectionService)
+    {
+        _tileCollectionService = tileCollectionService;
+    }
 
     public event Action<CurrentRound>? CurrentRoundChanged;
 
@@ -16,9 +22,9 @@ public sealed class GameStateService : IGameStateService
     {
         get
         {
-            lock (syncRoot)
+            lock (_syncRoot)
             {
-                return currentRound;
+                return _currentRound;
             }
         }
     }
@@ -54,10 +60,10 @@ public sealed class GameStateService : IGameStateService
             StartedAt = DateTimeOffset.UtcNow
         };
 
-        lock (syncRoot)
+        lock (_syncRoot)
         {
-            currentRound = round;
-            playerRoundStates.Clear();
+            _currentRound = round;
+            _playerRoundStates.Clear();
         }
 
         CurrentRoundChanged?.Invoke(round);
@@ -69,24 +75,24 @@ public sealed class GameStateService : IGameStateService
     {
         CurrentRound? completedRound;
 
-        lock (syncRoot)
+        lock (_syncRoot)
         {
-            if (currentRound is null)
+            if (_currentRound is null)
             {
                 return null;
             }
 
-            if (currentRound.Status == RoundStatus.Completed)
+            if (_currentRound.Status == RoundStatus.Completed)
             {
-                return currentRound;
+                return _currentRound;
             }
 
-            completedRound = currentRound with
+            completedRound = _currentRound with
             {
                 Status = RoundStatus.Completed,
                 CompletedAt = DateTimeOffset.UtcNow
             };
-            currentRound = completedRound;
+            _currentRound = completedRound;
             RecordTotalScoresUnsafe(completedRound);
         }
 
@@ -103,11 +109,11 @@ public sealed class GameStateService : IGameStateService
             return null;
         }
 
-        lock (syncRoot)
+        lock (_syncRoot)
         {
-            return currentRound is null
+            return _currentRound is null
                 ? null
-                : GetPlayerRoundStateUnsafe(currentRound.Id, normalizedName);
+                : GetPlayerRoundStateUnsafe(_currentRound.Id, normalizedName);
         }
     }
 
@@ -120,16 +126,16 @@ public sealed class GameStateService : IGameStateService
             return null;
         }
 
-        lock (syncRoot)
+        lock (_syncRoot)
         {
-            if (currentRound is null)
+            if (_currentRound is null)
             {
                 return null;
             }
 
-            var key = new PlayerRoundKey(currentRound.Id, normalizedName);
+            var key = new PlayerRoundKey(_currentRound.Id, normalizedName);
 
-            if (playerRoundStates.TryGetValue(key, out var playerRoundState))
+            if (_playerRoundStates.TryGetValue(key, out var playerRoundState))
             {
                 return playerRoundState;
             }
@@ -137,18 +143,12 @@ public sealed class GameStateService : IGameStateService
             playerRoundState = new PlayerRoundState
             {
                 PlayerName = normalizedName,
-                RoundId = currentRound.Id,
-                AvailableTiles = currentRound.ShuffledSentences
-                    .Select(sentence => new Tile
-                    {
-                        Id = Guid.NewGuid(),
-                        Text = sentence
-                    })
-                    .ToArray(),
+                RoundId = _currentRound.Id,
+                AvailableTiles = _tileCollectionService.CreateAvailableTiles(_currentRound),
                 SelectedTiles = []
             };
 
-            playerRoundStates.Add(key, playerRoundState);
+            _playerRoundStates.Add(key, playerRoundState);
 
             return playerRoundState;
         }
@@ -164,14 +164,14 @@ public sealed class GameStateService : IGameStateService
             return null;
         }
 
-        lock (syncRoot)
+        lock (_syncRoot)
         {
-            if (currentRound is null)
+            if (_currentRound is null)
             {
                 return null;
             }
 
-            var playerRoundState = GetOrCreatePlayerRoundStateUnsafe(currentRound, normalizedName);
+            var playerRoundState = GetOrCreatePlayerRoundStateUnsafe(_currentRound, normalizedName);
 
             if (playerRoundState.IsSubmitted)
             {
@@ -195,7 +195,7 @@ public sealed class GameStateService : IGameStateService
                     .ToArray()
             };
 
-            playerRoundStates[new PlayerRoundKey(currentRound.Id, normalizedName)] = updatedState;
+            _playerRoundStates[new PlayerRoundKey(_currentRound.Id, normalizedName)] = updatedState;
         }
 
         PlayerRoundStateChanged?.Invoke(updatedState);
@@ -213,14 +213,14 @@ public sealed class GameStateService : IGameStateService
             return null;
         }
 
-        lock (syncRoot)
+        lock (_syncRoot)
         {
-            if (currentRound is null)
+            if (_currentRound is null)
             {
                 return null;
             }
 
-            var playerRoundState = GetOrCreatePlayerRoundStateUnsafe(currentRound, normalizedName);
+            var playerRoundState = GetOrCreatePlayerRoundStateUnsafe(_currentRound, normalizedName);
 
             if (playerRoundState.IsSubmitted)
             {
@@ -244,7 +244,7 @@ public sealed class GameStateService : IGameStateService
                     .ToArray()
             };
 
-            playerRoundStates[new PlayerRoundKey(currentRound.Id, normalizedName)] = updatedState;
+            _playerRoundStates[new PlayerRoundKey(_currentRound.Id, normalizedName)] = updatedState;
         }
 
         PlayerRoundStateChanged?.Invoke(updatedState);
@@ -262,19 +262,19 @@ public sealed class GameStateService : IGameStateService
             return null;
         }
 
-        lock (syncRoot)
+        lock (_syncRoot)
         {
-            if (currentRound?.StartedAt is null)
+            if (_currentRound?.StartedAt is null)
             {
                 return null;
             }
 
-            if (currentRound.Status == RoundStatus.Completed)
+            if (_currentRound.Status == RoundStatus.Completed)
             {
-                return GetOrCreatePlayerRoundStateUnsafe(currentRound, normalizedName);
+                return GetOrCreatePlayerRoundStateUnsafe(_currentRound, normalizedName);
             }
 
-            var playerRoundState = GetOrCreatePlayerRoundStateUnsafe(currentRound, normalizedName);
+            var playerRoundState = GetOrCreatePlayerRoundStateUnsafe(_currentRound, normalizedName);
 
             if (playerRoundState.IsSubmitted)
             {
@@ -292,10 +292,10 @@ public sealed class GameStateService : IGameStateService
                 IsSubmitted = true,
                 SubmittedSentence = playerRoundState.CollectedSentence,
                 SubmittedAt = submittedAt,
-                SpentTime = submittedAt - currentRound.StartedAt.Value
+                SpentTime = submittedAt - _currentRound.StartedAt.Value
             };
 
-            playerRoundStates[new PlayerRoundKey(currentRound.Id, normalizedName)] = updatedState;
+            _playerRoundStates[new PlayerRoundKey(_currentRound.Id, normalizedName)] = updatedState;
         }
 
         PlayerRoundStateChanged?.Invoke(updatedState);
@@ -306,74 +306,25 @@ public sealed class GameStateService : IGameStateService
 
     public IReadOnlyList<PlayerRoundState> GetSubmittedPlayerRoundStates()
     {
-        lock (syncRoot)
+        lock (_syncRoot)
         {
-            if (currentRound is null)
+            if (_currentRound is null)
             {
                 return [];
             }
 
-            return playerRoundStates.Values
-                .Where(playerRoundState => playerRoundState.RoundId == currentRound.Id && playerRoundState.IsSubmitted)
+            return _playerRoundStates.Values
+                .Where(playerRoundState => playerRoundState.RoundId == _currentRound.Id && playerRoundState.IsSubmitted)
                 .OrderBy(playerRoundState => playerRoundState.SubmittedAt)
                 .ToArray();
         }
     }
 
-    public RoundResults? GetCurrentRoundResults()
-    {
-        lock (syncRoot)
-        {
-            if (currentRound is null)
-            {
-                return null;
-            }
-
-            var rankedResults = playerRoundStates.Values
-                .Where(playerRoundState =>
-                    playerRoundState.RoundId == currentRound.Id &&
-                    playerRoundState.IsSubmitted &&
-                    playerRoundState.SubmittedSentence is not null &&
-                    playerRoundState.SpentTime is not null &&
-                    playerRoundState.SubmittedAt is not null)
-                .Select(playerRoundState => new
-                {
-                    playerRoundState.PlayerName,
-                    SubmittedSentence = playerRoundState.SubmittedSentence!,
-                    CorrectnessCount = CalculateCorrectness(currentRound.OriginalSentences, playerRoundState.SubmittedSentence!),
-                    TotalSentenceCount = currentRound.OriginalSentences.Count,
-                    SpentTime = playerRoundState.SpentTime!.Value,
-                    SubmittedAt = playerRoundState.SubmittedAt!.Value
-                })
-                .OrderByDescending(playerResult => playerResult.CorrectnessCount)
-                .ThenBy(playerResult => playerResult.SpentTime)
-                .ThenBy(playerResult => playerResult.PlayerName, StringComparer.Ordinal)
-                .Select((playerResult, index) => new PlayerResult
-                {
-                    Rank = index + 1,
-                    PlayerName = playerResult.PlayerName,
-                    SubmittedSentence = playerResult.SubmittedSentence,
-                    CorrectnessCount = playerResult.CorrectnessCount,
-                    TotalSentenceCount = playerResult.TotalSentenceCount,
-                    SpentTime = playerResult.SpentTime,
-                    SubmittedAt = playerResult.SubmittedAt
-                })
-                .ToArray();
-
-            return new RoundResults
-            {
-                RoundId = currentRound.Id,
-                CorrectSentence = currentRound.SentenceText,
-                Results = rankedResults
-            };
-        }
-    }
-
     public IReadOnlyList<PlayerTotalScore> GetPlayerTotalScores()
     {
-        lock (syncRoot)
+        lock (_syncRoot)
         {
-            return playerTotalScores.Values
+            return _playerTotalScores.Values
                 .OrderBy(playerTotalScore => playerTotalScore.PlayerName, StringComparer.OrdinalIgnoreCase)
                 .ToArray();
         }
@@ -420,21 +371,21 @@ public sealed class GameStateService : IGameStateService
     {
         CurrentRound? completedRound = null;
 
-        lock (syncRoot)
+        lock (_syncRoot)
         {
-            if (currentRound is null ||
-                currentRound.Status == RoundStatus.Completed ||
-                currentRound.ExpectedPlayerNames.Count == 0)
+            if (_currentRound is null ||
+                _currentRound.Status == RoundStatus.Completed ||
+                _currentRound.ExpectedPlayerNames.Count == 0)
             {
                 return;
             }
 
-            var submittedNames = playerRoundStates.Values
-                .Where(playerRoundState => playerRoundState.RoundId == currentRound.Id && playerRoundState.IsSubmitted)
+            var submittedNames = _playerRoundStates.Values
+                .Where(playerRoundState => playerRoundState.RoundId == _currentRound.Id && playerRoundState.IsSubmitted)
                 .Select(playerRoundState => playerRoundState.PlayerName)
                 .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-            var allExpectedPlayersSubmitted = currentRound.ExpectedPlayerNames
+            var allExpectedPlayersSubmitted = _currentRound.ExpectedPlayerNames
                 .All(submittedNames.Contains);
 
             if (!allExpectedPlayersSubmitted)
@@ -442,12 +393,12 @@ public sealed class GameStateService : IGameStateService
                 return;
             }
 
-            completedRound = currentRound with
+            completedRound = _currentRound with
             {
                 Status = RoundStatus.Completed,
                 CompletedAt = DateTimeOffset.UtcNow
             };
-            currentRound = completedRound;
+            _currentRound = completedRound;
             RecordTotalScoresUnsafe(completedRound);
         }
 
@@ -456,7 +407,7 @@ public sealed class GameStateService : IGameStateService
 
     private PlayerRoundState? GetPlayerRoundStateUnsafe(Guid roundId, string playerName)
     {
-        return playerRoundStates.TryGetValue(new PlayerRoundKey(roundId, playerName), out var playerRoundState)
+        return _playerRoundStates.TryGetValue(new PlayerRoundKey(roundId, playerName), out var playerRoundState)
             ? playerRoundState
             : null;
     }
@@ -465,7 +416,7 @@ public sealed class GameStateService : IGameStateService
     {
         var key = new PlayerRoundKey(round.Id, playerName);
 
-        if (playerRoundStates.TryGetValue(key, out var playerRoundState))
+        if (_playerRoundStates.TryGetValue(key, out var playerRoundState))
         {
             return playerRoundState;
         }
@@ -474,29 +425,23 @@ public sealed class GameStateService : IGameStateService
         {
             PlayerName = playerName,
             RoundId = round.Id,
-            AvailableTiles = round.ShuffledSentences
-                .Select(sentence => new Tile
-                {
-                    Id = Guid.NewGuid(),
-                    Text = sentence
-                })
-                .ToArray(),
+            AvailableTiles = _tileCollectionService.CreateAvailableTiles(round),
             SelectedTiles = []
         };
 
-        playerRoundStates.Add(key, playerRoundState);
+        _playerRoundStates.Add(key, playerRoundState);
 
         return playerRoundState;
     }
 
     private void RecordTotalScoresUnsafe(CurrentRound round)
     {
-        if (!totaledRoundIds.Add(round.Id))
+        if (!_totaledRoundIds.Add(round.Id))
         {
             return;
         }
 
-        var submittedScores = playerRoundStates.Values
+        var submittedScores = _playerRoundStates.Values
             .Where(playerRoundState =>
                 playerRoundState.RoundId == round.Id &&
                 playerRoundState.IsSubmitted &&
@@ -514,9 +459,9 @@ public sealed class GameStateService : IGameStateService
         foreach (var playerName in playerNames)
         {
             submittedScores.TryGetValue(playerName, out var score);
-            playerTotalScores.TryGetValue(playerName, out var existingScore);
+            _playerTotalScores.TryGetValue(playerName, out var existingScore);
 
-            playerTotalScores[playerName] = new PlayerTotalScore
+            _playerTotalScores[playerName] = new PlayerTotalScore
             {
                 PlayerName = playerName,
                 Score = (existingScore?.Score ?? 0) + score,

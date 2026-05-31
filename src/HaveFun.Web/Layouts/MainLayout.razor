@@ -17,7 +17,7 @@
         <MudText Typo="Typo.h6" Class="ml-2">HAVE FUN</MudText>
     </MudAppBar>
 
-    @if (isNavigationOpen)
+    @if (_isNavigationOpen)
     {
         <MudDrawer Open="true"
                    ClipMode="DrawerClipMode.Always"
@@ -41,10 +41,10 @@
 </div>
 
 @code {
-    private bool isNavigationOpen = true;
+    private bool _isNavigationOpen = true;
 
     private void ToggleNavigation()
     {
-        isNavigationOpen = !isNavigationOpen;
+        _isNavigationOpen = !_isNavigationOpen;
     }
 }

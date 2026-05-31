@@ -2,9 +2,9 @@ namespace HaveFun.Core;
 
 public sealed class PlayerRegistryService : IPlayerRegistryService
 {
-    private readonly object syncRoot = new();
-    private readonly Dictionary<Guid, PlayerSession> playersById = [];
-    private readonly Dictionary<string, Guid> playerIdsByName = new(StringComparer.OrdinalIgnoreCase);
+    private readonly object _syncRoot = new();
+    private readonly Dictionary<Guid, PlayerSession> _playersById = [];
+    private readonly Dictionary<string, Guid> _playerIdsByName = new(StringComparer.OrdinalIgnoreCase);
 
     public event Action? PlayersChanged;
 
@@ -21,9 +21,9 @@ public sealed class PlayerRegistryService : IPlayerRegistryService
 
         PlayerSession player;
 
-        lock (syncRoot)
+        lock (_syncRoot)
         {
-            if (playerIdsByName.ContainsKey(displayName))
+            if (_playerIdsByName.ContainsKey(displayName))
             {
                 return JoinResult.Failed("That player name is already in use.", displayName);
             }
@@ -35,8 +35,8 @@ public sealed class PlayerRegistryService : IPlayerRegistryService
                 JoinedAt = DateTimeOffset.UtcNow
             };
 
-            playersById.Add(player.Id, player);
-            playerIdsByName.Add(displayName, player.Id);
+            _playersById.Add(player.Id, player);
+            _playerIdsByName.Add(displayName, player.Id);
         }
 
         PlayersChanged?.Invoke();
@@ -47,14 +47,14 @@ public sealed class PlayerRegistryService : IPlayerRegistryService
     {
         PlayerSession? removedPlayer;
 
-        lock (syncRoot)
+        lock (_syncRoot)
         {
-            if (!playersById.Remove(playerId, out removedPlayer))
+            if (!_playersById.Remove(playerId, out removedPlayer))
             {
                 return false;
             }
 
-            playerIdsByName.Remove(removedPlayer.DisplayName);
+            _playerIdsByName.Remove(removedPlayer.DisplayName);
         }
 
         PlayersChanged?.Invoke();
@@ -71,17 +71,17 @@ public sealed class PlayerRegistryService : IPlayerRegistryService
             return false;
         }
 
-        lock (syncRoot)
+        lock (_syncRoot)
         {
-            return playerIdsByName.ContainsKey(displayName);
+            return _playerIdsByName.ContainsKey(displayName);
         }
     }
 
     public bool TryGetPlayer(Guid playerId, out PlayerSession? player)
     {
-        lock (syncRoot)
+        lock (_syncRoot)
         {
-            return playersById.TryGetValue(playerId, out player);
+            return _playersById.TryGetValue(playerId, out player);
         }
     }
 
@@ -95,23 +95,23 @@ public sealed class PlayerRegistryService : IPlayerRegistryService
             return false;
         }
 
-        lock (syncRoot)
+        lock (_syncRoot)
         {
-            if (!playerIdsByName.TryGetValue(displayName, out var playerId))
+            if (!_playerIdsByName.TryGetValue(displayName, out var playerId))
             {
                 player = null;
                 return false;
             }
 
-            return playersById.TryGetValue(playerId, out player);
+            return _playersById.TryGetValue(playerId, out player);
         }
     }
 
     public IReadOnlyList<PlayerSession> GetPlayers()
     {
-        lock (syncRoot)
+        lock (_syncRoot)
         {
-            return playersById.Values
+            return _playersById.Values
                 .OrderBy(player => player.JoinedAt)
                 .ToArray();
         }

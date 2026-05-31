@@ -6,9 +6,9 @@ namespace HaveFun.Web;
 
 public partial class PlayerSentenceScrambler : ComponentBase, IAsyncDisposable
 {
-    private CancellationTokenSource? timerCancellation;
+    private CancellationTokenSource? _timerCancellation;
 
-    private Task? timerTask;
+    private Task? _timerTask;
 
     private bool IsSessionChecked { get; set; }
 
@@ -154,8 +154,8 @@ public partial class PlayerSentenceScrambler : ComponentBase, IAsyncDisposable
         }
 
         UpdateRemainingTime();
-        timerCancellation = new CancellationTokenSource();
-        timerTask = RunTimerAsync(timerCancellation.Token);
+        _timerCancellation = new CancellationTokenSource();
+        _timerTask = RunTimerAsync(_timerCancellation.Token);
     }
 
     private async Task RunTimerAsync(CancellationToken cancellationToken)
@@ -185,15 +185,15 @@ public partial class PlayerSentenceScrambler : ComponentBase, IAsyncDisposable
 
     private void StopTimer()
     {
-        if (timerCancellation is null)
+        if (_timerCancellation is null)
         {
             return;
         }
 
-        timerCancellation.Cancel();
-        timerCancellation.Dispose();
-        timerCancellation = null;
-        timerTask = null;
+        _timerCancellation.Cancel();
+        _timerCancellation.Dispose();
+        _timerCancellation = null;
+        _timerTask = null;
     }
 
     private void UpdateRemainingTime()

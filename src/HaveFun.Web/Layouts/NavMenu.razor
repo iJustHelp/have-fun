@@ -3,7 +3,7 @@
 @inject ISessionStorageService UserSessionStorageService
 
 <MudNavMenu>
-    @if (currentUser is not null)
+    @if (_currentUser is not null)
     {
         <MudNavLink Href="/home"
                     Match="NavLinkMatch.All"
@@ -11,7 +11,7 @@
             Home
         </MudNavLink>
 
-        @if (currentUser.Role == Role.Host)
+        @if (_currentUser.Role == Role.Host)
         {
             <MudDivider Class="my-2" />
             <MudNavLink Href="/host-sentence-scrambler"
@@ -23,7 +23,7 @@
 </MudNavMenu>
 
 @code {
-    private SessionStorageModel? currentUser;
+    private SessionStorageModel? _currentUser;
 
     protected override void OnInitialized()
     {
@@ -53,7 +53,7 @@
 
     private async Task LoadCurrentUserAsync()
     {
-        currentUser = await UserSessionStorageService.GetCurrentUserAsync();
+        _currentUser = await UserSessionStorageService.GetCurrentUserAsync();
         StateHasChanged();
     }
 }
