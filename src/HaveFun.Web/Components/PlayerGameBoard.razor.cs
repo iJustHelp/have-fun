@@ -29,14 +29,14 @@ public partial class PlayerGameBoard
     [Parameter]
     public Func<Task>? OnSubmit { get; set; }
 
-    private void SelectItem(Guid wordId)
+    private void SelectItem(Guid tileId)
     {
-        OnSelectItem?.Invoke(wordId);
+        OnSelectItem?.Invoke(tileId);
     }
 
-    private void ReturnItem(Guid wordId)
+    private void ReturnItem(Guid tileId)
     {
-        OnReturnItem?.Invoke(wordId);
+        OnReturnItem?.Invoke(tileId);
     }
 
     private Task SubmitAsync()

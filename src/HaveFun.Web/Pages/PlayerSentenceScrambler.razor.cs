@@ -25,18 +25,7 @@ public partial class PlayerSentenceScrambler : ComponentBase, IAsyncDisposable
     private TimeSpan RemainingTime { get; set; }
 
     private string RemainingTimeText => $"{(int)RemainingTime.TotalMinutes:00}:{RemainingTime.Seconds:00}";
-
-    private int AvailableSentenceCount => PlayerRoundState?.AvailableWords.Count ?? CurrentRound?.ShuffledSentences.Count ?? 0;
-
     private bool CanSubmit => CurrentRound?.Status == RoundStatus.Started && PlayerRoundState?.CanSubmit == true;
-
-    private bool CanReturnSentences => CurrentRound?.Status == RoundStatus.Started && PlayerRoundState?.IsSubmitted == false;
-
-    private bool IsCollectedSentenceIncomplete => PlayerRoundState?.CollectedWords.Count > 0 && PlayerRoundState.AvailableWords.Count > 0;
-
-    private bool IsTimerExpired => CurrentRound is not null && RemainingTime == TimeSpan.Zero;
-
-    private Color RoundStatusColor => CurrentRound?.Status == RoundStatus.Started ? Color.Success : Color.Default;
 
     [Inject]
     private NavigationManager NavigationManager { get; set; } = default!;
@@ -49,9 +38,6 @@ public partial class PlayerSentenceScrambler : ComponentBase, IAsyncDisposable
 
     [Inject]
     private IGameStateService GameState { get; set; } = default!;
-
-    [Inject]
-    private IDialogService DialogService { get; set; } = default!;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

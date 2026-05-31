@@ -138,14 +138,14 @@ public sealed class GameStateService : IGameStateService
             {
                 PlayerName = normalizedName,
                 RoundId = currentRound.Id,
-                AvailableWords = currentRound.ShuffledSentences
-                    .Select(sentence => new WordTile
+                AvailableTiles = currentRound.ShuffledSentences
+                    .Select(sentence => new Tile
                     {
                         Id = Guid.NewGuid(),
                         Text = sentence
                     })
                     .ToArray(),
-                CollectedWords = []
+                SelectedTiles = []
             };
 
             playerRoundStates.Add(key, playerRoundState);
@@ -178,7 +178,7 @@ public sealed class GameStateService : IGameStateService
                 return playerRoundState;
             }
 
-            var selectedSentence = playerRoundState.AvailableWords.FirstOrDefault(sentence => sentence.Id == wordId);
+            var selectedSentence = playerRoundState.AvailableTiles.FirstOrDefault(sentence => sentence.Id == wordId);
 
             if (selectedSentence is null)
             {
@@ -187,10 +187,10 @@ public sealed class GameStateService : IGameStateService
 
             updatedState = playerRoundState with
             {
-                AvailableWords = playerRoundState.AvailableWords
+                AvailableTiles = playerRoundState.AvailableTiles
                     .Where(sentence => sentence.Id != wordId)
                     .ToArray(),
-                CollectedWords = playerRoundState.CollectedWords
+                SelectedTiles = playerRoundState.SelectedTiles
                     .Append(selectedSentence)
                     .ToArray()
             };
@@ -227,7 +227,7 @@ public sealed class GameStateService : IGameStateService
                 return playerRoundState;
             }
 
-            var returnedWord = playerRoundState.CollectedWords.FirstOrDefault(word => word.Id == wordId);
+            var returnedWord = playerRoundState.SelectedTiles.FirstOrDefault(word => word.Id == wordId);
 
             if (returnedWord is null)
             {
@@ -236,10 +236,10 @@ public sealed class GameStateService : IGameStateService
 
             updatedState = playerRoundState with
             {
-                AvailableWords = playerRoundState.AvailableWords
+                AvailableTiles = playerRoundState.AvailableTiles
                     .Append(returnedWord)
                     .ToArray(),
-                CollectedWords = playerRoundState.CollectedWords
+                SelectedTiles = playerRoundState.SelectedTiles
                     .Where(word => word.Id != wordId)
                     .ToArray()
             };
@@ -474,14 +474,14 @@ public sealed class GameStateService : IGameStateService
         {
             PlayerName = playerName,
             RoundId = round.Id,
-            AvailableWords = round.ShuffledSentences
-                .Select(sentence => new WordTile
+            AvailableTiles = round.ShuffledSentences
+                .Select(sentence => new Tile
                 {
                     Id = Guid.NewGuid(),
                     Text = sentence
                 })
                 .ToArray(),
-            CollectedWords = []
+            SelectedTiles = []
         };
 
         playerRoundStates.Add(key, playerRoundState);
