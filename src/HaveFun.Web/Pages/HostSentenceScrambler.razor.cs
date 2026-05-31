@@ -1,5 +1,6 @@
 using HaveFun.Core;
 using Microsoft.AspNetCore.Components;
+using MudBlazor;
 
 namespace HaveFun.Web;
 
@@ -47,6 +48,10 @@ public partial class HostSentenceScrambler : ComponentBase, IAsyncDisposable
         TimeLimitInSeconds > 0 &&
         !IsRoundActive &&
         !IsFileComplete;
+    private bool IsRoundActionDisabled => IsRoundActive ? false : !CanStart;
+    private Color RoundActionButtonColor => IsRoundActive ? Color.Error : Color.Primary;
+    private string RoundActionButtonIcon => IsRoundActive ? Icons.Material.Filled.Stop : Icons.Material.Filled.PlayArrow;
+    private string RoundActionButtonText => IsRoundActive ? "Stop" : "Start";
     private TimeSpan RemainingTime { get; set; }
     private string RemainingTimeText => $"{(int)RemainingTime.TotalMinutes:00}:{RemainingTime.Seconds:00}";
     private CurrentRound? CurrentRound { get; set; }
@@ -114,6 +119,17 @@ public partial class HostSentenceScrambler : ComponentBase, IAsyncDisposable
         RefreshPlayerResults();
     }
 
+    private void ToggleRound()
+    {
+        if (IsRoundActive)
+        {
+            StopRound();
+            return;
+        }
+
+        StartRound();
+    }
+
     private void StartRound()
     {
         if (!CanStart)
@@ -147,6 +163,18 @@ public partial class HostSentenceScrambler : ComponentBase, IAsyncDisposable
         {
             FileLoadError = exception.Message;
         }
+    }
+
+    private void StopRound()
+    {
+        if (!IsRoundActive)
+        {
+            return;
+        }
+
+        CurrentRound = GameState.CompleteCurrentRound();
+        StopTimer();
+        RefreshPlayerResults();
     }
 
     private void LoadSentenceFiles()

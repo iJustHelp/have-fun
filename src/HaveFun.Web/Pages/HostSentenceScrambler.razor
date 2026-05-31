@@ -82,12 +82,12 @@ else
                         <MudItem>
                             <MudText Typo="Typo.body2" Color="Color.Primary">Sentence of @(DisplaySentenceNumber) of @(TotalSentenceCount)</MudText>
                         </MudItem>
-                        <MudButton Color="Color.Primary"
+                        <MudButton Color="@RoundActionButtonColor"
                                    Variant="Variant.Filled"
-                                   StartIcon="@Icons.Material.Filled.PlayArrow"
-                                   Disabled="@(!CanStart)"
-                                   OnClick="StartRound">
-                            Start
+                                   StartIcon="@RoundActionButtonIcon"
+                                   Disabled="@IsRoundActionDisabled"
+                                   OnClick="ToggleRound">
+                            @RoundActionButtonText
                         </MudButton>
                     </MudStack>
                 </MudItem>

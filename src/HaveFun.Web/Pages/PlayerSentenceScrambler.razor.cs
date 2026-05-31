@@ -154,20 +154,6 @@ public partial class PlayerSentenceScrambler : ComponentBase, IAsyncDisposable
             return;
         }
 
-        if (IsCollectedSentenceIncomplete)
-        {
-            var confirmed = await DialogService.ShowMessageBoxAsync(
-                "Submit incomplete sentence?",
-                "You still have words available. Submit this sentence anyway?",
-                yesText: "Submit",
-                cancelText: "Keep editing");
-
-            if (confirmed != true)
-            {
-                return;
-            }
-        }
-
         PlayerRoundState = GameState.SubmitPlayerRound(PlayerName);
     }
 
