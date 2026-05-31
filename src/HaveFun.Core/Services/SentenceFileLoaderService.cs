@@ -4,7 +4,7 @@ namespace HaveFun.Core;
 
 public static class SentenceFileLoaderService
 {
-    private static readonly JsonSerializerOptions SerializerOptions = new()
+    private static readonly JsonSerializerOptions _serializerOptions = new()
     {
         PropertyNameCaseInsensitive = true
     };
@@ -21,7 +21,7 @@ public static class SentenceFileLoaderService
         try
         {
             using var stream = File.OpenRead(filePath);
-            sentences = JsonSerializer.Deserialize<List<SentenceDefinition>>(stream, SerializerOptions);
+            sentences = JsonSerializer.Deserialize<List<SentenceDefinition>>(stream, _serializerOptions);
         }
         catch (JsonException exception)
         {

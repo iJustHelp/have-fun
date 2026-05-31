@@ -6,8 +6,8 @@ namespace HaveFun.Web;
 
 public partial class HostSentenceScrambler : ComponentBase, IAsyncDisposable
 {
-    private CancellationTokenSource? timerCancellation;
-    private Task? timerTask;
+    private CancellationTokenSource? _timerCancellation;
+    private Task? _timerTask;
     private bool IsSessionChecked { get; set; }
     private string? ErrorMessage { get; set; }
     private string? FileLoadError { get; set; }
@@ -227,7 +227,7 @@ public partial class HostSentenceScrambler : ComponentBase, IAsyncDisposable
 
     private void RefreshPlayerResults()
     {
-        var roundResults = GameState.GetCurrentRoundResults();
+        var roundResults = GetCurrentRoundResults();
         var resultsByPlayerName = roundResults?.Results.ToDictionary(result => result.PlayerName, StringComparer.OrdinalIgnoreCase)
             ?? [];
         var totalScoresByPlayerName = GameState.GetPlayerTotalScores()
@@ -251,6 +251,53 @@ public partial class HostSentenceScrambler : ComponentBase, IAsyncDisposable
                 };
             })
             .ToArray();
+    }
+
+    private RoundResults? GetCurrentRoundResults()
+    {
+        var currentRound = CurrentRound;
+
+        if (currentRound is null)
+        {
+            return null;
+        }
+
+        var rankedResults = GameState.GetSubmittedPlayerRoundStates()
+            .Where(playerRoundState =>
+                playerRoundState.RoundId == currentRound.Id &&
+                playerRoundState.SubmittedSentence is not null &&
+                playerRoundState.SpentTime is not null &&
+                playerRoundState.SubmittedAt is not null)
+            .Select(playerRoundState => new
+            {
+                playerRoundState.PlayerName,
+                SubmittedSentence = playerRoundState.SubmittedSentence!,
+                CorrectnessCount = CalculateCorrectness(currentRound.OriginalSentences, playerRoundState.SubmittedSentence!),
+                TotalSentenceCount = currentRound.OriginalSentences.Count,
+                SpentTime = playerRoundState.SpentTime!.Value,
+                SubmittedAt = playerRoundState.SubmittedAt!.Value
+            })
+            .OrderByDescending(playerResult => playerResult.CorrectnessCount)
+            .ThenBy(playerResult => playerResult.SpentTime)
+            .ThenBy(playerResult => playerResult.PlayerName, StringComparer.Ordinal)
+            .Select((playerResult, index) => new PlayerResult
+            {
+                Rank = index + 1,
+                PlayerName = playerResult.PlayerName,
+                SubmittedSentence = playerResult.SubmittedSentence,
+                CorrectnessCount = playerResult.CorrectnessCount,
+                TotalSentenceCount = playerResult.TotalSentenceCount,
+                SpentTime = playerResult.SpentTime,
+                SubmittedAt = playerResult.SubmittedAt
+            })
+            .ToArray();
+
+        return new RoundResults
+        {
+            RoundId = currentRound.Id,
+            CorrectSentence = currentRound.SentenceText,
+            Results = rankedResults
+        };
     }
 
     private void HandlePlayersChanged()
@@ -304,8 +351,8 @@ public partial class HostSentenceScrambler : ComponentBase, IAsyncDisposable
         }
 
         UpdateRemainingTime();
-        timerCancellation = new CancellationTokenSource();
-        timerTask = RunTimerAsync(timerCancellation.Token);
+        _timerCancellation = new CancellationTokenSource();
+        _timerTask = RunTimerAsync(_timerCancellation.Token);
     }
 
     private async Task RunTimerAsync(CancellationToken cancellationToken)
@@ -341,15 +388,15 @@ public partial class HostSentenceScrambler : ComponentBase, IAsyncDisposable
 
     private void StopTimer()
     {
-        if (timerCancellation is null)
+        if (_timerCancellation is null)
         {
             return;
         }
 
-        timerCancellation.Cancel();
-        timerCancellation.Dispose();
-        timerCancellation = null;
-        timerTask = null;
+        _timerCancellation.Cancel();
+        _timerCancellation.Dispose();
+        _timerCancellation = null;
+        _timerTask = null;
     }
 
     private void UpdateRemainingTime()
@@ -407,6 +454,23 @@ public partial class HostSentenceScrambler : ComponentBase, IAsyncDisposable
                 IsCorrect = index < correctWords.Count && word == correctWords[index]
             })
             .ToArray();
+    }
+
+    private static int CalculateCorrectness(IReadOnlyList<string> correctWords, string submittedSentence)
+    {
+        var submittedWords = SplitWords(submittedSentence);
+        var comparedWordCount = Math.Min(correctWords.Count, submittedWords.Count);
+        var correctnessCount = 0;
+
+        for (var index = 0; index < comparedWordCount; index++)
+        {
+            if (submittedWords[index] == correctWords[index])
+            {
+                correctnessCount++;
+            }
+        }
+
+        return correctnessCount;
     }
 
     private static IReadOnlyList<string> SplitWords(string sentence)

@@ -24,7 +24,5 @@ public interface IGameStateService
 
     IReadOnlyList<PlayerRoundState> GetSubmittedPlayerRoundStates();
 
-    RoundResults? GetCurrentRoundResults();
-
     IReadOnlyList<PlayerTotalScore> GetPlayerTotalScores();
 }

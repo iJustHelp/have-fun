@@ -20,7 +20,7 @@
 
 <MudPaper Class="pa-4" Elevation="0" Outlined="true">
     <MudText Typo="Typo.h6" Class="mb-4">Your Sentence</MudText>
-    @if (PlayerRoundState is null || PlayerRoundState.CollectedWords.Count == 0)
+    @if (SelectedTiles.Count == 0)
     {
         <MudText Typo="Typo.body2" Color="Color.Secondary">
             Click words below to build your sentence.
@@ -29,7 +29,7 @@
     else
     {
         <MudStack Row="true" Spacing="2" Class="flex-wrap">
-            @foreach (var word in PlayerRoundState.CollectedWords)
+            @foreach (var word in SelectedTiles)
             {
                 <MudButton Color="Color.Secondary"
                            Variant="Variant.Outlined"
@@ -42,13 +42,13 @@
     }
 </MudPaper>
 
-@if (PlayerRoundState?.IsSubmitted == true)
+@if (IsSubmitted)
 {
     <MudAlert Severity="Severity.Success" Variant="Variant.Outlined">
-        Submitted: @PlayerRoundState.SubmittedSentence
-        @if (PlayerRoundState.SpentTime is not null)
+        Submitted: @SubmittedText
+        @if (SpentTime is not null)
         {
-            <span> (@FormatSpentTime(PlayerRoundState.SpentTime.Value))</span>
+            <span> (@FormatSpentTime(SpentTime.Value))</span>
         }
     </MudAlert>
 }
@@ -56,7 +56,7 @@ else
 {
     <MudPaper Class="pa-4" Elevation="0" Outlined="true">
         <MudText Typo="Typo.h6" Class="mb-4">Available Words</MudText>
-        @if (PlayerRoundState is null || PlayerRoundState.AvailableWords.Count == 0)
+        @if (AvailableTiles.Count == 0)
         {
             <MudText Typo="Typo.body2" Color="Color.Secondary">
                 All words are selected. Submit when ready.
@@ -65,7 +65,7 @@ else
         else
         {
             <MudStack Row="true" Spacing="2" Class="flex-wrap">
-                @foreach (var word in PlayerRoundState.AvailableWords)
+                @foreach (var word in AvailableTiles)
                 {
                     <MudButton Color="Color.Primary"
                                Variant="Variant.Outlined"

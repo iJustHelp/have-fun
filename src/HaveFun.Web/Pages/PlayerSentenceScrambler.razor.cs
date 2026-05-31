@@ -6,9 +6,9 @@ namespace HaveFun.Web;
 
 public partial class PlayerSentenceScrambler : ComponentBase, IAsyncDisposable
 {
-    private CancellationTokenSource? timerCancellation;
+    private CancellationTokenSource? _timerCancellation;
 
-    private Task? timerTask;
+    private Task? _timerTask;
 
     private bool IsSessionChecked { get; set; }
 
@@ -25,18 +25,7 @@ public partial class PlayerSentenceScrambler : ComponentBase, IAsyncDisposable
     private TimeSpan RemainingTime { get; set; }
 
     private string RemainingTimeText => $"{(int)RemainingTime.TotalMinutes:00}:{RemainingTime.Seconds:00}";
-
-    private int AvailableSentenceCount => PlayerRoundState?.AvailableWords.Count ?? CurrentRound?.ShuffledSentences.Count ?? 0;
-
     private bool CanSubmit => CurrentRound?.Status == RoundStatus.Started && PlayerRoundState?.CanSubmit == true;
-
-    private bool CanReturnSentences => CurrentRound?.Status == RoundStatus.Started && PlayerRoundState?.IsSubmitted == false;
-
-    private bool IsCollectedSentenceIncomplete => PlayerRoundState?.CollectedWords.Count > 0 && PlayerRoundState.AvailableWords.Count > 0;
-
-    private bool IsTimerExpired => CurrentRound is not null && RemainingTime == TimeSpan.Zero;
-
-    private Color RoundStatusColor => CurrentRound?.Status == RoundStatus.Started ? Color.Success : Color.Default;
 
     [Inject]
     private NavigationManager NavigationManager { get; set; } = default!;
@@ -49,9 +38,6 @@ public partial class PlayerSentenceScrambler : ComponentBase, IAsyncDisposable
 
     [Inject]
     private IGameStateService GameState { get; set; } = default!;
-
-    [Inject]
-    private IDialogService DialogService { get; set; } = default!;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -168,8 +154,8 @@ public partial class PlayerSentenceScrambler : ComponentBase, IAsyncDisposable
         }
 
         UpdateRemainingTime();
-        timerCancellation = new CancellationTokenSource();
-        timerTask = RunTimerAsync(timerCancellation.Token);
+        _timerCancellation = new CancellationTokenSource();
+        _timerTask = RunTimerAsync(_timerCancellation.Token);
     }
 
     private async Task RunTimerAsync(CancellationToken cancellationToken)
@@ -199,15 +185,15 @@ public partial class PlayerSentenceScrambler : ComponentBase, IAsyncDisposable
 
     private void StopTimer()
     {
-        if (timerCancellation is null)
+        if (_timerCancellation is null)
         {
             return;
         }
 
-        timerCancellation.Cancel();
-        timerCancellation.Dispose();
-        timerCancellation = null;
-        timerTask = null;
+        _timerCancellation.Cancel();
+        _timerCancellation.Dispose();
+        _timerCancellation = null;
+        _timerTask = null;
     }
 
     private void UpdateRemainingTime()

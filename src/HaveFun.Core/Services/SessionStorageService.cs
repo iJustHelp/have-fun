@@ -5,19 +5,19 @@ namespace HaveFun.Core;
 
 public sealed class SessionStorageService : ISessionStorageService
 {
-    private const string SessionStorageKey = "havefun.sessionStorage";
-    private readonly IJSRuntime jsRuntime;
+    private const string _sessionStorageKey = "havefun.sessionStorage";
+    private readonly IJSRuntime _jsRuntime;
 
     public SessionStorageService(IJSRuntime jsRuntime)
     {
-        this.jsRuntime = jsRuntime;
+        _jsRuntime = jsRuntime;
     }
 
     public event Action? CurrentUserChanged;
 
     public async ValueTask<SessionStorageModel?> GetCurrentUserAsync()
     {
-        var json = await jsRuntime.InvokeAsync<string?>("sessionStorage.getItem", SessionStorageKey);
+        var json = await _jsRuntime.InvokeAsync<string?>("sessionStorage.getItem", _sessionStorageKey);
 
         if (string.IsNullOrWhiteSpace(json))
         {
@@ -38,13 +38,13 @@ public sealed class SessionStorageService : ISessionStorageService
     public async ValueTask SaveCurrentUserAsync(SessionStorageModel sessionStorage)
     {
         var json = JsonSerializer.Serialize(sessionStorage);
-        await jsRuntime.InvokeVoidAsync("sessionStorage.setItem", SessionStorageKey, json);
+        await _jsRuntime.InvokeVoidAsync("sessionStorage.setItem", _sessionStorageKey, json);
         CurrentUserChanged?.Invoke();
     }
 
     public async ValueTask ClearCurrentUserAsync()
     {
-        await jsRuntime.InvokeVoidAsync("sessionStorage.removeItem", SessionStorageKey);
+        await _jsRuntime.InvokeVoidAsync("sessionStorage.removeItem", _sessionStorageKey);
         CurrentUserChanged?.Invoke();
     }
 }

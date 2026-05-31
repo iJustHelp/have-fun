@@ -5,10 +5,10 @@ namespace HaveFun.Core;
 
 public sealed class QrCodeService : IQrCodeService
 {
-    private const int Version = 3;
-    private const int Size = Version * 4 + 17;
-    private const int DataCodesentenceCount = 55;
-    private const int ErrorCorrectionCodesentenceCount = 15;
+    private const int _version = 3;
+    private const int _size = _version * 4 + 17;
+    private const int _dataCodesentenceCount = 55;
+    private const int _errorCorrectionCodesentenceCount = 15;
 
     public string CreateSvgDataUri(string text)
     {
@@ -27,10 +27,10 @@ public sealed class QrCodeService : IQrCodeService
     private static bool[,] Encode(string text)
     {
         var dataCodesentences = CreateDataCodesentences(text);
-        var errorCorrectionCodesentences = CreateErrorCorrectionCodesentences(dataCodesentences, ErrorCorrectionCodesentenceCount);
+        var errorCorrectionCodesentences = CreateErrorCorrectionCodesentences(dataCodesentences, _errorCorrectionCodesentenceCount);
         var allCodesentences = dataCodesentences.Concat(errorCorrectionCodesentences).ToArray();
-        var modules = new bool[Size, Size];
-        var reserved = new bool[Size, Size];
+        var modules = new bool[_size, _size];
+        var reserved = new bool[_size, _size];
 
         DrawFunctionPatterns(modules, reserved);
         DrawCodesentences(modules, reserved, allCodesentences);
@@ -58,7 +58,7 @@ public sealed class QrCodeService : IQrCodeService
             AppendBits(bits, textByte, 8);
         }
 
-        var remainingBits = DataCodesentenceCount * 8 - bits.Count;
+        var remainingBits = _dataCodesentenceCount * 8 - bits.Count;
         AppendBits(bits, 0, Math.Min(4, remainingBits));
 
         while (bits.Count % 8 != 0)
@@ -73,7 +73,7 @@ public sealed class QrCodeService : IQrCodeService
             codesentences.Add((byte)GetBitsValue(bits, index, 8));
         }
 
-        for (var padByte = 0xec; codesentences.Count < DataCodesentenceCount; padByte ^= 0xec ^ 0x11)
+        for (var padByte = 0xec; codesentences.Count < _dataCodesentenceCount; padByte ^= 0xec ^ 0x11)
         {
             codesentences.Add((byte)padByte);
         }
@@ -124,11 +124,11 @@ public sealed class QrCodeService : IQrCodeService
     private static void DrawFunctionPatterns(bool[,] modules, bool[,] reserved)
     {
         DrawFinderPattern(modules, reserved, 3, 3);
-        DrawFinderPattern(modules, reserved, Size - 4, 3);
-        DrawFinderPattern(modules, reserved, 3, Size - 4);
+        DrawFinderPattern(modules, reserved, _size - 4, 3);
+        DrawFinderPattern(modules, reserved, 3, _size - 4);
         DrawAlignmentPattern(modules, reserved, 22, 22);
 
-        for (var index = 0; index < Size; index++)
+        for (var index = 0; index < _size; index++)
         {
             if (!reserved[6, index])
             {
@@ -141,7 +141,7 @@ public sealed class QrCodeService : IQrCodeService
             }
         }
 
-        SetFunctionModule(modules, reserved, 8, Size - 8, true);
+        SetFunctionModule(modules, reserved, 8, _size - 8, true);
 
         for (var index = 0; index < 9; index++)
         {
@@ -152,7 +152,7 @@ public sealed class QrCodeService : IQrCodeService
             }
         }
 
-        for (var index = Size - 8; index < Size; index++)
+        for (var index = _size - 8; index < _size; index++)
         {
             ReserveModule(reserved, 8, index);
             ReserveModule(reserved, index, 8);
@@ -169,7 +169,7 @@ public sealed class QrCodeService : IQrCodeService
                 var moduleX = centerX + x;
                 var moduleY = centerY + y;
 
-                if (moduleX < 0 || moduleY < 0 || moduleX >= Size || moduleY >= Size)
+                if (moduleX < 0 || moduleY < 0 || moduleX >= _size || moduleY >= _size)
                 {
                     continue;
                 }
@@ -196,16 +196,16 @@ public sealed class QrCodeService : IQrCodeService
         var bitIndex = 0;
         var upward = true;
 
-        for (var right = Size - 1; right >= 1; right -= 2)
+        for (var right = _size - 1; right >= 1; right -= 2)
         {
             if (right == 6)
             {
                 right--;
             }
 
-            for (var vertical = 0; vertical < Size; vertical++)
+            for (var vertical = 0; vertical < _size; vertical++)
             {
-                var y = upward ? Size - 1 - vertical : vertical;
+                var y = upward ? _size - 1 - vertical : vertical;
 
                 for (var column = 0; column < 2; column++)
                 {
@@ -229,9 +229,9 @@ public sealed class QrCodeService : IQrCodeService
 
     private static void ApplyMask(bool[,] modules, bool[,] reserved)
     {
-        for (var y = 0; y < Size; y++)
+        for (var y = 0; y < _size; y++)
         {
-            for (var x = 0; x < Size; x++)
+            for (var x = 0; x < _size; x++)
             {
                 if (!reserved[x, y] && (x + y) % 2 == 0)
                 {
@@ -261,19 +261,19 @@ public sealed class QrCodeService : IQrCodeService
 
         for (var index = 0; index < 8; index++)
         {
-            modules[Size - 1 - index, 8] = GetBit(formatBits, index);
+            modules[_size - 1 - index, 8] = GetBit(formatBits, index);
         }
 
         for (var index = 8; index < 15; index++)
         {
-            modules[8, Size - 15 + index] = GetBit(formatBits, index);
+            modules[8, _size - 15 + index] = GetBit(formatBits, index);
         }
     }
 
     private static string CreateSvg(bool[,] modules)
     {
         const int border = 4;
-        var viewBoxSize = Size + border * 2;
+        var viewBoxSize = _size + border * 2;
         var builder = new StringBuilder();
 
         builder.Append(CultureInfo.InvariantCulture, $"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 {viewBoxSize} {viewBoxSize}\" shape-rendering=\"crispEdges\">");
@@ -284,9 +284,9 @@ public sealed class QrCodeService : IQrCodeService
         builder.Append("H0z\"/>");
         builder.Append("<path fill=\"#111827\" d=\"");
 
-        for (var y = 0; y < Size; y++)
+        for (var y = 0; y < _size; y++)
         {
-            for (var x = 0; x < Size; x++)
+            for (var x = 0; x < _size; x++)
             {
                 if (modules[x, y])
                 {
