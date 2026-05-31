@@ -25,91 +25,13 @@
     }
     else if (CurrentRound is not null)
     {
-        <MudPaper Class="pa-6" Elevation="0" Outlined="true">
-            <MudStack Spacing="2">
-                <MudText Typo="Typo.h5">Sentence Scrambler Game</MudText>
-                <MudText Typo="Typo.subtitle1" Color="Color.Secondary">
-                    Rule: rearrange the available words to make a correct sentence.
-                </MudText>
-            </MudStack>
-        </MudPaper>
-        
-        <MudItem>
-            <MudChip T="string"
-                     Color="Color.Secondary"
-                     Variant="Variant.Outlined"
-                     Icon="@Icons.Material.Filled.Timer">
-                @RemainingTimeText remaining
-            </MudChip>
-        </MudItem>
-        
-        <MudPaper Class="pa-4" Elevation="0" Outlined="true">
-            <MudText Typo="Typo.h6" Class="mb-4">Your Sentence</MudText>
-            @if (PlayerRoundState is null || PlayerRoundState.CollectedWords.Count == 0)
-            {
-                <MudText Typo="Typo.body2" Color="Color.Secondary">
-                    Click words below to build your sentence.
-                </MudText>
-            }
-            else
-            {
-                <MudStack Row="true" Spacing="2" Class="flex-wrap">
-                    @foreach (var word in PlayerRoundState.CollectedWords)
-                    {
-                        <MudButton Color="Color.Secondary"
-                                   Variant="Variant.Outlined"
-                                   Style="text-transform: none;"
-                                   OnClick="@(() => ReturnWord(word.Id))">
-                            @word.Text
-                        </MudButton>
-                    }
-                </MudStack>
-            }
-        </MudPaper>
-
-        @if (PlayerRoundState?.IsSubmitted == true)
-        {
-            <MudAlert Severity="Severity.Success" Variant="Variant.Outlined">
-                Submitted: @PlayerRoundState.SubmittedSentence
-                @if (PlayerRoundState.SpentTime is not null)
-                {
-                    <span> (@FormatSpentTime(PlayerRoundState.SpentTime.Value))</span>
-                }
-            </MudAlert>
-        }
-        else
-        {
-            <MudPaper Class="pa-4" Elevation="0" Outlined="true">
-                <MudText Typo="Typo.h6" Class="mb-4">Available Words</MudText>
-                @if (PlayerRoundState is null || PlayerRoundState.AvailableWords.Count == 0)
-                {
-                    <MudText Typo="Typo.body2" Color="Color.Secondary">
-                        All words are selected. Submit when ready.
-                    </MudText>
-                }
-                else
-                {
-                    <MudStack Row="true" Spacing="2" Class="flex-wrap">
-                        @foreach (var word in PlayerRoundState.AvailableWords)
-                        {
-                            <MudButton Color="Color.Primary"
-                                       Variant="Variant.Outlined"
-                                       Style="text-transform: none;"
-                                       OnClick="@(() => SelectWord(word.Id))">
-                                @word.Text
-                            </MudButton>
-                        }
-                    </MudStack>
-                }
-            </MudPaper>
-
-            <MudButton Color="Color.Primary"
-                       Variant="Variant.Filled"
-                       StartIcon="@Icons.Material.Filled.Check"
-                       Disabled="@(!CanSubmit)"
-                       OnClick="SubmitRound">
-                Submit
-            </MudButton>
-        }
+        <PlayerGameBoard Title="Sentence Scrambler Game"
+                         Rules="Rule: rearrange the available words to make a correct sentence."
+                         PlayerRoundState="@PlayerRoundState"
+                         RemainingTimeText="@RemainingTimeText"
+                         CanSubmit="@CanSubmit"
+                         OnSelectWord="SelectWord"
+                         OnReturnWord="ReturnWord"
+                         OnSubmit="SubmitRound" />
     }
 </MudStack>

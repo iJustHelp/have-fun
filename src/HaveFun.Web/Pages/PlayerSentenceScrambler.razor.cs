@@ -239,9 +239,4 @@ public partial class PlayerSentenceScrambler : ComponentBase, IAsyncDisposable
         await UserSessionStorageService.ClearCurrentUserAsync();
         NavigationManager.NavigateTo("/register", replace: true);
     }
-
-    private static string FormatSpentTime(TimeSpan spentTime)
-    {
-        return $"{(int)spentTime.TotalMinutes:00}:{spentTime.Seconds:00}";
-    }
 }
