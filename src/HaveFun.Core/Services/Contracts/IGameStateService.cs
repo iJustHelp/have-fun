@@ -10,6 +10,12 @@ public interface IGameStateService
 
     CurrentRound StartRound(SentenceDefinition sentence, IReadOnlyList<string> expectedPlayerNames);
 
+    CurrentRound StartRound(
+        SentenceDefinition sentence,
+        IReadOnlyList<string> expectedPlayerNames,
+        Func<CurrentRound, IReadOnlyList<Tile>> createAvailableTiles,
+        Func<CurrentRound, string, int> calculateScore);
+
     CurrentRound? CompleteCurrentRound();
 
     PlayerRoundState? GetPlayerRoundState(string playerName);

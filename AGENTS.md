@@ -65,6 +65,9 @@ design/                        Product spec, stage plans, and task notes
 - Do not let folder structure create deep namespaces by default.
 - Use the root `HaveFun.Web` namespace for most web classes and Razor components.
 
+#### C# syntaxes
+- Use `_` prefix for each private field in each class.
+
 
 ## Configuration and Data
 

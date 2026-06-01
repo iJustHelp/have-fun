@@ -51,8 +51,8 @@ erDiagram
     SENTENCE_DEFINITION ||--o{ CURRENT_ROUND : "starts"
     CURRENT_ROUND ||--o{ PLAYER_ROUND_STATE : "tracks"
     PLAYER_SESSION ||--o{ PLAYER_ROUND_STATE : "plays"
-    PLAYER_ROUND_STATE ||--o{ WORD_TILE : "available words"
-    PLAYER_ROUND_STATE ||--o{ WORD_TILE : "collected words"
+    PLAYER_ROUND_STATE ||--o{ TILE : "available tiles"
+    PLAYER_ROUND_STATE ||--o{ TILE : "selected tiles"
     CURRENT_ROUND ||--o| ROUND_RESULTS : "produces"
     ROUND_RESULTS ||--o{ PLAYER_RESULT : "contains"
     PLAYER_SESSION ||--o{ PLAYER_TOTAL_SCORE : "accumulates"
@@ -107,16 +107,58 @@ sequenceDiagram
     G-->>W: CurrentRoundChanged
     W-->>P: Waiting room navigates to player game
 
-    P->>W: Select/return words in PlayerGameBoard
-    W->>G: SelectWord/ReturnWord
+    P->>W: Select/return tiles in PlayerGameBoard
+    W->>G: SelectWord/ReturnWord(tileId)
     G-->>W: PlayerRoundStateChanged
-    W-->>P: Refresh available and collected words
+    W-->>P: Refresh available and selected tiles
 
-    P->>W: Submit sentence
+    P->>W: Submit selected tiles
     W->>G: SubmitPlayerRound
     G-->>W: Results updated
     W-->>P: Show submitted or completed state
 ```
+
+## Host and Player Page Communication
+
+Host and player pages do not send messages directly to each other. Each browser has its own Blazor Server circuit connected to `HaveFun.Web`, and the pages coordinate through singleton in-memory services in `HaveFun.Core`.
+
+The host page writes round changes into `GameStateService`. Player pages read that same service state and subscribe to service events. Player pages write tile selections and submissions back into `GameStateService`, and the host page refreshes its result grid when the service raises player-state events.
+
+```mermaid
+sequenceDiagram
+    participant H as Host Page
+    participant G as GameStateService
+    participant P as Player Page
+
+    H->>G: StartRound(...)
+    G-->>H: CurrentRoundChanged
+    G-->>P: CurrentRoundChanged
+    P->>G: GetOrCreatePlayerRoundState(player)
+    G-->>P: AvailableTiles + SelectedTiles
+
+    P->>G: SelectWord/ReturnWord(player, tileId)
+    G-->>P: PlayerRoundStateChanged
+    P-->>P: Refresh PlayerGameBoard
+
+    P->>G: SubmitPlayerRound(player)
+    G-->>P: PlayerRoundStateChanged
+    G-->>H: PlayerRoundStateChanged
+    H->>G: GetSubmittedPlayerRoundStates()
+    H-->>H: Recalculate game-page results
+
+    H->>G: CompleteCurrentRound()
+    G-->>H: CurrentRoundChanged
+    G-->>P: CurrentRoundChanged
+```
+
+Communication rules:
+
+- `GameStateService` is the shared source of truth for the active round, player tile state, submissions, and total scores.
+- Host pages start/stop rounds and calculate game-specific current-round results for display.
+- Player pages select/return tiles and submit through `GameStateService`; they do not mutate local state as the source of truth.
+- `CurrentRoundChanged` tells host/player pages that a round started or completed.
+- `PlayerRoundStateChanged` tells host/player pages that a player selected, returned, or submitted tiles.
+- Browser `sessionStorage` is only used to remember role and display name; it is not used for host/player messaging.
 
 ## State Boundaries
 

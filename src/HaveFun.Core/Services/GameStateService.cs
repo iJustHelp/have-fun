@@ -7,11 +7,14 @@ public sealed class GameStateService : IGameStateService
     private readonly Dictionary<PlayerRoundKey, PlayerRoundState> _playerRoundStates = [];
     private readonly Dictionary<string, PlayerTotalScore> _playerTotalScores = new(StringComparer.OrdinalIgnoreCase);
     private readonly HashSet<Guid> _totaledRoundIds = [];
+    private Func<CurrentRound, IReadOnlyList<Tile>> _createAvailableTiles;
+    private Func<CurrentRound, string, int> _calculateScore = CalculateDefaultScore;
     private CurrentRound? _currentRound;
 
     public GameStateService(ITileCollectionService tileCollectionService)
     {
         _tileCollectionService = tileCollectionService;
+        _createAvailableTiles = tileCollectionService.CreateAvailableTiles;
     }
 
     public event Action<CurrentRound>? CurrentRoundChanged;
@@ -31,10 +34,26 @@ public sealed class GameStateService : IGameStateService
 
     public CurrentRound StartRound(SentenceDefinition sentence, IReadOnlyList<string> expectedPlayerNames)
     {
+        return StartRound(
+            sentence,
+            expectedPlayerNames,
+            _tileCollectionService.CreateAvailableTiles,
+            CalculateDefaultScore);
+    }
+
+    public CurrentRound StartRound(
+        SentenceDefinition sentence,
+        IReadOnlyList<string> expectedPlayerNames,
+        Func<CurrentRound, IReadOnlyList<Tile>> createAvailableTiles,
+        Func<CurrentRound, string, int> calculateScore)
+    {
         if (string.IsNullOrWhiteSpace(sentence.Text))
         {
             throw new ArgumentException("Sentence text is required.", nameof(sentence));
         }
+
+        ArgumentNullException.ThrowIfNull(createAvailableTiles);
+        ArgumentNullException.ThrowIfNull(calculateScore);
 
         if (sentence.TimeLimitInSeconds <= 0)
         {
@@ -63,6 +82,8 @@ public sealed class GameStateService : IGameStateService
         lock (_syncRoot)
         {
             _currentRound = round;
+            _createAvailableTiles = createAvailableTiles;
+            _calculateScore = calculateScore;
             _playerRoundStates.Clear();
         }
 
@@ -144,7 +165,7 @@ public sealed class GameStateService : IGameStateService
             {
                 PlayerName = normalizedName,
                 RoundId = _currentRound.Id,
-                AvailableTiles = _tileCollectionService.CreateAvailableTiles(_currentRound),
+                AvailableTiles = _createAvailableTiles(_currentRound),
                 SelectedTiles = []
             };
 
@@ -425,7 +446,7 @@ public sealed class GameStateService : IGameStateService
         {
             PlayerName = playerName,
             RoundId = round.Id,
-            AvailableTiles = _tileCollectionService.CreateAvailableTiles(round),
+            AvailableTiles = _createAvailableTiles(round),
             SelectedTiles = []
         };
 
@@ -448,7 +469,7 @@ public sealed class GameStateService : IGameStateService
                 playerRoundState.SubmittedSentence is not null)
             .ToDictionary(
                 playerRoundState => playerRoundState.PlayerName,
-                playerRoundState => CalculateCorrectness(round.OriginalSentences, playerRoundState.SubmittedSentence!),
+                playerRoundState => _calculateScore(round, playerRoundState.SubmittedSentence!),
                 StringComparer.OrdinalIgnoreCase);
 
         var playerNames = round.ExpectedPlayerNames
@@ -468,6 +489,11 @@ public sealed class GameStateService : IGameStateService
                 TotalScore = (existingScore?.TotalScore ?? 0) + round.OriginalSentences.Count
             };
         }
+    }
+
+    private static int CalculateDefaultScore(CurrentRound round, string submittedSentence)
+    {
+        return CalculateCorrectness(round.OriginalSentences, submittedSentence);
     }
 
     private static string NormalizePlayerName(string playerName)
