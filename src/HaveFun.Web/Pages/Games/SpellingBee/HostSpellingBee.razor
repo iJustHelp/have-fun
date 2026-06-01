@@ -1,8 +1,8 @@
-@page "/host-sentence-scrambler"
+@page "/host-spelling-bee"
 @using HaveFun.Core
 @namespace HaveFun.Web
 
-<PageTitle>Host Sentence Scrambler</PageTitle>
+<PageTitle>Host Spelling Bee</PageTitle>
 
 @if (!IsSessionChecked)
 {
@@ -27,9 +27,9 @@ else
     <MudStack Spacing="4">
         <MudPaper Class="pa-6" Elevation="0" Outlined="true">
             <MudStack Spacing="2">
-                <MudText Typo="Typo.h5">Sentence Scrambler Game</MudText>
+                <MudText Typo="Typo.h5">Spelling Bee Game</MudText>
                 <MudText Typo="Typo.subtitle1" Color="Color.Secondary">
-                    Rule: select a file with sentences, set timeout, start each sentence, and players arrange the shuffled words into the correct sentence.
+                    Rule: select a file with words, set timeout, start each word, and players arrange the shuffled letters into the correct word.
                 </MudText>
             </MudStack>
         </MudPaper>
@@ -45,15 +45,15 @@ else
             <MudGrid Spacing="3">
                 <MudItem xs="12">
                     <MudSelect T="string"
-                               Label="Select file with sentences"
+                               Label="Select file with words"
                                Variant="Variant.Outlined"
                                Value="@SelectedFileName"
-                               ValueChanged="SelectSentenceFile"
-                               Disabled="@(SentenceFiles.Count == 0 || IsRoundActive)">
-                        @foreach (var file in SentenceFiles)
+                               ValueChanged="SelectWordFile"
+                               Disabled="@(WordFiles.Count == 0 || IsRoundActive)">
+                        @foreach (var file in WordFiles)
                         {
-                            <MudSelectItem T="string" Value="@file.FileName">
-                                @file.FileName
+                            <MudSelectItem T="string" Value="@file.FilePath">
+                                @file.FilePath
                             </MudSelectItem>
                         }
                     </MudSelect>
@@ -62,7 +62,7 @@ else
                 <MudItem xs="12">
                     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="4">
                         <MudText Typo="Typo.body2" Color="Color.Secondary">
-                            Timeout  the current sentence in seconds
+                            Timeout the current word in seconds
                         </MudText>
                         <MudNumericField T="int"
                                          Variant="Variant.Outlined"
@@ -80,7 +80,7 @@ else
                             </MudChip>
                         }
                         <MudItem>
-                            <MudText Typo="Typo.body2" Color="Color.Primary">Sentence of @(DisplaySentenceNumber) of @(TotalSentenceCount)</MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Primary">Word of @(DisplayWordNumber) of @(TotalWordCount)</MudText>
                         </MudItem>
                         <MudButton Color="@RoundActionButtonColor"
                                    Variant="Variant.Filled"
@@ -97,7 +97,7 @@ else
         @if (CurrentRound?.IsCompleted == true)
         {
             <MudAlert Severity="Severity.Success" Variant="Variant.Outlined">
-                <MudText>Correct sentence:</MudText>
+                <MudText>Correct word:</MudText>
                 <MudText Typo="Typo.h5" Color="Color.Primary">@CurrentRound.SentenceText</MudText>
             </MudAlert>
         }
@@ -138,7 +138,7 @@ else
                             </MudTh>
                             @if (CurrentRound?.IsCompleted == true)
                             {
-                                <MudTh>Submitted sentence</MudTh>
+                                <MudTh>Submitted word</MudTh>
                             }
                             <MudTh>
                                 <MudTableSortLabel T="HostPlayerResultRow" SortBy="@(row => row.ScoreSortValue)">
@@ -156,11 +156,11 @@ else
                             <MudTd DataLabel="Time before submit">@FormatTimeBeforeSubmit(context.TimeBeforeSubmit)</MudTd>
                             @if (CurrentRound?.IsCompleted == true)
                             {
-                                <MudTd DataLabel="Submitted sentence">
+                                <MudTd DataLabel="Submitted word">
                                     <MudStack Row="true" Spacing="1" Class="flex-wrap">
-                                        @foreach (var word in context.SubmittedWords)
+                                        @foreach (var letter in context.SubmittedLetters)
                                         {
-                                            <span style="@GetSubmittedWordStyle(word.IsCorrect)">@word.Text</span>
+                                            <span style="@GetSubmittedLetterStyle(letter.IsCorrect)">@letter.Text</span>
                                         }
                                     </MudStack>
                                 </MudTd>

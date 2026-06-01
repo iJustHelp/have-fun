@@ -1,24 +1,31 @@
 namespace HaveFun.Core;
 
-public sealed class SentenceFileService : ISentenceFileService
+public class FileService : IFileService
 {
     private readonly string _folderPath;
+    private readonly string _configurationKey;
 
-    public SentenceFileService(string folderPath)
+    public FileService(string folderPath)
+        : this(folderPath, "FilePath")
     {
-        _folderPath = folderPath;
     }
 
-    public IReadOnlyList<SentenceFileOption> GetSentenceFiles()
+    public FileService(string folderPath, string configurationKey)
+    {
+        _folderPath = folderPath;
+        _configurationKey = configurationKey;
+    }
+
+    public IReadOnlyList<GameFilePathOption> GetGameFilePathes()
     {
         if (string.IsNullOrWhiteSpace(_folderPath))
         {
-            throw new InvalidOperationException("SentenceScramblerPath is required.");
+            throw new InvalidOperationException($"{_configurationKey} is required.");
         }
 
         if (!Directory.Exists(_folderPath))
         {
-            throw new InvalidOperationException($"SentenceScramblerPath folder was not found: {_folderPath}");
+            throw new InvalidOperationException($"{_configurationKey} folder was not found: {_folderPath}");
         }
 
         var files = Directory
@@ -26,36 +33,36 @@ public sealed class SentenceFileService : ISentenceFileService
             .Select(Path.GetFileName)
             .Where(fileName => !string.IsNullOrWhiteSpace(fileName))
             .OrderBy(fileName => fileName, StringComparer.OrdinalIgnoreCase)
-            .Select(fileName => new SentenceFileOption
+            .Select(fileName => new GameFilePathOption
             {
-                FileName = fileName!
+                FilePath = fileName!
             })
             .ToArray();
 
         if (files.Length == 0)
         {
-            throw new InvalidOperationException($"SentenceScramblerPath folder contains no .txt files: {_folderPath}");
+            throw new InvalidOperationException($"{_configurationKey} folder contains no .txt files: {_folderPath}");
         }
 
         return files;
     }
 
-    public IReadOnlyList<string> LoadSentenceLines(string fileName)
+    public IReadOnlyList<string> LoadLines(string fileName)
     {
         if (string.IsNullOrWhiteSpace(fileName))
         {
             throw new ArgumentException("Sentence file name is required.", nameof(fileName));
         }
 
-        var sentenceFile = GetSentenceFiles()
-            .FirstOrDefault(file => string.Equals(file.FileName, fileName, StringComparison.OrdinalIgnoreCase));
+        var sentenceFile = GetGameFilePathes()
+            .FirstOrDefault(file => string.Equals(file.FilePath, fileName, StringComparison.OrdinalIgnoreCase));
 
         if (sentenceFile is null)
         {
-            throw new InvalidOperationException($"Sentence file was not found in SentenceScramblerPath: {fileName}");
+            throw new InvalidOperationException($"File was not found in {_configurationKey}: {fileName}");
         }
 
-        var filePath = Path.Combine(_folderPath, sentenceFile.FileName);
+        var filePath = Path.Combine(_folderPath, sentenceFile.FilePath);
         var sentences = File.ReadLines(filePath)
             .Select(line => line.Trim())
             .Where(line => !string.IsNullOrWhiteSpace(line))

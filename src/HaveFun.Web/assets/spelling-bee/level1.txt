@@ -1,0 +1,8 @@
+apple
+banana
+castle
+dragon
+garden
+planet
+silver
+window

@@ -4,47 +4,47 @@ using MudBlazor;
 
 namespace HaveFun.Web;
 
-public partial class HostSpellingBee : ComponentBase, IAsyncDisposable
+public partial class HostSentenceScrambler : ComponentBase, IAsyncDisposable
 {
     private CancellationTokenSource? _timerCancellation;
     private Task? _timerTask;
     private bool IsSessionChecked { get; set; }
     private string? ErrorMessage { get; set; }
     private string? FileLoadError { get; set; }
-    private IReadOnlyList<SentenceFileOption> WordFiles { get; set; } = [];
-    private IReadOnlyList<string> WordLines { get; set; } = [];
+    private IReadOnlyList<GameFilePathOption> SentenceFiles { get; set; } = [];
+    private IReadOnlyList<string> SentenceLines { get; set; } = [];
     private string? SelectedFileName { get; set; }
     private int TimeLimitInSeconds { get; set; } = 30;
-    private int CurrentWordIndex { get; set; } = -1;
-    private int CurrentWordNumber => CurrentWordIndex >= 0 ? CurrentWordIndex + 1 : 0;
-    private int TotalWordCount => WordLines.Count;
-    private int DisplayWordNumber
+    private int CurrentSentenceIndex { get; set; } = -1;
+    private int CurrentSentenceNumber => CurrentSentenceIndex >= 0 ? CurrentSentenceIndex + 1 : 0;
+    private int TotalSentenceCount => SentenceLines.Count;
+    private int DisplaySentenceNumber
     {
         get
         {
-            if (TotalWordCount == 0)
+            if (TotalSentenceCount == 0)
             {
                 return 0;
             }
 
             if (IsRoundActive)
             {
-                return CurrentWordNumber;
+                return CurrentSentenceNumber;
             }
 
             if (CurrentRound?.IsCompleted == true)
             {
-                return Math.Min(CurrentWordNumber + 1, TotalWordCount);
+                return Math.Min(CurrentSentenceNumber + 1, TotalSentenceCount);
             }
 
-            return CurrentWordNumber == 0 ? 1 : CurrentWordNumber;
+            return CurrentSentenceNumber == 0 ? 1 : CurrentSentenceNumber;
         }
     }
 
-    private bool IsFileComplete => TotalWordCount > 0 && CurrentWordIndex >= TotalWordCount - 1 && CurrentRound?.IsCompleted == true;
+    private bool IsFileComplete => TotalSentenceCount > 0 && CurrentSentenceIndex >= TotalSentenceCount - 1 && CurrentRound?.IsCompleted == true;
     private bool IsRoundActive => CurrentRound?.Status == RoundStatus.Started;
     private bool CanStart => !string.IsNullOrWhiteSpace(SelectedFileName) &&
-        WordLines.Count > 0 &&
+        SentenceLines.Count > 0 &&
         TimeLimitInSeconds > 0 &&
         !IsRoundActive &&
         !IsFileComplete;
@@ -59,26 +59,26 @@ public partial class HostSpellingBee : ComponentBase, IAsyncDisposable
     private IReadOnlyList<HostPlayerResultRow> PlayerResults { get; set; } = [];
 
     [Inject]
-    private IPlayerRegistryService PlayerRegistryService { get; set; } = default!;
+    private IPlayerRegistryService PlayerRegistry { get; set; } = default!;
 
     [Inject]
-    private ISentenceFileService SentenceFileService { get; set; } = default!;
+    private SentenceScramblerFileService SentenceFileService { get; set; } = default!;
 
     [Inject]
-    private IGameStateService GameStateService { get; set; } = default!;
+    private IGameStateService GameState { get; set; } = default!;
 
     [Inject]
     private ISessionStorageService SessionStorageService { get; set; } = default!;
 
     protected override void OnInitialized()
     {
-        CurrentRound = GameStateService.CurrentRound;
+        CurrentRound = GameState.CurrentRound;
         RefreshPlayers();
         RefreshPlayerResults();
-        LoadWordFiles();
-        PlayerRegistryService.PlayersChanged += HandlePlayersChanged;
-        GameStateService.CurrentRoundChanged += HandleCurrentRoundChanged;
-        GameStateService.PlayerRoundStateChanged += HandlePlayerRoundStateChanged;
+        LoadSentenceFiles();
+        PlayerRegistry.PlayersChanged += HandlePlayersChanged;
+        GameState.CurrentRoundChanged += HandleCurrentRoundChanged;
+        GameState.PlayerRoundStateChanged += HandlePlayerRoundStateChanged;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -92,7 +92,7 @@ public partial class HostSpellingBee : ComponentBase, IAsyncDisposable
 
         if (currentUser?.Role != Role.Host)
         {
-            ErrorMessage = "Open the host Home page before using Host Spelling Bee.";
+            ErrorMessage = "Open the host Home page before using Host Sentence Scrambler.";
         }
 
         IsSessionChecked = true;
@@ -101,21 +101,21 @@ public partial class HostSpellingBee : ComponentBase, IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        PlayerRegistryService.PlayersChanged -= HandlePlayersChanged;
-        GameStateService.CurrentRoundChanged -= HandleCurrentRoundChanged;
-        GameStateService.PlayerRoundStateChanged -= HandlePlayerRoundStateChanged;
+        PlayerRegistry.PlayersChanged -= HandlePlayersChanged;
+        GameState.CurrentRoundChanged -= HandleCurrentRoundChanged;
+        GameState.PlayerRoundStateChanged -= HandlePlayerRoundStateChanged;
         StopTimer();
         await ValueTask.CompletedTask;
     }
 
-    private void SelectWordFile(string fileName)
+    private void SelectSentenceFile(string fileName)
     {
         SelectedFileName = fileName;
-        CurrentWordIndex = -1;
+        CurrentSentenceIndex = -1;
         CurrentRound = null;
         RemainingTime = TimeSpan.Zero;
         StopTimer();
-        LoadSelectedWordLines();
+        LoadSelectedSentenceLines();
         RefreshPlayerResults();
     }
 
@@ -139,18 +139,18 @@ public partial class HostSpellingBee : ComponentBase, IAsyncDisposable
 
         try
         {
-            var nextWordIndex = CurrentWordIndex + 1;
+            var nextSentenceIndex = CurrentSentenceIndex + 1;
             var sentence = new TextDefinition
             {
-                Text = WordLines[nextWordIndex],
+                Text = SentenceLines[nextSentenceIndex],
                 TimeLimitInSeconds = TimeLimitInSeconds
             };
             var expectedPlayerNames = Players
                 .Select(player => player.DisplayName)
                 .ToArray();
 
-            CurrentWordIndex = nextWordIndex;
-            CurrentRound = GameStateService.StartRound(sentence, expectedPlayerNames, CreateLetterTiles, CalculateCorrectness);
+            CurrentSentenceIndex = nextSentenceIndex;
+            CurrentRound = GameState.StartRound(sentence, expectedPlayerNames, CreateWordTiles, CalculateCorrectness);
             FileLoadError = null;
             RefreshPlayerResults();
             StartTimerIfRoundIsActive();
@@ -172,57 +172,57 @@ public partial class HostSpellingBee : ComponentBase, IAsyncDisposable
             return;
         }
 
-        CurrentRound = GameStateService.CompleteCurrentRound();
+        CurrentRound = GameState.CompleteCurrentRound();
         StopTimer();
         RefreshPlayerResults();
     }
 
-    private void LoadWordFiles()
+    private void LoadSentenceFiles()
     {
         try
         {
-            WordFiles = SentenceFileService.GetSentenceFiles();
-            SelectedFileName = WordFiles.FirstOrDefault()?.FileName;
-            LoadSelectedWordLines();
+            SentenceFiles = SentenceFileService.GetGameFilePathes();
+            SelectedFileName = SentenceFiles.FirstOrDefault()?.FilePath;
+            LoadSelectedSentenceLines();
             FileLoadError = null;
         }
         catch (InvalidOperationException exception)
         {
-            WordFiles = [];
+            SentenceFiles = [];
             SelectedFileName = null;
-            WordLines = [];
+            SentenceLines = [];
             FileLoadError = exception.Message;
         }
     }
 
-    private void LoadSelectedWordLines()
+    private void LoadSelectedSentenceLines()
     {
         if (string.IsNullOrWhiteSpace(SelectedFileName))
         {
-            WordLines = [];
+            SentenceLines = [];
             return;
         }
 
         try
         {
-            WordLines = SentenceFileService.LoadSentenceLines(SelectedFileName);
+            SentenceLines = SentenceFileService.LoadLines(SelectedFileName);
             FileLoadError = null;
         }
         catch (InvalidOperationException exception)
         {
-            WordLines = [];
+            SentenceLines = [];
             FileLoadError = exception.Message;
         }
         catch (ArgumentException exception)
         {
-            WordLines = [];
+            SentenceLines = [];
             FileLoadError = exception.Message;
         }
     }
 
     private void RefreshPlayers()
     {
-        Players = PlayerRegistryService.GetPlayers();
+        Players = PlayerRegistry.GetPlayers();
     }
 
     private void RefreshPlayerResults()
@@ -230,7 +230,7 @@ public partial class HostSpellingBee : ComponentBase, IAsyncDisposable
         var roundResults = GetCurrentRoundResults();
         var resultsByPlayerName = roundResults?.Results.ToDictionary(result => result.PlayerName, StringComparer.OrdinalIgnoreCase)
             ?? [];
-        var totalScoresByPlayerName = GameStateService.GetPlayerTotalScores()
+        var totalScoresByPlayerName = GameState.GetPlayerTotalScores()
             .ToDictionary(playerTotalScore => playerTotalScore.PlayerName, StringComparer.OrdinalIgnoreCase);
 
         PlayerResults = Players
@@ -242,7 +242,7 @@ public partial class HostSpellingBee : ComponentBase, IAsyncDisposable
                 {
                     PlayerName = player.DisplayName,
                     TimeBeforeSubmit = result is null ? null : TimeSpan.FromSeconds(CurrentRound?.TimeLimitInSeconds ?? 0) - result.SpentTime,
-                    SubmittedLetters = BuildSubmittedLetters(result?.SelectedTiles, CurrentRound?.SentenceText),
+                    SubmittedWords = BuildSubmittedWords(result?.SelectedTiles, CurrentRound?.OriginalSentences),
                     Score = result?.CorrectnessCount,
                     TotalScore = result?.TotalSentenceCount,
                     AggregateScore = totalScore?.Score,
@@ -261,7 +261,7 @@ public partial class HostSpellingBee : ComponentBase, IAsyncDisposable
             return null;
         }
 
-        var rankedResults = GameStateService.GetSubmittedPlayerRoundStates()
+        var rankedResults = GameState.GetSubmittedPlayerRoundStates()
             .Where(playerRoundState =>
                 playerRoundState.RoundId == currentRound.Id &&
                 playerRoundState.SelectedTiles.Count > 0 &&
@@ -271,8 +271,8 @@ public partial class HostSpellingBee : ComponentBase, IAsyncDisposable
             {
                 playerRoundState.PlayerName,
                 playerRoundState.SelectedTiles,
-                CorrectnessCount = CalculateCorrectness(currentRound, playerRoundState.SelectedTiles),
-                TotalLetterCount = GetLetters(currentRound.SentenceText).Count,
+                CorrectnessCount = CalculateCorrectness(currentRound.OriginalSentences, playerRoundState.SelectedTiles),
+                TotalSentenceCount = currentRound.OriginalSentences.Count,
                 SpentTime = playerRoundState.SpentTime!.Value,
                 SubmittedAt = playerRoundState.SubmittedAt!.Value
             })
@@ -285,7 +285,7 @@ public partial class HostSpellingBee : ComponentBase, IAsyncDisposable
                 PlayerName = playerResult.PlayerName,
                 SelectedTiles = playerResult.SelectedTiles,
                 CorrectnessCount = playerResult.CorrectnessCount,
-                TotalSentenceCount = playerResult.TotalLetterCount,
+                TotalSentenceCount = playerResult.TotalSentenceCount,
                 SpentTime = playerResult.SpentTime,
                 SubmittedAt = playerResult.SubmittedAt
             })
@@ -368,7 +368,7 @@ public partial class HostSpellingBee : ComponentBase, IAsyncDisposable
 
                     if (RemainingTime == TimeSpan.Zero && CurrentRound?.Status == RoundStatus.Started)
                     {
-                        CurrentRound = GameStateService.CompleteCurrentRound();
+                        CurrentRound = GameState.CompleteCurrentRound();
                     }
 
                     StateHasChanged();
@@ -411,43 +411,6 @@ public partial class HostSpellingBee : ComponentBase, IAsyncDisposable
         RemainingTime = remaining <= TimeSpan.Zero ? TimeSpan.Zero : remaining;
     }
 
-    private static IReadOnlyList<Tile> CreateLetterTiles(CurrentRound round)
-    {
-        var letters = GetLetters(round.SentenceText).ToArray();
-
-        for (var index = letters.Length - 1; index > 0; index--)
-        {
-            var swapIndex = Random.Shared.Next(index + 1);
-            (letters[index], letters[swapIndex]) = (letters[swapIndex], letters[index]);
-        }
-
-        return letters
-            .Select(letter => new Tile
-            {
-                Id = Guid.NewGuid(),
-                Text = letter
-            })
-            .ToArray();
-    }
-
-    private static int CalculateCorrectness(CurrentRound round, IReadOnlyList<Tile> selectedTiles)
-    {
-        var correctLetters = GetLetters(round.SentenceText);
-        var submittedLetters = selectedTiles.Select(tile => tile.Text).ToArray();
-        var comparedLetterCount = Math.Min(correctLetters.Count, submittedLetters.Length);
-        var correctnessCount = 0;
-
-        for (var index = 0; index < comparedLetterCount; index++)
-        {
-            if (submittedLetters[index] == correctLetters[index])
-            {
-                correctnessCount++;
-            }
-        }
-
-        return correctnessCount;
-    }
-
     private static string FormatTimeBeforeSubmit(TimeSpan? timeBeforeSubmit)
     {
         if (timeBeforeSubmit is null)
@@ -464,40 +427,65 @@ public partial class HostSpellingBee : ComponentBase, IAsyncDisposable
         return score is null || totalScore is null ? string.Empty : $"{score} / {totalScore}";
     }
 
-    private static string GetSubmittedLetterStyle(bool isCorrect)
+    private static IReadOnlyList<Tile> CreateWordTiles(CurrentRound round)
+    {
+        return round.ShuffledSentences
+            .Select(sentence => new Tile
+            {
+                Id = Guid.NewGuid(),
+                Text = sentence
+            })
+            .ToArray();
+    }
+
+    private static string GetSubmittedWordStyle(bool isCorrect)
     {
         return isCorrect
             ? "background-color: #dcfce7; color: #166534; border-radius: 4px; padding: 0 4px; font-weight: 600;"
             : string.Empty;
     }
 
-    private static IReadOnlyList<SubmittedLetterPart> BuildSubmittedLetters(
+    private static IReadOnlyList<SubmittedWordPart> BuildSubmittedWords(
         IReadOnlyList<Tile>? submittedTiles,
-        string? correctWord)
+        IReadOnlyList<string>? correctWords)
     {
         if (submittedTiles is null || submittedTiles.Count == 0)
         {
             return [];
         }
 
-        var submittedLetters = submittedTiles.Select(tile => tile.Text).ToArray();
-        var correctLetters = correctWord is null ? [] : GetLetters(correctWord);
+        var submittedWords = submittedTiles.Select(tile => tile.Text).ToArray();
+        correctWords ??= [];
 
-        return submittedLetters
-            .Select((letter, index) => new SubmittedLetterPart
+        return submittedWords
+            .Select((word, index) => new SubmittedWordPart
             {
-                Text = letter,
-                IsCorrect = index < correctLetters.Count && letter == correctLetters[index]
+                Text = word,
+                IsCorrect = index < correctWords.Count && word == correctWords[index]
             })
             .ToArray();
     }
 
-    private static IReadOnlyList<string> GetLetters(string text)
+    private static int CalculateCorrectness(CurrentRound round, IReadOnlyList<Tile> selectedTiles)
     {
-        return text
-            .Where(character => !char.IsWhiteSpace(character))
-            .Select(character => character.ToString())
-            .ToArray();
+        return CalculateCorrectness(round.OriginalSentences, selectedTiles);
+    }
+
+    private static int CalculateCorrectness(IReadOnlyList<string> correctWords, IReadOnlyList<Tile> selectedTiles)
+    {
+        var submittedWords = selectedTiles.Select(tile => tile.Text).ToArray();
+        var comparedWordCount = Math.Min(correctWords.Count, submittedWords.Length);
+        var correctnessCount = 0;
+
+        for (var index = 0; index < comparedWordCount; index++)
+        {
+            if (submittedWords[index] == correctWords[index])
+            {
+                correctnessCount++;
+            }
+        }
+
+        return correctnessCount;
     }
 
     private sealed record HostPlayerResultRow
@@ -508,7 +496,7 @@ public partial class HostSpellingBee : ComponentBase, IAsyncDisposable
 
         public double TimeBeforeSubmitSeconds => TimeBeforeSubmit?.TotalSeconds ?? -1;
 
-        public IReadOnlyList<SubmittedLetterPart> SubmittedLetters { get; init; } = [];
+        public IReadOnlyList<SubmittedWordPart> SubmittedWords { get; init; } = [];
 
         public int? Score { get; init; }
 
@@ -530,7 +518,7 @@ public partial class HostSpellingBee : ComponentBase, IAsyncDisposable
         }
     }
 
-    private sealed record SubmittedLetterPart
+    private sealed record SubmittedWordPart
     {
         public required string Text { get; init; }
 
