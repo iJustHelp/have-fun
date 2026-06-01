@@ -140,7 +140,7 @@ public partial class HostSpellingBee : ComponentBase, IAsyncDisposable
         try
         {
             var nextWordIndex = CurrentWordIndex + 1;
-            var sentence = new SentenceDefinition
+            var sentence = new TextDefinition
             {
                 Text = WordLines[nextWordIndex],
                 TimeLimitInSeconds = TimeLimitInSeconds
@@ -242,8 +242,7 @@ public partial class HostSpellingBee : ComponentBase, IAsyncDisposable
                 {
                     PlayerName = player.DisplayName,
                     TimeBeforeSubmit = result is null ? null : TimeSpan.FromSeconds(CurrentRound?.TimeLimitInSeconds ?? 0) - result.SpentTime,
-                    SubmittedWord = result?.SubmittedSentence,
-                    SubmittedLetters = BuildSubmittedLetters(result?.SubmittedSentence, CurrentRound?.SentenceText),
+                    SubmittedLetters = BuildSubmittedLetters(result?.SelectedTiles, CurrentRound?.SentenceText),
                     Score = result?.CorrectnessCount,
                     TotalScore = result?.TotalSentenceCount,
                     AggregateScore = totalScore?.Score,
@@ -265,14 +264,14 @@ public partial class HostSpellingBee : ComponentBase, IAsyncDisposable
         var rankedResults = GameStateService.GetSubmittedPlayerRoundStates()
             .Where(playerRoundState =>
                 playerRoundState.RoundId == currentRound.Id &&
-                playerRoundState.SubmittedSentence is not null &&
+                playerRoundState.SelectedTiles.Count > 0 &&
                 playerRoundState.SpentTime is not null &&
                 playerRoundState.SubmittedAt is not null)
             .Select(playerRoundState => new
             {
                 playerRoundState.PlayerName,
-                SubmittedWord = NormalizeSubmittedWord(playerRoundState.SubmittedSentence!),
-                CorrectnessCount = CalculateCorrectness(currentRound, playerRoundState.SubmittedSentence!),
+                playerRoundState.SelectedTiles,
+                CorrectnessCount = CalculateCorrectness(currentRound, playerRoundState.SelectedTiles),
                 TotalLetterCount = GetLetters(currentRound.SentenceText).Count,
                 SpentTime = playerRoundState.SpentTime!.Value,
                 SubmittedAt = playerRoundState.SubmittedAt!.Value
@@ -284,7 +283,7 @@ public partial class HostSpellingBee : ComponentBase, IAsyncDisposable
             {
                 Rank = index + 1,
                 PlayerName = playerResult.PlayerName,
-                SubmittedSentence = playerResult.SubmittedWord,
+                SelectedTiles = playerResult.SelectedTiles,
                 CorrectnessCount = playerResult.CorrectnessCount,
                 TotalSentenceCount = playerResult.TotalLetterCount,
                 SpentTime = playerResult.SpentTime,
@@ -431,11 +430,11 @@ public partial class HostSpellingBee : ComponentBase, IAsyncDisposable
             .ToArray();
     }
 
-    private static int CalculateCorrectness(CurrentRound round, string submittedSentence)
+    private static int CalculateCorrectness(CurrentRound round, IReadOnlyList<Tile> selectedTiles)
     {
         var correctLetters = GetLetters(round.SentenceText);
-        var submittedLetters = GetLetters(submittedSentence);
-        var comparedLetterCount = Math.Min(correctLetters.Count, submittedLetters.Count);
+        var submittedLetters = selectedTiles.Select(tile => tile.Text).ToArray();
+        var comparedLetterCount = Math.Min(correctLetters.Count, submittedLetters.Length);
         var correctnessCount = 0;
 
         for (var index = 0; index < comparedLetterCount; index++)
@@ -447,11 +446,6 @@ public partial class HostSpellingBee : ComponentBase, IAsyncDisposable
         }
 
         return correctnessCount;
-    }
-
-    private static string NormalizeSubmittedWord(string submittedSentence)
-    {
-        return string.Concat(GetLetters(submittedSentence));
     }
 
     private static string FormatTimeBeforeSubmit(TimeSpan? timeBeforeSubmit)
@@ -478,15 +472,15 @@ public partial class HostSpellingBee : ComponentBase, IAsyncDisposable
     }
 
     private static IReadOnlyList<SubmittedLetterPart> BuildSubmittedLetters(
-        string? submittedWord,
+        IReadOnlyList<Tile>? submittedTiles,
         string? correctWord)
     {
-        if (string.IsNullOrWhiteSpace(submittedWord))
+        if (submittedTiles is null || submittedTiles.Count == 0)
         {
             return [];
         }
 
-        var submittedLetters = GetLetters(submittedWord);
+        var submittedLetters = submittedTiles.Select(tile => tile.Text).ToArray();
         var correctLetters = correctWord is null ? [] : GetLetters(correctWord);
 
         return submittedLetters
@@ -513,8 +507,6 @@ public partial class HostSpellingBee : ComponentBase, IAsyncDisposable
         public TimeSpan? TimeBeforeSubmit { get; init; }
 
         public double TimeBeforeSubmitSeconds => TimeBeforeSubmit?.TotalSeconds ?? -1;
-
-        public string? SubmittedWord { get; init; }
 
         public IReadOnlyList<SubmittedLetterPart> SubmittedLetters { get; init; } = [];
 

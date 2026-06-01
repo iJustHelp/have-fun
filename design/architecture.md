@@ -107,13 +107,11 @@ sequenceDiagram
     G-->>W: CurrentRoundChanged
     W-->>P: Waiting room navigates to player game
 
-    P->>W: Select/return tiles in PlayerGameBoard
-    W->>G: SelectTile/ReturnTile(tileId)
-    G-->>W: PlayerRoundStateChanged
-    W-->>P: Refresh available and selected tiles
+    P->>W: Select/return draft tiles in PlayerGameBoard
+    W-->>P: Refresh local available and selected tiles
 
     P->>W: Submit selected tiles
-    W->>G: SubmitPlayerRound
+    W->>G: SubmitPlayerRound(player, selectedTiles)
     G-->>W: Results updated
     W-->>P: Show submitted or completed state
 ```
@@ -122,7 +120,7 @@ sequenceDiagram
 
 Host and player pages do not send messages directly to each other. Each browser has its own Blazor Server circuit connected to `HaveFun.Web`, and the pages coordinate through singleton in-memory services in `HaveFun.Core`.
 
-The host page writes round changes into `GameStateService`. Player pages read that same service state and subscribe to service events. Player pages write tile selections and submissions back into `GameStateService`, and the host page refreshes its result grid when the service raises player-state events.
+The host page writes round changes into `GameStateService`. Player pages read that same service state and subscribe to service events. Player pages keep draft tile selection inside `PlayerGameBoard`, submit selected tiles to `GameStateService`, and the host page refreshes its result grid when the service raises player-state events.
 
 ```mermaid
 sequenceDiagram
@@ -134,13 +132,11 @@ sequenceDiagram
     G-->>H: CurrentRoundChanged
     G-->>P: CurrentRoundChanged
     P->>G: GetOrCreatePlayerRoundState(player)
-    G-->>P: AvailableTiles + SelectedTiles
+    G-->>P: Initial AvailableTiles
 
-    P->>G: SelectTile/ReturnTile(player, tileId)
-    G-->>P: PlayerRoundStateChanged
-    P-->>P: Refresh PlayerGameBoard
+    P-->>P: Select/return draft tiles in PlayerGameBoard
 
-    P->>G: SubmitPlayerRound(player)
+    P->>G: SubmitPlayerRound(player, selectedTiles)
     G-->>P: PlayerRoundStateChanged
     G-->>H: PlayerRoundStateChanged
     H->>G: GetSubmittedPlayerRoundStates()
@@ -153,11 +149,12 @@ sequenceDiagram
 
 Communication rules:
 
-- `GameStateService` is the shared source of truth for the active round, player tile state, submissions, and total scores.
+- `GameStateService` is the shared source of truth for the active round, submitted player tile state, submissions, and total scores.
 - Host pages start/stop rounds and calculate game-specific current-round results for display.
-- Player pages select/return tiles and submit through `GameStateService`; they do not mutate local state as the source of truth.
+- Player pages select/return draft tiles inside `PlayerGameBoard`; only submitted selected tiles are sent to `GameStateService`.
 - `CurrentRoundChanged` tells host/player pages that a round started or completed.
-- `PlayerRoundStateChanged` tells host/player pages that a player selected, returned, or submitted tiles.
+- `PlayerRoundStateChanged` tells host/player pages that a player submitted tiles.
+- `SelectedTiles` is the submitted answer; display text is derived from selected tile text when needed.
 - Browser `sessionStorage` is only used to remember role and display name; it is not used for host/player messaging.
 
 ## State Boundaries

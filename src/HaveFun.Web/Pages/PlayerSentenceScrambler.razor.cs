@@ -25,7 +25,7 @@ public partial class PlayerSentenceScrambler : ComponentBase, IAsyncDisposable
     private TimeSpan RemainingTime { get; set; }
 
     private string RemainingTimeText => $"{(int)RemainingTime.TotalMinutes:00}:{RemainingTime.Seconds:00}";
-    private bool CanSubmit => CurrentRound?.Status == RoundStatus.Started && PlayerRoundState?.CanSubmit == true;
+    private bool CanSubmit => CurrentRound?.Status == RoundStatus.Started && PlayerRoundState?.IsSubmitted != true;
 
     [Inject]
     private NavigationManager NavigationManager { get; set; } = default!;
@@ -113,34 +113,15 @@ public partial class PlayerSentenceScrambler : ComponentBase, IAsyncDisposable
         });
     }
 
-    private void SelectWord(Guid wordId)
+    private async Task SubmitRound(IReadOnlyList<Tile> selectedTiles)
     {
         if (PlayerName is null || CurrentRound?.Status != RoundStatus.Started)
         {
             return;
         }
 
-        PlayerRoundState = GameStateService.SelectTile(PlayerName, wordId);
-    }
-
-    private void ReturnWord(Guid wordId)
-    {
-        if (PlayerName is null || CurrentRound?.Status != RoundStatus.Started)
-        {
-            return;
-        }
-
-        PlayerRoundState = GameStateService.ReturnTile(PlayerName, wordId);
-    }
-
-    private async Task SubmitRound()
-    {
-        if (PlayerName is null || CurrentRound?.Status != RoundStatus.Started)
-        {
-            return;
-        }
-
-        PlayerRoundState = GameStateService.SubmitPlayerRound(PlayerName);
+        PlayerRoundState = GameStateService.SubmitPlayerRound(PlayerName, selectedTiles);
+        await Task.CompletedTask;
     }
 
     private void StartTimerIfRoundIsActive()

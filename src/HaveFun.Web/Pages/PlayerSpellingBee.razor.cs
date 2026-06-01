@@ -24,7 +24,7 @@ public partial class PlayerSpellingBee : ComponentBase, IAsyncDisposable
     private TimeSpan RemainingTime { get; set; }
 
     private string RemainingTimeText => $"{(int)RemainingTime.TotalMinutes:00}:{RemainingTime.Seconds:00}";
-    private bool CanSubmit => CurrentRound?.Status == RoundStatus.Started && PlayerRoundState?.CanSubmit == true;
+    private bool CanSubmit => CurrentRound?.Status == RoundStatus.Started && PlayerRoundState?.IsSubmitted != true;
 
     [Inject]
     private NavigationManager NavigationManager { get; set; } = default!;
@@ -112,34 +112,14 @@ public partial class PlayerSpellingBee : ComponentBase, IAsyncDisposable
         });
     }
 
-    private void SelectLetter(Guid tileId)
+    private async Task SubmitRound(IReadOnlyList<Tile> selectedTiles)
     {
         if (PlayerName is null || CurrentRound?.Status != RoundStatus.Started)
         {
             return;
         }
 
-        PlayerRoundState = GameState.SelectTile(PlayerName, tileId);
-    }
-
-    private void ReturnLetter(Guid tileId)
-    {
-        if (PlayerName is null || CurrentRound?.Status != RoundStatus.Started)
-        {
-            return;
-        }
-
-        PlayerRoundState = GameState.ReturnTile(PlayerName, tileId);
-    }
-
-    private async Task SubmitRound()
-    {
-        if (PlayerName is null || CurrentRound?.Status != RoundStatus.Started)
-        {
-            return;
-        }
-
-        PlayerRoundState = GameState.SubmitPlayerRound(PlayerName);
+        PlayerRoundState = GameState.SubmitPlayerRound(PlayerName, selectedTiles);
         await Task.CompletedTask;
     }
 

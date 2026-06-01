@@ -1,6 +1,6 @@
 namespace HaveFun.Core;
 
-public sealed record SentenceDefinition
+public sealed record TextDefinition
 {
     public string Text { get; init; } = string.Empty;
 

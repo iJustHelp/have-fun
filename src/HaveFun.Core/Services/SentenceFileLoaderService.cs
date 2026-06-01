@@ -9,19 +9,19 @@ public static class SentenceFileLoaderService
         PropertyNameCaseInsensitive = true
     };
 
-    public static IReadOnlyList<SentenceDefinition> Load(string filePath)
+    public static IReadOnlyList<TextDefinition> Load(string filePath)
     {
         if (!File.Exists(filePath))
         {
             throw new InvalidOperationException($"Sentence file was not found: {filePath}");
         }
 
-        List<SentenceDefinition>? sentences;
+        List<TextDefinition>? sentences;
 
         try
         {
             using var stream = File.OpenRead(filePath);
-            sentences = JsonSerializer.Deserialize<List<SentenceDefinition>>(stream, _serializerOptions);
+            sentences = JsonSerializer.Deserialize<List<TextDefinition>>(stream, _serializerOptions);
         }
         catch (JsonException exception)
         {
@@ -33,7 +33,7 @@ public static class SentenceFileLoaderService
         return sentences!.AsReadOnly();
     }
 
-    private static void Validate(List<SentenceDefinition>? sentences, string filePath)
+    private static void Validate(List<TextDefinition>? sentences, string filePath)
     {
         if (sentences is null || sentences.Count == 0)
         {

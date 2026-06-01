@@ -27,15 +27,14 @@
     {
         <PlayerGameBoard Title="Spelling Bee Game"
                          Rules="Rule: arrange the available letters to spell the correct word."
+                         RoundId="@CurrentRound?.Id"
                          AvailableTiles="@(PlayerRoundState?.AvailableTiles ?? [])"
                          SelectedTiles="@(PlayerRoundState?.SelectedTiles ?? [])"
                          IsSubmitted="@(PlayerRoundState?.IsSubmitted == true)"
-                         SubmittedText="@PlayerRoundState?.SubmittedSentence"
+                         TileTextSeparator=""
                          SpentTime="@PlayerRoundState?.SpentTime"
                          RemainingTimeText="@RemainingTimeText"
                          CanSubmit="@CanSubmit"
-                         OnSelectItem="SelectLetter"
-                         OnReturnItem="ReturnLetter"
                          OnSubmit="SubmitRound" />
     }
 </MudStack>

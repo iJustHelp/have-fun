@@ -2,10 +2,10 @@ namespace HaveFun.Core;
 
 public sealed class InMemorySentenceLibraryService : ISentenceLibraryService
 {
-    public InMemorySentenceLibraryService(IReadOnlyList<SentenceDefinition> sentences)
+    public InMemorySentenceLibraryService(IReadOnlyList<TextDefinition> texts)
     {
-        Sentences = sentences;
+        Texts = texts;
     }
 
-    public IReadOnlyList<SentenceDefinition> Sentences { get; }
+    public IReadOnlyList<TextDefinition> Texts { get; }
 }

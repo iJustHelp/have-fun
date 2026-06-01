@@ -6,7 +6,7 @@ public sealed record PlayerResult
 
     public required string PlayerName { get; init; }
 
-    public required string SubmittedSentence { get; init; }
+    public required IReadOnlyList<Tile> SelectedTiles { get; init; }
 
     public required int CorrectnessCount { get; init; }
 
