@@ -120,7 +120,7 @@ public partial class PlayerSentenceScrambler : ComponentBase, IAsyncDisposable
             return;
         }
 
-        PlayerRoundState = GameStateService.SelectWord(PlayerName, wordId);
+        PlayerRoundState = GameStateService.SelectTile(PlayerName, wordId);
     }
 
     private void ReturnWord(Guid wordId)
@@ -130,7 +130,7 @@ public partial class PlayerSentenceScrambler : ComponentBase, IAsyncDisposable
             return;
         }
 
-        PlayerRoundState = GameStateService.ReturnWord(PlayerName, wordId);
+        PlayerRoundState = GameStateService.ReturnTile(PlayerName, wordId);
     }
 
     private async Task SubmitRound()

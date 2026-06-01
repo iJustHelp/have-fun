@@ -108,7 +108,7 @@ sequenceDiagram
     W-->>P: Waiting room navigates to player game
 
     P->>W: Select/return tiles in PlayerGameBoard
-    W->>G: SelectWord/ReturnWord(tileId)
+    W->>G: SelectTile/ReturnTile(tileId)
     G-->>W: PlayerRoundStateChanged
     W-->>P: Refresh available and selected tiles
 
@@ -136,7 +136,7 @@ sequenceDiagram
     P->>G: GetOrCreatePlayerRoundState(player)
     G-->>P: AvailableTiles + SelectedTiles
 
-    P->>G: SelectWord/ReturnWord(player, tileId)
+    P->>G: SelectTile/ReturnTile(player, tileId)
     G-->>P: PlayerRoundStateChanged
     P-->>P: Refresh PlayerGameBoard
 

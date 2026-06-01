@@ -22,9 +22,9 @@ public interface IGameStateService
 
     PlayerRoundState? GetOrCreatePlayerRoundState(string playerName);
 
-    PlayerRoundState? SelectWord(string playerName, Guid wordId);
+    PlayerRoundState? SelectTile(string playerName, Guid wordId);
 
-    PlayerRoundState? ReturnWord(string playerName, Guid wordId);
+    PlayerRoundState? ReturnTile(string playerName, Guid wordId);
 
     PlayerRoundState? SubmitPlayerRound(string playerName);
 

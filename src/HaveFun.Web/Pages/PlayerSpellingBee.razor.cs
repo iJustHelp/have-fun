@@ -119,7 +119,7 @@ public partial class PlayerSpellingBee : ComponentBase, IAsyncDisposable
             return;
         }
 
-        PlayerRoundState = GameState.SelectWord(PlayerName, tileId);
+        PlayerRoundState = GameState.SelectTile(PlayerName, tileId);
     }
 
     private void ReturnLetter(Guid tileId)
@@ -129,7 +129,7 @@ public partial class PlayerSpellingBee : ComponentBase, IAsyncDisposable
             return;
         }
 
-        PlayerRoundState = GameState.ReturnWord(PlayerName, tileId);
+        PlayerRoundState = GameState.ReturnTile(PlayerName, tileId);
     }
 
     private async Task SubmitRound()

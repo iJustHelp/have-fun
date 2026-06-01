@@ -175,7 +175,7 @@ public sealed class GameStateService : IGameStateService
         }
     }
 
-    public PlayerRoundState? SelectWord(string playerName, Guid wordId)
+    public PlayerRoundState? SelectTile(string playerName, Guid tileId)
     {
         var normalizedName = NormalizePlayerName(playerName);
         PlayerRoundState? updatedState;
@@ -199,7 +199,7 @@ public sealed class GameStateService : IGameStateService
                 return playerRoundState;
             }
 
-            var selectedSentence = playerRoundState.AvailableTiles.FirstOrDefault(sentence => sentence.Id == wordId);
+            var selectedSentence = playerRoundState.AvailableTiles.FirstOrDefault(sentence => sentence.Id == tileId);
 
             if (selectedSentence is null)
             {
@@ -209,7 +209,7 @@ public sealed class GameStateService : IGameStateService
             updatedState = playerRoundState with
             {
                 AvailableTiles = playerRoundState.AvailableTiles
-                    .Where(sentence => sentence.Id != wordId)
+                    .Where(sentence => sentence.Id != tileId)
                     .ToArray(),
                 SelectedTiles = playerRoundState.SelectedTiles
                     .Append(selectedSentence)
@@ -224,7 +224,7 @@ public sealed class GameStateService : IGameStateService
         return updatedState;
     }
 
-    public PlayerRoundState? ReturnWord(string playerName, Guid wordId)
+    public PlayerRoundState? ReturnTile(string playerName, Guid tileId)
     {
         var normalizedName = NormalizePlayerName(playerName);
         PlayerRoundState? updatedState;
@@ -248,7 +248,7 @@ public sealed class GameStateService : IGameStateService
                 return playerRoundState;
             }
 
-            var returnedWord = playerRoundState.SelectedTiles.FirstOrDefault(word => word.Id == wordId);
+            var returnedWord = playerRoundState.SelectedTiles.FirstOrDefault(word => word.Id == tileId);
 
             if (returnedWord is null)
             {
@@ -261,7 +261,7 @@ public sealed class GameStateService : IGameStateService
                     .Append(returnedWord)
                     .ToArray(),
                 SelectedTiles = playerRoundState.SelectedTiles
-                    .Where(word => word.Id != wordId)
+                    .Where(word => word.Id != tileId)
                     .ToArray()
             };
 
