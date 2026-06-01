@@ -40,23 +40,46 @@ flowchart LR
     Core --> SentenceFiles
 ```
 
-## Entity Relationships
+## Host and Player Page Communication
 
-These are in-memory records and service-owned collections, not database tables. Relationships that use player names are logical links, not foreign keys.
+App implements Mediator design pattern. Host and player pages do not send messages directly to each other. Each browser has its own Blazor Server circuit connected to `HaveFun.Web`, and the pages coordinate through singleton in-memory `GameStateService` service in `HaveFun.Core`.
+
+The host page writes round changes into `GameStateService`. Player pages read that same service state and subscribe to service events. Player pages keep draft tile selection inside `PlayerGameBoard`, submit selected tiles to `GameStateService`, and the host page refreshes its result grid when the service raises player-state events.
 
 ```mermaid
-erDiagram
-    SESSION_STORAGE_MODEL }o--o| PLAYER_SESSION : "identifies player browser"
-    SENTENCE_FILE_OPTION ||--o{ SENTENCE_DEFINITION : "loads lines as"
-    SENTENCE_DEFINITION ||--o{ CURRENT_ROUND : "starts"
-    CURRENT_ROUND ||--o{ PLAYER_ROUND_STATE : "tracks"
-    PLAYER_SESSION ||--o{ PLAYER_ROUND_STATE : "plays"
-    PLAYER_ROUND_STATE ||--o{ TILE : "available tiles"
-    PLAYER_ROUND_STATE ||--o{ TILE : "selected tiles"
-    CURRENT_ROUND ||--o| ROUND_RESULTS : "produces"
-    ROUND_RESULTS ||--o{ PLAYER_RESULT : "contains"
-    PLAYER_SESSION ||--o{ PLAYER_TOTAL_SCORE : "accumulates"
+sequenceDiagram
+    participant H as Host Page
+    participant G as GameStateService
+    participant P as Player Page
+
+    H->>G: StartRound(...)
+    G-->>H: CurrentRoundChanged
+    G-->>P: CurrentRoundChanged
+    P->>G: GetOrCreatePlayerRoundState(player)
+    G-->>P: Initial AvailableTiles
+
+    P-->>P: Select/return draft tiles in PlayerGameBoard
+
+    P->>G: SubmitPlayerRound(player, selectedTiles)
+    G-->>P: PlayerRoundStateChanged
+    G-->>H: PlayerRoundStateChanged
+    H->>G: GetSubmittedPlayerRoundStates()
+    H-->>H: Recalculate game-page results
+
+    H->>G: CompleteCurrentRound()
+    G-->>H: CurrentRoundChanged
+    G-->>P: CurrentRoundChanged
 ```
+
+Communication rules:
+
+- `GameStateService` is the shared source of truth for the active round, submitted player tile state, submissions, and total scores.
+- Host pages start/stop rounds and calculate game-specific current-round results for display.
+- Player pages select/return draft tiles inside `PlayerGameBoard`; only submitted selected tiles are sent to `GameStateService`.
+- `CurrentRoundChanged` tells host/player pages that a round started or completed.
+- `PlayerRoundStateChanged` tells host/player pages that a player submitted tiles.
+- `SelectedTiles` is the submitted answer; display text is derived from selected tile text when needed.
+- Browser `sessionStorage` is only used to remember role and display name; it is not used for host/player messaging.
 
 ## Host Flow
 
@@ -116,46 +139,24 @@ sequenceDiagram
     W-->>P: Show submitted or completed state
 ```
 
-## Host and Player Page Communication
+## Entity Relationships
 
-Host and player pages do not send messages directly to each other. Each browser has its own Blazor Server circuit connected to `HaveFun.Web`, and the pages coordinate through singleton in-memory services in `HaveFun.Core`.
-
-The host page writes round changes into `GameStateService`. Player pages read that same service state and subscribe to service events. Player pages keep draft tile selection inside `PlayerGameBoard`, submit selected tiles to `GameStateService`, and the host page refreshes its result grid when the service raises player-state events.
+These are in-memory records and service-owned collections, not database tables. Relationships that use player names are logical links, not foreign keys.
 
 ```mermaid
-sequenceDiagram
-    participant H as Host Page
-    participant G as GameStateService
-    participant P as Player Page
-
-    H->>G: StartRound(...)
-    G-->>H: CurrentRoundChanged
-    G-->>P: CurrentRoundChanged
-    P->>G: GetOrCreatePlayerRoundState(player)
-    G-->>P: Initial AvailableTiles
-
-    P-->>P: Select/return draft tiles in PlayerGameBoard
-
-    P->>G: SubmitPlayerRound(player, selectedTiles)
-    G-->>P: PlayerRoundStateChanged
-    G-->>H: PlayerRoundStateChanged
-    H->>G: GetSubmittedPlayerRoundStates()
-    H-->>H: Recalculate game-page results
-
-    H->>G: CompleteCurrentRound()
-    G-->>H: CurrentRoundChanged
-    G-->>P: CurrentRoundChanged
+erDiagram
+    SESSION_STORAGE_MODEL }o--o| PLAYER_SESSION : "identifies player browser"
+    SENTENCE_FILE_OPTION ||--o{ SENTENCE_DEFINITION : "loads lines as"
+    SENTENCE_DEFINITION ||--o{ CURRENT_ROUND : "starts"
+    CURRENT_ROUND ||--o{ PLAYER_ROUND_STATE : "tracks"
+    PLAYER_SESSION ||--o{ PLAYER_ROUND_STATE : "plays"
+    PLAYER_ROUND_STATE ||--o{ TILE : "available tiles"
+    PLAYER_ROUND_STATE ||--o{ TILE : "selected tiles"
+    CURRENT_ROUND ||--o| ROUND_RESULTS : "produces"
+    ROUND_RESULTS ||--o{ PLAYER_RESULT : "contains"
+    PLAYER_SESSION ||--o{ PLAYER_TOTAL_SCORE : "accumulates"
 ```
 
-Communication rules:
-
-- `GameStateService` is the shared source of truth for the active round, submitted player tile state, submissions, and total scores.
-- Host pages start/stop rounds and calculate game-specific current-round results for display.
-- Player pages select/return draft tiles inside `PlayerGameBoard`; only submitted selected tiles are sent to `GameStateService`.
-- `CurrentRoundChanged` tells host/player pages that a round started or completed.
-- `PlayerRoundStateChanged` tells host/player pages that a player submitted tiles.
-- `SelectedTiles` is the submitted answer; display text is derived from selected tile text when needed.
-- Browser `sessionStorage` is only used to remember role and display name; it is not used for host/player messaging.
 
 ## State Boundaries
 
