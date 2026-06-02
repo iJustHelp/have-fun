@@ -1,0 +1,40 @@
+@page "/player-spelling-bee"
+@layout RegisterLayout
+@namespace HaveFun.Web
+
+<PageTitle>Player Spelling Bee</PageTitle>
+
+<MudStack Spacing="4" Class="pa-4">
+    @if (!IsSessionChecked)
+    {
+        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
+            Checking player session
+        </MudAlert>
+    }
+    else if (ErrorMessage is not null)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined">
+            @ErrorMessage
+        </MudAlert>
+        <MudButton Href="/register"
+                   Color="Color.Primary"
+                   Variant="Variant.Filled"
+                   StartIcon="@Icons.Material.Filled.Login">
+            Register
+        </MudButton>
+    }
+    else if (CurrentRound is not null)
+    {
+        <PlayerGameBoard Title="Spelling Bee Game"
+                         Rules="Rule: arrange the available letters to spell the correct word."
+                         RoundId="@CurrentRound?.Id"
+                         AvailableTiles="@(PlayerRoundState?.AvailableTiles ?? [])"
+                         SelectedTiles="@(PlayerRoundState?.SelectedTiles ?? [])"
+                         IsSubmitted="@(PlayerRoundState?.IsSubmitted == true)"
+                         TileTextSeparator=""
+                         SpentTime="@PlayerRoundState?.SpentTime"
+                         RemainingTimeText="@RemainingTimeText"
+                         CanSubmit="@CanSubmit"
+                         OnSubmit="SubmitRound" />
+    }
+</MudStack>

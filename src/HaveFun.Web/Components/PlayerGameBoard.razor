@@ -20,7 +20,7 @@
 
 <MudPaper Class="pa-4" Elevation="0" Outlined="true">
     <MudText Typo="Typo.h6" Class="mb-4">Your Sentence</MudText>
-    @if (SelectedTiles.Count == 0)
+    @if (_selectedTiles.Count == 0)
     {
         <MudText Typo="Typo.body2" Color="Color.Secondary">
             Click words below to build your sentence.
@@ -29,12 +29,12 @@
     else
     {
         <MudStack Row="true" Spacing="2" Class="flex-wrap">
-            @foreach (var word in SelectedTiles)
+            @foreach (var word in _selectedTiles)
             {
                 <MudButton Color="Color.Secondary"
                            Variant="Variant.Outlined"
                            Style="text-transform: none;"
-                           OnClick="@(() => ReturnItem(word.Id))">
+                           OnClick="@(() => ReturnTile(word.Id))">
                     @word.Text
                 </MudButton>
             }
@@ -56,7 +56,7 @@ else
 {
     <MudPaper Class="pa-4" Elevation="0" Outlined="true">
         <MudText Typo="Typo.h6" Class="mb-4">Available Words</MudText>
-        @if (AvailableTiles.Count == 0)
+        @if (_availableTiles.Count == 0)
         {
             <MudText Typo="Typo.body2" Color="Color.Secondary">
                 All words are selected. Submit when ready.
@@ -65,12 +65,12 @@ else
         else
         {
             <MudStack Row="true" Spacing="2" Class="flex-wrap">
-                @foreach (var word in AvailableTiles)
+                @foreach (var word in _availableTiles)
                 {
                     <MudButton Color="Color.Primary"
                                Variant="Variant.Outlined"
                                Style="text-transform: none;"
-                               OnClick="@(() => SelectItem(word.Id))">
+                               OnClick="@(() => SelectTile(word.Id))">
                         @word.Text
                     </MudButton>
                 }
@@ -81,7 +81,7 @@ else
     <MudButton Color="Color.Primary"
                Variant="Variant.Filled"
                StartIcon="@Icons.Material.Filled.Check"
-               Disabled="@(!CanSubmit)"
+               Disabled="@(!CanSubmitDraft)"
                OnClick="SubmitAsync">
         Submit
     </MudButton>

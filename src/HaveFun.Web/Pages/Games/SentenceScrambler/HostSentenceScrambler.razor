@@ -52,8 +52,8 @@ else
                                Disabled="@(SentenceFiles.Count == 0 || IsRoundActive)">
                         @foreach (var file in SentenceFiles)
                         {
-                            <MudSelectItem T="string" Value="@file.FileName">
-                                @file.FileName
+                            <MudSelectItem T="string" Value="@file.FilePath">
+                                @file.FilePath
                             </MudSelectItem>
                         }
                     </MudSelect>

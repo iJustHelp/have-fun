@@ -7,7 +7,6 @@ public static class ServicesExtension
     public static IServiceCollection AddCoreServices(this IServiceCollection services)
     {
         services.AddSingleton<IPlayerRegistryService, PlayerRegistryService>();
-        services.AddSingleton<ITileCollectionService, SentenceScramblerTileCollectionService>();
         services.AddSingleton<IGameStateService, GameStateService>();
         services.AddSingleton<IUrlService, UrlService>();
         services.AddSingleton<IQrCodeService, QrCodeService>();

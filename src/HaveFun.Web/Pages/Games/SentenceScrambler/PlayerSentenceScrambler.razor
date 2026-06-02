@@ -27,15 +27,13 @@
     {
         <PlayerGameBoard Title="Sentence Scrambler Game"
                          Rules="Rule: rearrange the available words to make a correct sentence."
+                         RoundId="@CurrentRound?.Id"
                          AvailableTiles="@(PlayerRoundState?.AvailableTiles ?? [])"
                          SelectedTiles="@(PlayerRoundState?.SelectedTiles ?? [])"
                          IsSubmitted="@(PlayerRoundState?.IsSubmitted == true)"
-                         SubmittedText="@PlayerRoundState?.SubmittedSentence"
                          SpentTime="@PlayerRoundState?.SpentTime"
                          RemainingTimeText="@RemainingTimeText"
                          CanSubmit="@CanSubmit"
-                         OnSelectItem="SelectWord"
-                         OnReturnItem="ReturnWord"
                          OnSubmit="SubmitRound" />
     }
 </MudStack>

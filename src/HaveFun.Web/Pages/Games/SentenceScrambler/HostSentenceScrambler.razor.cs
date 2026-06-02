@@ -11,7 +11,7 @@ public partial class HostSentenceScrambler : ComponentBase, IAsyncDisposable
     private bool IsSessionChecked { get; set; }
     private string? ErrorMessage { get; set; }
     private string? FileLoadError { get; set; }
-    private IReadOnlyList<SentenceFileOption> SentenceFiles { get; set; } = [];
+    private IReadOnlyList<GameFilePathOption> SentenceFiles { get; set; } = [];
     private IReadOnlyList<string> SentenceLines { get; set; } = [];
     private string? SelectedFileName { get; set; }
     private int TimeLimitInSeconds { get; set; } = 30;
@@ -62,7 +62,7 @@ public partial class HostSentenceScrambler : ComponentBase, IAsyncDisposable
     private IPlayerRegistryService PlayerRegistry { get; set; } = default!;
 
     [Inject]
-    private ISentenceFileService SentenceFileService { get; set; } = default!;
+    private SentenceScramblerFileService SentenceFileService { get; set; } = default!;
 
     [Inject]
     private IGameStateService GameState { get; set; } = default!;
@@ -140,7 +140,7 @@ public partial class HostSentenceScrambler : ComponentBase, IAsyncDisposable
         try
         {
             var nextSentenceIndex = CurrentSentenceIndex + 1;
-            var sentence = new SentenceDefinition
+            var sentence = new TextDefinition
             {
                 Text = SentenceLines[nextSentenceIndex],
                 TimeLimitInSeconds = TimeLimitInSeconds
@@ -150,7 +150,7 @@ public partial class HostSentenceScrambler : ComponentBase, IAsyncDisposable
                 .ToArray();
 
             CurrentSentenceIndex = nextSentenceIndex;
-            CurrentRound = GameState.StartRound(sentence, expectedPlayerNames);
+            CurrentRound = GameState.StartRound(sentence, expectedPlayerNames, CreateWordTiles, CalculateCorrectness);
             FileLoadError = null;
             RefreshPlayerResults();
             StartTimerIfRoundIsActive();
@@ -181,8 +181,8 @@ public partial class HostSentenceScrambler : ComponentBase, IAsyncDisposable
     {
         try
         {
-            SentenceFiles = SentenceFileService.GetSentenceFiles();
-            SelectedFileName = SentenceFiles.FirstOrDefault()?.FileName;
+            SentenceFiles = SentenceFileService.GetGameFilePathes();
+            SelectedFileName = SentenceFiles.FirstOrDefault()?.FilePath;
             LoadSelectedSentenceLines();
             FileLoadError = null;
         }
@@ -205,7 +205,7 @@ public partial class HostSentenceScrambler : ComponentBase, IAsyncDisposable
 
         try
         {
-            SentenceLines = SentenceFileService.LoadSentenceLines(SelectedFileName);
+            SentenceLines = SentenceFileService.LoadLines(SelectedFileName);
             FileLoadError = null;
         }
         catch (InvalidOperationException exception)
@@ -242,8 +242,7 @@ public partial class HostSentenceScrambler : ComponentBase, IAsyncDisposable
                 {
                     PlayerName = player.DisplayName,
                     TimeBeforeSubmit = result is null ? null : TimeSpan.FromSeconds(CurrentRound?.TimeLimitInSeconds ?? 0) - result.SpentTime,
-                    SubmittedSentence = result?.SubmittedSentence,
-                    SubmittedWords = BuildSubmittedWords(result?.SubmittedSentence, CurrentRound?.OriginalSentences),
+                    SubmittedWords = BuildSubmittedWords(result?.SelectedTiles, CurrentRound?.OriginalSentences),
                     Score = result?.CorrectnessCount,
                     TotalScore = result?.TotalSentenceCount,
                     AggregateScore = totalScore?.Score,
@@ -265,14 +264,14 @@ public partial class HostSentenceScrambler : ComponentBase, IAsyncDisposable
         var rankedResults = GameState.GetSubmittedPlayerRoundStates()
             .Where(playerRoundState =>
                 playerRoundState.RoundId == currentRound.Id &&
-                playerRoundState.SubmittedSentence is not null &&
+                playerRoundState.SelectedTiles.Count > 0 &&
                 playerRoundState.SpentTime is not null &&
                 playerRoundState.SubmittedAt is not null)
             .Select(playerRoundState => new
             {
                 playerRoundState.PlayerName,
-                SubmittedSentence = playerRoundState.SubmittedSentence!,
-                CorrectnessCount = CalculateCorrectness(currentRound.OriginalSentences, playerRoundState.SubmittedSentence!),
+                playerRoundState.SelectedTiles,
+                CorrectnessCount = CalculateCorrectness(currentRound.OriginalSentences, playerRoundState.SelectedTiles),
                 TotalSentenceCount = currentRound.OriginalSentences.Count,
                 SpentTime = playerRoundState.SpentTime!.Value,
                 SubmittedAt = playerRoundState.SubmittedAt!.Value
@@ -284,7 +283,7 @@ public partial class HostSentenceScrambler : ComponentBase, IAsyncDisposable
             {
                 Rank = index + 1,
                 PlayerName = playerResult.PlayerName,
-                SubmittedSentence = playerResult.SubmittedSentence,
+                SelectedTiles = playerResult.SelectedTiles,
                 CorrectnessCount = playerResult.CorrectnessCount,
                 TotalSentenceCount = playerResult.TotalSentenceCount,
                 SpentTime = playerResult.SpentTime,
@@ -428,6 +427,17 @@ public partial class HostSentenceScrambler : ComponentBase, IAsyncDisposable
         return score is null || totalScore is null ? string.Empty : $"{score} / {totalScore}";
     }
 
+    private static IReadOnlyList<Tile> CreateWordTiles(CurrentRound round)
+    {
+        return round.ShuffledSentences
+            .Select(sentence => new Tile
+            {
+                Id = Guid.NewGuid(),
+                Text = sentence
+            })
+            .ToArray();
+    }
+
     private static string GetSubmittedWordStyle(bool isCorrect)
     {
         return isCorrect
@@ -436,15 +446,15 @@ public partial class HostSentenceScrambler : ComponentBase, IAsyncDisposable
     }
 
     private static IReadOnlyList<SubmittedWordPart> BuildSubmittedWords(
-        string? submittedSentence,
+        IReadOnlyList<Tile>? submittedTiles,
         IReadOnlyList<string>? correctWords)
     {
-        if (string.IsNullOrWhiteSpace(submittedSentence))
+        if (submittedTiles is null || submittedTiles.Count == 0)
         {
             return [];
         }
 
-        var submittedWords = SplitWords(submittedSentence);
+        var submittedWords = submittedTiles.Select(tile => tile.Text).ToArray();
         correctWords ??= [];
 
         return submittedWords
@@ -456,10 +466,15 @@ public partial class HostSentenceScrambler : ComponentBase, IAsyncDisposable
             .ToArray();
     }
 
-    private static int CalculateCorrectness(IReadOnlyList<string> correctWords, string submittedSentence)
+    private static int CalculateCorrectness(CurrentRound round, IReadOnlyList<Tile> selectedTiles)
     {
-        var submittedWords = SplitWords(submittedSentence);
-        var comparedWordCount = Math.Min(correctWords.Count, submittedWords.Count);
+        return CalculateCorrectness(round.OriginalSentences, selectedTiles);
+    }
+
+    private static int CalculateCorrectness(IReadOnlyList<string> correctWords, IReadOnlyList<Tile> selectedTiles)
+    {
+        var submittedWords = selectedTiles.Select(tile => tile.Text).ToArray();
+        var comparedWordCount = Math.Min(correctWords.Count, submittedWords.Length);
         var correctnessCount = 0;
 
         for (var index = 0; index < comparedWordCount; index++)
@@ -473,13 +488,6 @@ public partial class HostSentenceScrambler : ComponentBase, IAsyncDisposable
         return correctnessCount;
     }
 
-    private static IReadOnlyList<string> SplitWords(string sentence)
-    {
-        return sentence
-            .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .ToArray();
-    }
-
     private sealed record HostPlayerResultRow
     {
         public required string PlayerName { get; init; }
@@ -487,8 +495,6 @@ public partial class HostSentenceScrambler : ComponentBase, IAsyncDisposable
         public TimeSpan? TimeBeforeSubmit { get; init; }
 
         public double TimeBeforeSubmitSeconds => TimeBeforeSubmit?.TotalSeconds ?? -1;
-
-        public string? SubmittedSentence { get; init; }
 
         public IReadOnlyList<SubmittedWordPart> SubmittedWords { get; init; } = [];
 

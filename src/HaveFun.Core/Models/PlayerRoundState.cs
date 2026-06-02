@@ -12,13 +12,7 @@ public sealed record PlayerRoundState
 
     public bool IsSubmitted { get; init; }
 
-    public string? SubmittedSentence { get; init; }
-
     public DateTimeOffset? SubmittedAt { get; init; }
 
     public TimeSpan? SpentTime { get; init; }
-
-    public string CollectedSentence => string.Join(' ', SelectedTiles.Select(tile => tile.Text));
-
-    public bool CanSubmit => !IsSubmitted && SelectedTiles.Count > 0;
 }

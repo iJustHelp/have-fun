@@ -1,3 +1,0 @@
-one two three
-The quick brown fox jumps over the lazy dog
-Friends play games together on the same local network

@@ -4,10 +4,9 @@ using MudBlazor;
 
 namespace HaveFun.Web;
 
-public partial class PlayerSentenceScrambler : ComponentBase, IAsyncDisposable
+public partial class PlayerSpellingBee : ComponentBase, IAsyncDisposable
 {
     private CancellationTokenSource? _timerCancellation;
-
     private Task? _timerTask;
 
     private bool IsSessionChecked { get; set; }
@@ -25,7 +24,7 @@ public partial class PlayerSentenceScrambler : ComponentBase, IAsyncDisposable
     private TimeSpan RemainingTime { get; set; }
 
     private string RemainingTimeText => $"{(int)RemainingTime.TotalMinutes:00}:{RemainingTime.Seconds:00}";
-    private bool CanSubmit => CurrentRound?.Status == RoundStatus.Started && PlayerRoundState?.CanSubmit == true;
+    private bool CanSubmit => CurrentRound?.Status == RoundStatus.Started && PlayerRoundState?.IsSubmitted != true;
 
     [Inject]
     private NavigationManager NavigationManager { get; set; } = default!;
@@ -50,7 +49,7 @@ public partial class PlayerSentenceScrambler : ComponentBase, IAsyncDisposable
 
         if (currentUser?.Role == Role.Host)
         {
-            NavigationManager.NavigateTo("/host-sentence-scrambler", replace: true);
+            NavigationManager.NavigateTo("/host-spelling-bee", replace: true);
             return;
         }
 
@@ -113,34 +112,15 @@ public partial class PlayerSentenceScrambler : ComponentBase, IAsyncDisposable
         });
     }
 
-    private void SelectWord(Guid wordId)
+    private async Task SubmitRound(IReadOnlyList<Tile> selectedTiles)
     {
         if (PlayerName is null || CurrentRound?.Status != RoundStatus.Started)
         {
             return;
         }
 
-        PlayerRoundState = GameState.SelectWord(PlayerName, wordId);
-    }
-
-    private void ReturnWord(Guid wordId)
-    {
-        if (PlayerName is null || CurrentRound?.Status != RoundStatus.Started)
-        {
-            return;
-        }
-
-        PlayerRoundState = GameState.ReturnWord(PlayerName, wordId);
-    }
-
-    private async Task SubmitRound()
-    {
-        if (PlayerName is null || CurrentRound?.Status != RoundStatus.Started)
-        {
-            return;
-        }
-
-        PlayerRoundState = GameState.SubmitPlayerRound(PlayerName);
+        PlayerRoundState = GameState.SubmitPlayerRound(PlayerName, selectedTiles);
+        await Task.CompletedTask;
     }
 
     private void StartTimerIfRoundIsActive()

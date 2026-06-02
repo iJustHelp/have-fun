@@ -8,7 +8,11 @@ public interface IGameStateService
 
     CurrentRound? CurrentRound { get; }
 
-    CurrentRound StartRound(SentenceDefinition sentence, IReadOnlyList<string> expectedPlayerNames);
+    CurrentRound StartRound(
+        TextDefinition sentence,
+        IReadOnlyList<string> expectedPlayerNames,
+        Func<CurrentRound, IReadOnlyList<Tile>> createAvailableTiles,
+        Func<CurrentRound, IReadOnlyList<Tile>, int> calculateScore);
 
     CurrentRound? CompleteCurrentRound();
 
@@ -16,11 +20,7 @@ public interface IGameStateService
 
     PlayerRoundState? GetOrCreatePlayerRoundState(string playerName);
 
-    PlayerRoundState? SelectWord(string playerName, Guid wordId);
-
-    PlayerRoundState? ReturnWord(string playerName, Guid wordId);
-
-    PlayerRoundState? SubmitPlayerRound(string playerName);
+    PlayerRoundState? SubmitPlayerRound(string playerName, IReadOnlyList<Tile> selectedTiles);
 
     IReadOnlyList<PlayerRoundState> GetSubmittedPlayerRoundStates();
 

@@ -14,12 +14,14 @@ var sentenceScramblerOptions = new SentenceScramblerOptions
     SentenceScramblerPath = builder.Configuration["Game:SentenceScramblerPath"]
         ?? Path.Combine("assets", "sentence-scrambler")
 };
-var sentenceScramblerPath = Path.IsPathRooted(sentenceScramblerOptions.SentenceScramblerPath)
-    ? sentenceScramblerOptions.SentenceScramblerPath
-    : Path.Combine(builder.Environment.ContentRootPath, sentenceScramblerOptions.SentenceScramblerPath);
+var sentenceScramblerPath = ResolveContentPath(builder, sentenceScramblerOptions.SentenceScramblerPath);
+var spellingBeePath = ResolveContentPath(
+    builder,
+    builder.Configuration["Game:SpellingBeePath"] ?? Path.Combine("assets", "spelling-bee"));
 
 builder.Services.AddSingleton(sentenceScramblerOptions);
-builder.Services.AddSingleton<ISentenceFileService>(_ => new SentenceFileService(sentenceScramblerPath));
+builder.Services.AddSingleton(_ => new SentenceScramblerFileService(sentenceScramblerPath));
+builder.Services.AddSingleton(_ => new SpellingBeeFileService(spellingBeePath));
 
 builder.Services.AddCoreServices();
 
@@ -42,3 +44,10 @@ app.MapRazorComponents<HaveFun.Web.App>()
     .AddInteractiveServerRenderMode();
 
 app.Run();
+
+static string ResolveContentPath(WebApplicationBuilder builder, string path)
+{
+    return Path.IsPathRooted(path)
+        ? path
+        : Path.Combine(builder.Environment.ContentRootPath, path);
+}
