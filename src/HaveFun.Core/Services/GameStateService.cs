@@ -2,6 +2,7 @@ namespace HaveFun.Core;
 
 public class GameStateService : IGameStateService
 {
+    private const int FirstSubmittedPlayerBonus = 1;
     private readonly object _syncRoot = new();
     private readonly Dictionary<PlayerRoundKey, PlayerRoundState> _playerRoundStates = [];
     private readonly Dictionary<string, PlayerTotalScore> _playerTotalScores = new(StringComparer.OrdinalIgnoreCase);
@@ -343,13 +344,35 @@ public class GameStateService : IGameStateService
             return;
         }
 
-        var submittedScores = _playerRoundStates.Values
+        var submittedPlayerRoundStates = _playerRoundStates.Values
             .Where(playerRoundState =>
                 playerRoundState.RoundId == round.Id &&
                 playerRoundState.IsSubmitted)
+            .ToArray();
+        var roundTotalScore = _createAvailableTiles(round).Count;
+        var firstSubmittedPlayer = submittedPlayerRoundStates
+            .Select(playerRoundState => new
+            {
+                playerRoundState.PlayerName,
+                playerRoundState.SubmittedAt,
+                Score = _calculateScore(round, playerRoundState.SelectedTiles)
+            })
+            .Where(playerRoundState => playerRoundState.SubmittedAt is not null)
+            .OrderBy(playerRoundState => playerRoundState.SubmittedAt)
+            .ThenBy(playerRoundState => playerRoundState.PlayerName, StringComparer.Ordinal)
+            .FirstOrDefault();
+        var isFirstSubmittedPlayerCorrect = firstSubmittedPlayer?.Score == roundTotalScore;
+        var firstSubmittedPlayerName = isFirstSubmittedPlayerCorrect
+            ? firstSubmittedPlayer?.PlayerName
+            : null;
+        var submittedScores = submittedPlayerRoundStates
             .ToDictionary(
                 playerRoundState => playerRoundState.PlayerName,
-                playerRoundState => _calculateScore(round, playerRoundState.SelectedTiles),
+                playerRoundState => _calculateScore(round, playerRoundState.SelectedTiles) +
+                    (isFirstSubmittedPlayerCorrect &&
+                    string.Equals(playerRoundState.PlayerName, firstSubmittedPlayerName, StringComparison.OrdinalIgnoreCase)
+                        ? FirstSubmittedPlayerBonus
+                        : 0),
                 StringComparer.OrdinalIgnoreCase);
 
         var playerNames = round.ExpectedPlayerNames
@@ -366,7 +389,7 @@ public class GameStateService : IGameStateService
             {
                 PlayerName = playerName,
                 Score = (existingScore?.Score ?? 0) + score,
-                TotalScore = (existingScore?.TotalScore ?? 0) + round.OriginalSentences.Count
+                TotalScore = (existingScore?.TotalScore ?? 0) + roundTotalScore
             };
         }
     }

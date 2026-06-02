@@ -241,7 +241,7 @@ public partial class HostSpellingBee : ComponentBase, IAsyncDisposable
                 return new HostPlayerResultRow
                 {
                     PlayerName = player.DisplayName,
-                    TimeBeforeSubmit = result is null ? null : TimeSpan.FromSeconds(CurrentRound?.TimeLimitInSeconds ?? 0) - result.SpentTime,
+                    SubmitTime = result?.SpentTime,
                     SubmittedLetters = BuildSubmittedLetters(result?.SelectedTiles, CurrentRound?.SentenceText),
                     Score = result?.CorrectnessCount,
                     TotalScore = result?.TotalSentenceCount,
@@ -261,20 +261,49 @@ public partial class HostSpellingBee : ComponentBase, IAsyncDisposable
             return null;
         }
 
-        var rankedResults = GameStateService.GetSubmittedPlayerRoundStates()
+        var submittedPlayerRoundStates = GameStateService.GetSubmittedPlayerRoundStates()
             .Where(playerRoundState =>
                 playerRoundState.RoundId == currentRound.Id &&
                 playerRoundState.SelectedTiles.Count > 0 &&
                 playerRoundState.SpentTime is not null &&
                 playerRoundState.SubmittedAt is not null)
+            .ToArray();
+        var totalLetterCount = GetLetters(currentRound.SentenceText).Count;
+        var firstSubmittedPlayer = submittedPlayerRoundStates
+            .Select(playerRoundState => new
+            {
+                playerRoundState.PlayerName,
+                playerRoundState.SubmittedAt,
+                BaseCorrectnessCount = CalculateCorrectness(currentRound, playerRoundState.SelectedTiles)
+            })
+            .OrderBy(playerRoundState => playerRoundState.SubmittedAt)
+            .ThenBy(playerRoundState => playerRoundState.PlayerName, StringComparer.Ordinal)
+            .FirstOrDefault();
+        var isFirstSubmittedPlayerCorrect = firstSubmittedPlayer?.BaseCorrectnessCount == totalLetterCount;
+        var firstSubmittedPlayerName = isFirstSubmittedPlayerCorrect
+            ? firstSubmittedPlayer?.PlayerName
+            : null;
+        var rankedResults = submittedPlayerRoundStates
             .Select(playerRoundState => new
             {
                 playerRoundState.PlayerName,
                 playerRoundState.SelectedTiles,
-                CorrectnessCount = CalculateCorrectness(currentRound, playerRoundState.SelectedTiles),
-                TotalLetterCount = GetLetters(currentRound.SentenceText).Count,
+                BaseCorrectnessCount = CalculateCorrectness(currentRound, playerRoundState.SelectedTiles),
                 SpentTime = playerRoundState.SpentTime!.Value,
                 SubmittedAt = playerRoundState.SubmittedAt!.Value
+            })
+            .Select(playerResult => new
+            {
+                playerResult.PlayerName,
+                playerResult.SelectedTiles,
+                CorrectnessCount = playerResult.BaseCorrectnessCount +
+                    (isFirstSubmittedPlayerCorrect &&
+                        string.Equals(playerResult.PlayerName, firstSubmittedPlayerName, StringComparison.OrdinalIgnoreCase)
+                            ? 1
+                            : 0),
+                TotalLetterCount = totalLetterCount,
+                playerResult.SpentTime,
+                playerResult.SubmittedAt
             })
             .OrderByDescending(playerResult => playerResult.CorrectnessCount)
             .ThenBy(playerResult => playerResult.SpentTime)
@@ -448,14 +477,14 @@ public partial class HostSpellingBee : ComponentBase, IAsyncDisposable
         return correctnessCount;
     }
 
-    private static string FormatTimeBeforeSubmit(TimeSpan? timeBeforeSubmit)
+    private static string FormatSubmitTime(TimeSpan? submitTime)
     {
-        if (timeBeforeSubmit is null)
+        if (submitTime is null)
         {
             return string.Empty;
         }
 
-        var value = timeBeforeSubmit.Value <= TimeSpan.Zero ? TimeSpan.Zero : timeBeforeSubmit.Value;
+        var value = submitTime.Value <= TimeSpan.Zero ? TimeSpan.Zero : submitTime.Value;
         return $"{(int)value.TotalMinutes:00}:{value.Seconds:00}";
     }
 
@@ -504,9 +533,9 @@ public partial class HostSpellingBee : ComponentBase, IAsyncDisposable
     {
         public required string PlayerName { get; init; }
 
-        public TimeSpan? TimeBeforeSubmit { get; init; }
+        public TimeSpan? SubmitTime { get; init; }
 
-        public double TimeBeforeSubmitSeconds => TimeBeforeSubmit?.TotalSeconds ?? -1;
+        public double SubmitTimeSeconds => SubmitTime?.TotalSeconds ?? -1;
 
         public IReadOnlyList<SubmittedLetterPart> SubmittedLetters { get; init; } = [];
 

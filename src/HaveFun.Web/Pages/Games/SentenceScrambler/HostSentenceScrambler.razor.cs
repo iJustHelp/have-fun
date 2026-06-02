@@ -241,7 +241,7 @@ public partial class HostSentenceScrambler : ComponentBase, IAsyncDisposable
                 return new HostPlayerResultRow
                 {
                     PlayerName = player.DisplayName,
-                    TimeBeforeSubmit = result is null ? null : TimeSpan.FromSeconds(CurrentRound?.TimeLimitInSeconds ?? 0) - result.SpentTime,
+                    SubmitTime = result?.SpentTime,
                     SubmittedWords = BuildSubmittedWords(result?.SelectedTiles, CurrentRound?.OriginalSentences),
                     Score = result?.CorrectnessCount,
                     TotalScore = result?.TotalSentenceCount,
@@ -261,20 +261,48 @@ public partial class HostSentenceScrambler : ComponentBase, IAsyncDisposable
             return null;
         }
 
-        var rankedResults = GameState.GetSubmittedPlayerRoundStates()
+        var submittedPlayerRoundStates = GameState.GetSubmittedPlayerRoundStates()
             .Where(playerRoundState =>
                 playerRoundState.RoundId == currentRound.Id &&
                 playerRoundState.SelectedTiles.Count > 0 &&
                 playerRoundState.SpentTime is not null &&
                 playerRoundState.SubmittedAt is not null)
+            .ToArray();
+        var firstSubmittedPlayer = submittedPlayerRoundStates
+            .Select(playerRoundState => new
+            {
+                playerRoundState.PlayerName,
+                playerRoundState.SubmittedAt,
+                BaseCorrectnessCount = CalculateCorrectness(currentRound.OriginalSentences, playerRoundState.SelectedTiles)
+            })
+            .OrderBy(playerRoundState => playerRoundState.SubmittedAt)
+            .ThenBy(playerRoundState => playerRoundState.PlayerName, StringComparer.Ordinal)
+            .FirstOrDefault();
+        var isFirstSubmittedPlayerCorrect = firstSubmittedPlayer?.BaseCorrectnessCount == currentRound.OriginalSentences.Count;
+        var firstSubmittedPlayerName = isFirstSubmittedPlayerCorrect
+            ? firstSubmittedPlayer?.PlayerName
+            : null;
+        var rankedResults = submittedPlayerRoundStates
             .Select(playerRoundState => new
             {
                 playerRoundState.PlayerName,
                 playerRoundState.SelectedTiles,
-                CorrectnessCount = CalculateCorrectness(currentRound.OriginalSentences, playerRoundState.SelectedTiles),
-                TotalSentenceCount = currentRound.OriginalSentences.Count,
+                BaseCorrectnessCount = CalculateCorrectness(currentRound.OriginalSentences, playerRoundState.SelectedTiles),
                 SpentTime = playerRoundState.SpentTime!.Value,
                 SubmittedAt = playerRoundState.SubmittedAt!.Value
+            })
+            .Select(playerResult => new
+            {
+                playerResult.PlayerName,
+                playerResult.SelectedTiles,
+                CorrectnessCount = playerResult.BaseCorrectnessCount +
+                    (isFirstSubmittedPlayerCorrect &&
+                        string.Equals(playerResult.PlayerName, firstSubmittedPlayerName, StringComparison.OrdinalIgnoreCase)
+                            ? 1
+                            : 0),
+                TotalSentenceCount = currentRound.OriginalSentences.Count,
+                playerResult.SpentTime,
+                playerResult.SubmittedAt
             })
             .OrderByDescending(playerResult => playerResult.CorrectnessCount)
             .ThenBy(playerResult => playerResult.SpentTime)
@@ -411,14 +439,14 @@ public partial class HostSentenceScrambler : ComponentBase, IAsyncDisposable
         RemainingTime = remaining <= TimeSpan.Zero ? TimeSpan.Zero : remaining;
     }
 
-    private static string FormatTimeBeforeSubmit(TimeSpan? timeBeforeSubmit)
+    private static string FormatSubmitTime(TimeSpan? submitTime)
     {
-        if (timeBeforeSubmit is null)
+        if (submitTime is null)
         {
             return string.Empty;
         }
 
-        var value = timeBeforeSubmit.Value <= TimeSpan.Zero ? TimeSpan.Zero : timeBeforeSubmit.Value;
+        var value = submitTime.Value <= TimeSpan.Zero ? TimeSpan.Zero : submitTime.Value;
         return $"{(int)value.TotalMinutes:00}:{value.Seconds:00}";
     }
 
@@ -492,9 +520,9 @@ public partial class HostSentenceScrambler : ComponentBase, IAsyncDisposable
     {
         public required string PlayerName { get; init; }
 
-        public TimeSpan? TimeBeforeSubmit { get; init; }
+        public TimeSpan? SubmitTime { get; init; }
 
-        public double TimeBeforeSubmitSeconds => TimeBeforeSubmit?.TotalSeconds ?? -1;
+        public double SubmitTimeSeconds => SubmitTime?.TotalSeconds ?? -1;
 
         public IReadOnlyList<SubmittedWordPart> SubmittedWords { get; init; } = [];
 

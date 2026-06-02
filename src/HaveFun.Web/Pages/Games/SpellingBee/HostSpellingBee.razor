@@ -132,8 +132,8 @@ else
                                 </MudTableSortLabel>
                             </MudTh>
                             <MudTh>
-                                <MudTableSortLabel T="HostPlayerResultRow" SortBy="@(row => row.TimeBeforeSubmitSeconds)">
-                                    Time before submit
+                                <MudTableSortLabel T="HostPlayerResultRow" SortBy="@(row => row.SubmitTimeSeconds)">
+                                    Submit time
                                 </MudTableSortLabel>
                             </MudTh>
                             @if (CurrentRound?.IsCompleted == true)
@@ -153,7 +153,7 @@ else
                         </HeaderContent>
                         <RowTemplate>
                             <MudTd DataLabel="Player">@context.PlayerName</MudTd>
-                            <MudTd DataLabel="Time before submit">@FormatTimeBeforeSubmit(context.TimeBeforeSubmit)</MudTd>
+                            <MudTd DataLabel="Submit time">@FormatSubmitTime(context.SubmitTime)</MudTd>
                             @if (CurrentRound?.IsCompleted == true)
                             {
                                 <MudTd DataLabel="Submitted word">
