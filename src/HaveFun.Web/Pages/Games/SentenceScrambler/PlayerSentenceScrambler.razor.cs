@@ -40,7 +40,7 @@ public partial class PlayerSentenceScrambler : ComponentBase, IAsyncDisposable
     private SentenceScramblerGameStateService GameStateService { get; set; } = default!;
 
     [Inject]
-    private SpellingBeeGameStateService SpellingBeeGameStateService { get; set; } = default!;
+    private WordScramblerGameStateService WordScramblerGameStateService { get; set; } = default!;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -82,7 +82,7 @@ public partial class PlayerSentenceScrambler : ComponentBase, IAsyncDisposable
         RefreshPlayerRoundState();
         PlayerRegistryService.PlayerRemoved += HandlePlayerRemoved;
         GameStateService.CurrentRoundChanged += HandleCurrentRoundChanged;
-        SpellingBeeGameStateService.CurrentRoundChanged += HandleSpellingBeeRoundChanged;
+        WordScramblerGameStateService.CurrentRoundChanged += HandleWordScramblerRoundChanged;
         StartTimerIfRoundIsActive();
         IsSessionChecked = true;
         StateHasChanged();
@@ -92,7 +92,7 @@ public partial class PlayerSentenceScrambler : ComponentBase, IAsyncDisposable
     {
         PlayerRegistryService.PlayerRemoved -= HandlePlayerRemoved;
         GameStateService.CurrentRoundChanged -= HandleCurrentRoundChanged;
-        SpellingBeeGameStateService.CurrentRoundChanged -= HandleSpellingBeeRoundChanged;
+        WordScramblerGameStateService.CurrentRoundChanged -= HandleWordScramblerRoundChanged;
         StopTimer();
         await ValueTask.CompletedTask;
     }
@@ -118,14 +118,14 @@ public partial class PlayerSentenceScrambler : ComponentBase, IAsyncDisposable
         });
     }
 
-    private void HandleSpellingBeeRoundChanged(CurrentRound round)
+    private void HandleWordScramblerRoundChanged(CurrentRound round)
     {
         if (round.Status != RoundStatus.Started)
         {
             return;
         }
 
-        _ = InvokeAsync(() => NavigationManager.NavigateTo("/player-spelling-bee", replace: true));
+        _ = InvokeAsync(() => NavigationManager.NavigateTo("/player-word-scrambler", replace: true));
     }
 
     private async Task SubmitRound(IReadOnlyList<Tile> selectedTiles)

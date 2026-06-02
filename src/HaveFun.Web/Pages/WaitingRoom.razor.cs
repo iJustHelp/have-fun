@@ -24,7 +24,7 @@ public partial class WaitingRoom : ComponentBase, IAsyncDisposable
     private SentenceScramblerGameStateService SentenceScramblerGameState { get; set; } = default!;
 
     [Inject]
-    private SpellingBeeGameStateService SpellingBeeGameState { get; set; } = default!;
+    private WordScramblerGameStateService WordScramblerGameState { get; set; } = default!;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -59,7 +59,7 @@ public partial class WaitingRoom : ComponentBase, IAsyncDisposable
         PlayerName = registeredPlayer.DisplayName;
         PlayerRegistry.PlayerRemoved += HandlePlayerRemoved;
         SentenceScramblerGameState.CurrentRoundChanged += HandleSentenceScramblerRoundChanged;
-        SpellingBeeGameState.CurrentRoundChanged += HandleSpellingBeeRoundChanged;
+        WordScramblerGameState.CurrentRoundChanged += HandleWordScramblerRoundChanged;
         IsSessionChecked = true;
         StateHasChanged();
     }
@@ -68,7 +68,7 @@ public partial class WaitingRoom : ComponentBase, IAsyncDisposable
     {
         PlayerRegistry.PlayerRemoved -= HandlePlayerRemoved;
         SentenceScramblerGameState.CurrentRoundChanged -= HandleSentenceScramblerRoundChanged;
-        SpellingBeeGameState.CurrentRoundChanged -= HandleSpellingBeeRoundChanged;
+        WordScramblerGameState.CurrentRoundChanged -= HandleWordScramblerRoundChanged;
         await ValueTask.CompletedTask;
     }
 
@@ -87,9 +87,9 @@ public partial class WaitingRoom : ComponentBase, IAsyncDisposable
         HandleRoundChanged(round, "/player-sentence-scrambler");
     }
 
-    private void HandleSpellingBeeRoundChanged(CurrentRound round)
+    private void HandleWordScramblerRoundChanged(CurrentRound round)
     {
-        HandleRoundChanged(round, "/player-spelling-bee");
+        HandleRoundChanged(round, "/player-word-scrambler");
     }
 
     private void HandleRoundChanged(CurrentRound round, string path)
@@ -119,8 +119,8 @@ public partial class WaitingRoom : ComponentBase, IAsyncDisposable
             },
             new
             {
-                Round = SpellingBeeGameState.CurrentRound,
-                Path = "/player-spelling-bee"
+                Round = WordScramblerGameState.CurrentRound,
+                Path = "/player-word-scrambler"
             }
         };
 

@@ -4,7 +4,7 @@ using MudBlazor;
 
 namespace HaveFun.Web;
 
-public partial class PlayerSpellingBee : ComponentBase, IAsyncDisposable
+public partial class PlayerWordScrambler : ComponentBase, IAsyncDisposable
 {
     private CancellationTokenSource? _timerCancellation;
     private Task? _timerTask;
@@ -36,7 +36,7 @@ public partial class PlayerSpellingBee : ComponentBase, IAsyncDisposable
     private ISessionStorageService UserSessionStorageService { get; set; } = default!;
 
     [Inject]
-    private SpellingBeeGameStateService GameState { get; set; } = default!;
+    private WordScramblerGameStateService GameState { get; set; } = default!;
 
     [Inject]
     private SentenceScramblerGameStateService SentenceScramblerGameState { get; set; } = default!;
@@ -52,7 +52,7 @@ public partial class PlayerSpellingBee : ComponentBase, IAsyncDisposable
 
         if (currentUser?.Role == Role.Host)
         {
-            NavigationManager.NavigateTo("/host-spelling-bee", replace: true);
+            NavigationManager.NavigateTo("/host-word-scrambler", replace: true);
             return;
         }
 

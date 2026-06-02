@@ -4,7 +4,7 @@ using MudBlazor;
 
 namespace HaveFun.Web;
 
-public partial class HostSpellingBee : ComponentBase, IAsyncDisposable
+public partial class HostWordScrambler : ComponentBase, IAsyncDisposable
 {
     private CancellationTokenSource? _timerCancellation;
     private Task? _timerTask;
@@ -62,10 +62,10 @@ public partial class HostSpellingBee : ComponentBase, IAsyncDisposable
     private IPlayerRegistryService PlayerRegistryService { get; set; } = default!;
 
     [Inject]
-    private SpellingBeeFileService WordFileService { get; set; } = default!;
+    private WordScramblerFileService WordFileService { get; set; } = default!;
 
     [Inject]
-    private SpellingBeeGameStateService GameStateService { get; set; } = default!;
+    private WordScramblerGameStateService GameStateService { get; set; } = default!;
 
     [Inject]
     private ISessionStorageService SessionStorageService { get; set; } = default!;
@@ -92,7 +92,7 @@ public partial class HostSpellingBee : ComponentBase, IAsyncDisposable
 
         if (currentUser?.Role != Role.Host)
         {
-            ErrorMessage = "Open the host Home page before using Host Spelling Bee.";
+            ErrorMessage = "Open the host Home page before using Host Word Scrambler.";
         }
 
         IsSessionChecked = true;

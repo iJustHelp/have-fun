@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace HaveFun.Core;
 
@@ -9,7 +9,7 @@ public static class ServicesExtension
         services.AddSingleton<IPlayerRegistryService, PlayerRegistryService>();
         // Each game needs an isolated singleton because game state is mutable and in-memory.
         services.AddSingleton<SentenceScramblerGameStateService>();
-        services.AddSingleton<SpellingBeeGameStateService>();
+        services.AddSingleton<WordScramblerGameStateService>();
         services.AddSingleton<IUrlService, UrlService>();
         services.AddSingleton<IQrCodeService, QrCodeService>();
         services.AddScoped<ISessionStorageService, SessionStorageService>();
