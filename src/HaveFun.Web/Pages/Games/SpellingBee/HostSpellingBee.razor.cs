@@ -65,7 +65,7 @@ public partial class HostSpellingBee : ComponentBase, IAsyncDisposable
     private SpellingBeeFileService WordFileService { get; set; } = default!;
 
     [Inject]
-    private IGameStateService GameStateService { get; set; } = default!;
+    private SpellingBeeGameStateService GameStateService { get; set; } = default!;
 
     [Inject]
     private ISessionStorageService SessionStorageService { get; set; } = default!;

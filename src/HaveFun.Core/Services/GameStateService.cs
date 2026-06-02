@@ -1,6 +1,6 @@
 namespace HaveFun.Core;
 
-public sealed class GameStateService : IGameStateService
+public class GameStateService : IGameStateService
 {
     private readonly object _syncRoot = new();
     private readonly Dictionary<PlayerRoundKey, PlayerRoundState> _playerRoundStates = [];

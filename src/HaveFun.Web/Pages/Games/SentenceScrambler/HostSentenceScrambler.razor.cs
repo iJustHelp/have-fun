@@ -65,7 +65,7 @@ public partial class HostSentenceScrambler : ComponentBase, IAsyncDisposable
     private SentenceScramblerFileService SentenceFileService { get; set; } = default!;
 
     [Inject]
-    private IGameStateService GameState { get; set; } = default!;
+    private SentenceScramblerGameStateService GameState { get; set; } = default!;
 
     [Inject]
     private ISessionStorageService SessionStorageService { get; set; } = default!;

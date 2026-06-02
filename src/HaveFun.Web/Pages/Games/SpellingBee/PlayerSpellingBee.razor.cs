@@ -36,7 +36,10 @@ public partial class PlayerSpellingBee : ComponentBase, IAsyncDisposable
     private ISessionStorageService UserSessionStorageService { get; set; } = default!;
 
     [Inject]
-    private IGameStateService GameState { get; set; } = default!;
+    private SpellingBeeGameStateService GameState { get; set; } = default!;
+
+    [Inject]
+    private SentenceScramblerGameStateService SentenceScramblerGameState { get; set; } = default!;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -78,6 +81,7 @@ public partial class PlayerSpellingBee : ComponentBase, IAsyncDisposable
         RefreshPlayerRoundState();
         PlayerRegistry.PlayerRemoved += HandlePlayerRemoved;
         GameState.CurrentRoundChanged += HandleCurrentRoundChanged;
+        SentenceScramblerGameState.CurrentRoundChanged += HandleSentenceScramblerRoundChanged;
         StartTimerIfRoundIsActive();
         IsSessionChecked = true;
         StateHasChanged();
@@ -87,6 +91,7 @@ public partial class PlayerSpellingBee : ComponentBase, IAsyncDisposable
     {
         PlayerRegistry.PlayerRemoved -= HandlePlayerRemoved;
         GameState.CurrentRoundChanged -= HandleCurrentRoundChanged;
+        SentenceScramblerGameState.CurrentRoundChanged -= HandleSentenceScramblerRoundChanged;
         StopTimer();
         await ValueTask.CompletedTask;
     }
@@ -110,6 +115,16 @@ public partial class PlayerSpellingBee : ComponentBase, IAsyncDisposable
             StartTimerIfRoundIsActive();
             StateHasChanged();
         });
+    }
+
+    private void HandleSentenceScramblerRoundChanged(CurrentRound round)
+    {
+        if (round.Status != RoundStatus.Started)
+        {
+            return;
+        }
+
+        _ = InvokeAsync(() => NavigationManager.NavigateTo("/player-sentence-scrambler", replace: true));
     }
 
     private async Task SubmitRound(IReadOnlyList<Tile> selectedTiles)

@@ -21,7 +21,10 @@ public partial class WaitingRoom : ComponentBase, IAsyncDisposable
     private ISessionStorageService UserSessionStorageService { get; set; } = default!;
 
     [Inject]
-    private IGameStateService GameState { get; set; } = default!;
+    private SentenceScramblerGameStateService SentenceScramblerGameState { get; set; } = default!;
+
+    [Inject]
+    private SpellingBeeGameStateService SpellingBeeGameState { get; set; } = default!;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -44,16 +47,19 @@ public partial class WaitingRoom : ComponentBase, IAsyncDisposable
             return;
         }
 
-        if (GameState.CurrentRound?.Status == RoundStatus.Started)
+        var activeGamePath = GetActiveGamePath();
+
+        if (activeGamePath is not null)
         {
-            NavigationManager.NavigateTo("/player-sentence-scrambler", replace: true);
+            NavigationManager.NavigateTo(activeGamePath, replace: true);
             return;
         }
 
         DisplayName = registeredPlayer.DisplayName;
         PlayerName = registeredPlayer.DisplayName;
         PlayerRegistry.PlayerRemoved += HandlePlayerRemoved;
-        GameState.CurrentRoundChanged += HandleCurrentRoundChanged;
+        SentenceScramblerGameState.CurrentRoundChanged += HandleSentenceScramblerRoundChanged;
+        SpellingBeeGameState.CurrentRoundChanged += HandleSpellingBeeRoundChanged;
         IsSessionChecked = true;
         StateHasChanged();
     }
@@ -61,7 +67,8 @@ public partial class WaitingRoom : ComponentBase, IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         PlayerRegistry.PlayerRemoved -= HandlePlayerRemoved;
-        GameState.CurrentRoundChanged -= HandleCurrentRoundChanged;
+        SentenceScramblerGameState.CurrentRoundChanged -= HandleSentenceScramblerRoundChanged;
+        SpellingBeeGameState.CurrentRoundChanged -= HandleSpellingBeeRoundChanged;
         await ValueTask.CompletedTask;
     }
 
@@ -75,9 +82,24 @@ public partial class WaitingRoom : ComponentBase, IAsyncDisposable
         _ = InvokeAsync(RedirectToRegisterAsync);
     }
 
-    private void HandleCurrentRoundChanged(CurrentRound round)
+    private void HandleSentenceScramblerRoundChanged(CurrentRound round)
     {
-        _ = InvokeAsync(() => NavigationManager.NavigateTo("/player-sentence-scrambler", replace: true));
+        HandleRoundChanged(round, "/player-sentence-scrambler");
+    }
+
+    private void HandleSpellingBeeRoundChanged(CurrentRound round)
+    {
+        HandleRoundChanged(round, "/player-spelling-bee");
+    }
+
+    private void HandleRoundChanged(CurrentRound round, string path)
+    {
+        if (round.Status != RoundStatus.Started)
+        {
+            return;
+        }
+
+        _ = InvokeAsync(() => NavigationManager.NavigateTo(path, replace: true));
     }
 
     private async Task RedirectToRegisterAsync()
@@ -85,4 +107,28 @@ public partial class WaitingRoom : ComponentBase, IAsyncDisposable
         await UserSessionStorageService.ClearCurrentUserAsync();
         NavigationManager.NavigateTo("/register", replace: true);
     }
+
+    private string? GetActiveGamePath()
+    {
+        var activeGames = new[]
+        {
+            new
+            {
+                Round = SentenceScramblerGameState.CurrentRound,
+                Path = "/player-sentence-scrambler"
+            },
+            new
+            {
+                Round = SpellingBeeGameState.CurrentRound,
+                Path = "/player-spelling-bee"
+            }
+        };
+
+        return activeGames
+            .Where(game => game.Round?.Status == RoundStatus.Started)
+            .OrderByDescending(game => game.Round!.StartedAt)
+            .Select(game => game.Path)
+            .FirstOrDefault();
+    }
+
 }
