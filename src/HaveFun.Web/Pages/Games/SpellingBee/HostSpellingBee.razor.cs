@@ -225,6 +225,12 @@ public partial class HostSpellingBee : ComponentBase, IAsyncDisposable
         Players = PlayerRegistryService.GetPlayers();
     }
 
+    private void ResetScores()
+    {
+        GameStateService.ResetTotalScores();
+        RefreshPlayerResults();
+    }
+
     private void RefreshPlayerResults()
     {
         var roundResults = GetCurrentRoundResults();

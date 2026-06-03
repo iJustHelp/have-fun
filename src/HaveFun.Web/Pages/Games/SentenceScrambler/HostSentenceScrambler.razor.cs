@@ -225,6 +225,12 @@ public partial class HostSentenceScrambler : ComponentBase, IAsyncDisposable
         Players = PlayerRegistry.GetPlayers();
     }
 
+    private void ResetScores()
+    {
+        GameState.ResetTotalScores();
+        RefreshPlayerResults();
+    }
+
     private void RefreshPlayerResults()
     {
         var roundResults = GetCurrentRoundResults();

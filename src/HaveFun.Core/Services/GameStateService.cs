@@ -250,6 +250,26 @@ public class GameStateService : IGameStateService
         }
     }
 
+    public void ResetTotalScores()
+    {
+        lock (_syncRoot)
+        {
+            var playerNames = _playerTotalScores.Keys.ToArray();
+
+            _playerTotalScores.Clear();
+
+            foreach (var playerName in playerNames)
+            {
+                _playerTotalScores[playerName] = new PlayerTotalScore
+                {
+                    PlayerName = playerName,
+                    Score = 0,
+                    TotalScore = 0
+                };
+            }
+        }
+    }
+
     private static IReadOnlyList<string> SplitSentences(string sentenceText)
     {
         return sentenceText

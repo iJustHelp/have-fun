@@ -25,4 +25,6 @@ public interface IGameStateService
     IReadOnlyList<PlayerRoundState> GetSubmittedPlayerRoundStates();
 
     IReadOnlyList<PlayerTotalScore> GetPlayerTotalScores();
+
+    void ResetTotalScores();
 }
