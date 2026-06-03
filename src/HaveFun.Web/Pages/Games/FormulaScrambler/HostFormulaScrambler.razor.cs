@@ -480,6 +480,8 @@ public partial class HostFormulaScrambler : ComponentBase, IAsyncDisposable
             return [];
         }
 
+        var submittedFormula = FormulaScramblerService.JoinTiles(submittedTiles);
+        var isSubmittedFormulaCorrect = FormulaScramblerService.IsMathematicallyCorrect(submittedFormula);
         var submittedCharacters = submittedTiles.Select(tile => tile.Text).ToArray();
         var correctCharacters = correctFormula is null
             ? []
@@ -489,7 +491,8 @@ public partial class HostFormulaScrambler : ComponentBase, IAsyncDisposable
             .Select((character, index) => new SubmittedFormulaCharacterPart
             {
                 Text = character,
-                IsCorrect = index < correctCharacters.Length && character == correctCharacters[index]
+                IsCorrect = isSubmittedFormulaCorrect ||
+                    index < correctCharacters.Length && character == correctCharacters[index]
             })
             .ToArray();
     }
@@ -514,7 +517,7 @@ public partial class HostFormulaScrambler : ComponentBase, IAsyncDisposable
 
         public int? AggregateTotalScore { get; init; }
 
-        public double AggregateScoreSortValue => CalculateScoreSortValue(AggregateScore, AggregateTotalScore);
+        public double AggregateScoreSortValue => AggregateScore ?? -1;
 
         private static double CalculateScoreSortValue(int? score, int? totalScore)
         {

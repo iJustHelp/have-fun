@@ -166,7 +166,7 @@ else
                                 </MudTd>
                             }
                             <MudTd DataLabel="Score">@FormatScore(context.Score, context.TotalScore)</MudTd>
-                            <MudTd DataLabel="Total Score">@FormatScore(context.AggregateScore, context.AggregateTotalScore)</MudTd>
+                            <MudTd DataLabel="Total Score">@context.AggregateScore</MudTd>
                         </RowTemplate>
                     </MudTable>
                 }

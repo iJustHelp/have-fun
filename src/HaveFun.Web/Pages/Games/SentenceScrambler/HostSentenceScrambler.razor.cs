@@ -536,7 +536,7 @@ public partial class HostSentenceScrambler : ComponentBase, IAsyncDisposable
 
         public int? AggregateTotalScore { get; init; }
 
-        public double AggregateScoreSortValue => CalculateScoreSortValue(AggregateScore, AggregateTotalScore);
+        public double AggregateScoreSortValue => AggregateScore ?? -1;
 
         private static double CalculateScoreSortValue(int? score, int? totalScore)
         {

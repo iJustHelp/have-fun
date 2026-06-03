@@ -54,7 +54,7 @@ public sealed class FormulaScramblerService
         }
 
         return IsMathematicallyCorrect(normalizedSubmittedFormula)
-            ? normalizedSourceFormula.Length
+            ? normalizedSubmittedFormula.Length
             : CountPositionMatches(normalizedSourceFormula, normalizedSubmittedFormula);
     }
 
