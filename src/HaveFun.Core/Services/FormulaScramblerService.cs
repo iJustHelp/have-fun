@@ -55,7 +55,7 @@ public sealed class FormulaScramblerService
 
         return IsMathematicallyCorrect(normalizedSubmittedFormula)
             ? CountNumbers(normalizedSubmittedFormula)
-            : CountPositionMatches(normalizedSourceFormula, normalizedSubmittedFormula);
+            : 0;
     }
 
     public int GetTotalScore(string sourceFormula)
@@ -68,25 +68,6 @@ public sealed class FormulaScramblerService
         return string.Concat(tiles.Select(tile => tile.Text));
     }
 
-    public int CountPositionMatches(string sourceFormula, string submittedFormula)
-    {
-        var normalizedSourceFormula = NormalizeFormula(sourceFormula);
-        var normalizedSubmittedFormula = NormalizeFormula(submittedFormula);
-        var comparedCharacterCount = Math.Min(normalizedSourceFormula.Length, normalizedSubmittedFormula.Length);
-        var score = 0;
-
-        for (var index = 0; index < comparedCharacterCount; index++)
-        {
-            if (char.IsDigit(normalizedSourceFormula[index]) &&
-                normalizedSubmittedFormula[index] == normalizedSourceFormula[index])
-            {
-                score++;
-            }
-        }
-
-        return score;
-    }
-
     public int CountNumbers(string formula)
     {
         return NormalizeFormula(formula).Count(char.IsDigit);
@@ -96,8 +77,7 @@ public sealed class FormulaScramblerService
     {
         var normalizedFormula = NormalizeFormula(formula);
 
-        if (normalizedFormula.Length == 0 ||
-            normalizedFormula.Count(character => character == '=') != 1)
+        if (!HasEquationAndNumbers(normalizedFormula))
         {
             return false;
         }
@@ -127,6 +107,17 @@ public sealed class FormulaScramblerService
     private static bool IsSupportedCharacter(char character)
     {
         return char.IsDigit(character) || SupportedOperatorCharacters.Contains(character);
+    }
+
+    private static bool HasEquationAndNumbers(string formula)
+    {
+        if (formula.Length == 0 || formula.Count(character => character == '=') != 1)
+        {
+            return false;
+        }
+
+        var equationSides = formula.Split('=');
+        return equationSides[0].Any(char.IsDigit) && equationSides[1].Any(char.IsDigit);
     }
 
     private static bool TryEvaluateExpression(string expression, out double value)
