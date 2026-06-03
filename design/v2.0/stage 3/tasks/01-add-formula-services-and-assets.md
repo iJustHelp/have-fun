@@ -20,7 +20,7 @@ Add the Formula Scrambler service registrations, configuration path, and starter
 - The web app can resolve `FormulaScramblerGameStateService` and `FormulaScramblerFileService` from DI.
 - Formula Scrambler has its own isolated in-memory game state.
 - Formula files are loaded from `Game:FormulaScramblerPath`.
-- Existing Sentence Scrambler and Spelling Bee service registrations still work.
+- Existing Sentence Scrambler and Word Scrambler service registrations still work.
 
 ## Verification
 

@@ -2,7 +2,7 @@
 
 ## Summary
 
-Refactor the current Sentence Scrambler game flow so tile selection is explicitly game-service owned and reusable for future tile-based games. Stage 2 does not add Spelling Bee or any other new game. `PlayerGameBoard` remains based on `PlayerRoundState` and continues to render available/selected tiles through page-provided state and callbacks.
+Refactor the current Sentence Scrambler game flow so tile selection is explicitly game-service owned and reusable for future tile-based games. Stage 2 does not add Word Scrambler or any other new game. `PlayerGameBoard` remains based on `PlayerRoundState` and continues to render available/selected tiles through page-provided state and callbacks.
 
 ## Key Changes
 
@@ -38,7 +38,7 @@ Refactor the current Sentence Scrambler game flow so tile selection is explicitl
 
 ## Out of Scope
 
-- Do not add Spelling Bee in Stage 2.
+- Do not add Word Scrambler in Stage 2.
 - Do not add a game selector.
 - Do not add new routes for other games.
 - Do not move tile selection state into pages.
@@ -58,7 +58,7 @@ Refactor the current Sentence Scrambler game flow so tile selection is explicitl
 
 ## Assumptions
 
-- “Spelling Bee” is only an example of a future tile-based game.
+- “Word Scrambler” is only an example of a future tile-based game.
 - `Tile.Text` is sufficient for current Stage 2 needs.
 - Stage 2 is an internal service refactor plus behavior preservation stage.
 - Future stages can add game-specific pages and result grids on top of this service boundary.

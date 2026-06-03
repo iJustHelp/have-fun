@@ -1,8 +1,8 @@
-@page "/host-spelling-bee"
+@page "/host-word-scrambler"
 @using HaveFun.Core
 @namespace HaveFun.Web
 
-<PageTitle>Host Spelling Bee</PageTitle>
+<PageTitle>Host Word Scrambler</PageTitle>
 
 @if (!IsSessionChecked)
 {
@@ -27,7 +27,7 @@ else
     <MudStack Spacing="4">
         <MudPaper Class="pa-6" Elevation="0" Outlined="true">
             <MudStack Spacing="2">
-                <MudText Typo="Typo.h5">Spelling Bee Game</MudText>
+                <MudText Typo="Typo.h5">Word Scrambler Game</MudText>
                 <MudText Typo="Typo.subtitle1" Color="Color.Secondary">
                     Rule: select a file with words, set timeout, start each word, and players arrange the shuffled letters into the correct word.
                 </MudText>

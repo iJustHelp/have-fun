@@ -42,7 +42,7 @@ public partial class PlayerFormulaScrambler : ComponentBase, IAsyncDisposable
     private SentenceScramblerGameStateService SentenceScramblerGameState { get; set; } = default!;
 
     [Inject]
-    private SpellingBeeGameStateService SpellingBeeGameState { get; set; } = default!;
+    private WordScramblerGameStateService WordScramblerGameState { get; set; } = default!;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -85,7 +85,7 @@ public partial class PlayerFormulaScrambler : ComponentBase, IAsyncDisposable
         PlayerRegistry.PlayerRemoved += HandlePlayerRemoved;
         GameState.CurrentRoundChanged += HandleCurrentRoundChanged;
         SentenceScramblerGameState.CurrentRoundChanged += HandleSentenceScramblerRoundChanged;
-        SpellingBeeGameState.CurrentRoundChanged += HandleSpellingBeeRoundChanged;
+        WordScramblerGameState.CurrentRoundChanged += HandleWordScramblerRoundChanged;
         StartTimerIfRoundIsActive();
         IsSessionChecked = true;
         StateHasChanged();
@@ -96,7 +96,7 @@ public partial class PlayerFormulaScrambler : ComponentBase, IAsyncDisposable
         PlayerRegistry.PlayerRemoved -= HandlePlayerRemoved;
         GameState.CurrentRoundChanged -= HandleCurrentRoundChanged;
         SentenceScramblerGameState.CurrentRoundChanged -= HandleSentenceScramblerRoundChanged;
-        SpellingBeeGameState.CurrentRoundChanged -= HandleSpellingBeeRoundChanged;
+        WordScramblerGameState.CurrentRoundChanged -= HandleWordScramblerRoundChanged;
         StopTimer();
         await ValueTask.CompletedTask;
     }
@@ -132,14 +132,14 @@ public partial class PlayerFormulaScrambler : ComponentBase, IAsyncDisposable
         _ = InvokeAsync(() => NavigationManager.NavigateTo("/player-sentence-scrambler", replace: true));
     }
 
-    private void HandleSpellingBeeRoundChanged(CurrentRound round)
+    private void HandleWordScramblerRoundChanged(CurrentRound round)
     {
         if (round.Status != RoundStatus.Started)
         {
             return;
         }
 
-        _ = InvokeAsync(() => NavigationManager.NavigateTo("/player-spelling-bee", replace: true));
+        _ = InvokeAsync(() => NavigationManager.NavigateTo("/player-word-scrambler", replace: true));
     }
 
     private async Task SubmitRound(IReadOnlyList<Tile> selectedTiles)

@@ -14,7 +14,7 @@ Add Formula Scrambler as a third tile-based game using the existing host/player 
   - Each non-empty line is one formula round, for example `(1+3)/2=2`.
 - Add host/player pages:
   - Routes: `/host-formula-scrambler` and `/player-formula-scrambler`.
-  - Host flow matches Spelling Bee: select file, set timeout, start/stop each formula, show players, submit time, submitted formula, round score, and total score.
+  - Host flow matches Word Scrambler: select file, set timeout, start/stop each formula, show players, submit time, submitted formula, round score, and total score.
   - Player flow uses `PlayerGameBoard` with character tiles and no separator.
   - Add Formula Scrambler to the host nav menu.
 - Extend player routing:
@@ -54,9 +54,9 @@ Add Formula Scrambler as a third tile-based game using the existing host/player 
 - Verify correct equivalent submissions pass, for example `2=(1+3)/2` for source `(1+3)/2=2`.
 - Verify incorrect submissions receive position-match partial score.
 - Verify invalid formulas, missing `=`, multiple `=`, unsupported characters, and division by zero score as incorrect.
-- Verify Sentence Scrambler and Spelling Bee still start independently and route players correctly.
+- Verify Sentence Scrambler and Word Scrambler still start independently and route players correctly.
 
 ## Assumptions
-- This stage is additive: do not rename or remove existing Sentence Scrambler or Spelling Bee behavior.
+- This stage is additive: do not rename or remove existing Sentence Scrambler or Word Scrambler behavior.
 - Formula files are plain text, one formula per line, matching the current file-service style.
 - Numeric comparison can use a small tolerance for division results to avoid floating-point precision surprises.

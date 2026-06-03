@@ -17,7 +17,7 @@ Connect Formula Scrambler to host navigation and player waiting-room routing.
 
 - Host users can navigate to Formula Scrambler from the menu.
 - Registered waiting players route to the correct player page when Formula Scrambler starts.
-- Formula Scrambler does not overwrite Sentence Scrambler or Spelling Bee state.
+- Formula Scrambler does not overwrite Sentence Scrambler or Word Scrambler state.
 - Starting any one game routes players to that game's page.
 
 ## Verification
@@ -25,4 +25,4 @@ Connect Formula Scrambler to host navigation and player waiting-room routing.
 - Run `dotnet build .\HaveFun.sln --no-restore` from `src`.
 - Register a player, leave them in the waiting room, and start a Formula Scrambler round.
 - Confirm the player is routed to `/player-formula-scrambler`.
-- Confirm Sentence Scrambler and Spelling Bee routing still work.
+- Confirm Sentence Scrambler and Word Scrambler routing still work.

@@ -1,8 +1,8 @@
-@page "/player-spelling-bee"
+@page "/player-word-scrambler"
 @layout RegisterLayout
 @namespace HaveFun.Web
 
-<PageTitle>Player Spelling Bee</PageTitle>
+<PageTitle>Player Word Scrambler</PageTitle>
 
 <MudStack Spacing="4" Class="pa-4">
     @if (!IsSessionChecked)
@@ -25,7 +25,7 @@
     }
     else if (CurrentRound is not null)
     {
-        <PlayerGameBoard Title="Spelling Bee Game"
+        <PlayerGameBoard Title="Word Scrambler Game"
                          Rules="Rule: arrange the available letters to spell the correct word."
                          RoundId="@CurrentRound?.Id"
                          AvailableTiles="@(PlayerRoundState?.AvailableTiles ?? [])"

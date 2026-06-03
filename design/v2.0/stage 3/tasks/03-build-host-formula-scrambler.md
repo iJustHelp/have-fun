@@ -7,7 +7,7 @@ Add the host page for running Formula Scrambler rounds.
 ## Work
 
 - Add a host page at `/host-formula-scrambler`.
-- Use the existing Spelling Bee host flow as the behavior pattern.
+- Use the existing Word Scrambler host flow as the behavior pattern.
 - Inject `FormulaScramblerFileService` and `FormulaScramblerGameStateService`.
 - Let the host select a formula file, set timeout, start each formula, stop an active formula, and advance through the selected file.
 - Start rounds using character tiles from the selected formula.

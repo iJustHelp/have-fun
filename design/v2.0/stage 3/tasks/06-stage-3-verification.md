@@ -15,7 +15,7 @@ Verify the complete Formula Scrambler flow and regress the existing games.
 - Verify mathematical-equivalence scoring.
 - Verify incorrect formulas receive position-match partial scores.
 - Verify invalid formulas are handled as incorrect without crashing.
-- Verify Sentence Scrambler and Spelling Bee still work independently.
+- Verify Sentence Scrambler and Word Scrambler still work independently.
 
 ## Done Criteria
 

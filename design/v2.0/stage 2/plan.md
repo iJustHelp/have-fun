@@ -40,7 +40,7 @@ Refactor tile selection so `PlayerGameBoard` owns the player's local draft tile 
   - Player page `CanSubmit` means "round is active and not submitted," not `PlayerRoundState.CanSubmit`.
   - Player page submit handlers accept `IReadOnlyList<Tile> selectedTiles` and call `SubmitPlayerRound(PlayerName, selectedTiles)`.
   - Host pages build current-round result rows from submitted `SelectedTiles`, not `SubmittedSentence`.
-  - Sentence Scrambler scoring joins selected tile text as words; Spelling Bee scoring joins selected tile text as letters.
+  - Sentence Scrambler scoring joins selected tile text as words; Word Scrambler scoring joins selected tile text as letters.
 
 - Update architecture documentation:
   - Show tile selection as local to `PlayerGameBoard`.
@@ -52,12 +52,12 @@ Refactor tile selection so `PlayerGameBoard` owns the player's local draft tile 
 
 - Run `dotnet build .\HaveFun.sln --no-restore` from `src`.
 - Verify Sentence Scrambler player can select tiles, return tiles, and submit.
-- Verify Spelling Bee player can select letter tiles, return letters, and submit.
+- Verify Word Scrambler player can select letter tiles, return letters, and submit.
 - Verify submit stays disabled until at least one tile is selected.
 - Verify submitted alert shows text derived from selected tiles and spent time.
 - Verify host result grids update after submit, not during draft tile movement.
 - Verify all-player submission completion still completes the active round.
-- Verify Sentence Scrambler and Spelling Bee host flows still start rounds and create correct initial tiles.
+- Verify Sentence Scrambler and Word Scrambler host flows still start rounds and create correct initial tiles.
 
 ## Assumptions
 

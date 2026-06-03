@@ -9,7 +9,7 @@ public static class ServicesExtension
         services.AddSingleton<IPlayerRegistryService, PlayerRegistryService>();
         // Each game needs an isolated singleton because game state is mutable and in-memory.
         services.AddSingleton<SentenceScramblerGameStateService>();
-        services.AddSingleton<SpellingBeeGameStateService>();
+        services.AddSingleton<WordScramblerGameStateService>();
         services.AddSingleton<FormulaScramblerGameStateService>();
         services.AddSingleton<FormulaScramblerService>();
         services.AddSingleton<IUrlService, UrlService>();

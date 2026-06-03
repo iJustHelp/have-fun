@@ -1,11 +1,11 @@
-# Spelling Bee game
+# Word Scrambler game
 
-implement Spelling Bee game
+implement Word Scrambler game
 
-- Create HostSpellingBee.razor and add it to menu
-- create PlayerSpellingBee.razor
+- Create HostWordScrambler.razor and add it to menu
+- create PlayerWordScrambler.razor
 
 Do not add new entities. 
 - Word in game should be the same as sentence
 - Tile in PlayerGameBoard should be letter
-- Result for each player is calculated in HostSpellingBee page.
+- Result for each player is calculated in HostWordScrambler page.
