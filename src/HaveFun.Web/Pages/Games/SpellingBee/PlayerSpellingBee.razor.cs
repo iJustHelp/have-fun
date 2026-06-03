@@ -41,6 +41,9 @@ public partial class PlayerSpellingBee : ComponentBase, IAsyncDisposable
     [Inject]
     private SentenceScramblerGameStateService SentenceScramblerGameState { get; set; } = default!;
 
+    [Inject]
+    private FormulaScramblerGameStateService FormulaScramblerGameState { get; set; } = default!;
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender)
@@ -82,6 +85,7 @@ public partial class PlayerSpellingBee : ComponentBase, IAsyncDisposable
         PlayerRegistry.PlayerRemoved += HandlePlayerRemoved;
         GameState.CurrentRoundChanged += HandleCurrentRoundChanged;
         SentenceScramblerGameState.CurrentRoundChanged += HandleSentenceScramblerRoundChanged;
+        FormulaScramblerGameState.CurrentRoundChanged += HandleFormulaScramblerRoundChanged;
         StartTimerIfRoundIsActive();
         IsSessionChecked = true;
         StateHasChanged();
@@ -92,6 +96,7 @@ public partial class PlayerSpellingBee : ComponentBase, IAsyncDisposable
         PlayerRegistry.PlayerRemoved -= HandlePlayerRemoved;
         GameState.CurrentRoundChanged -= HandleCurrentRoundChanged;
         SentenceScramblerGameState.CurrentRoundChanged -= HandleSentenceScramblerRoundChanged;
+        FormulaScramblerGameState.CurrentRoundChanged -= HandleFormulaScramblerRoundChanged;
         StopTimer();
         await ValueTask.CompletedTask;
     }
@@ -125,6 +130,16 @@ public partial class PlayerSpellingBee : ComponentBase, IAsyncDisposable
         }
 
         _ = InvokeAsync(() => NavigationManager.NavigateTo("/player-sentence-scrambler", replace: true));
+    }
+
+    private void HandleFormulaScramblerRoundChanged(CurrentRound round)
+    {
+        if (round.Status != RoundStatus.Started)
+        {
+            return;
+        }
+
+        _ = InvokeAsync(() => NavigationManager.NavigateTo("/player-formula-scrambler", replace: true));
     }
 
     private async Task SubmitRound(IReadOnlyList<Tile> selectedTiles)

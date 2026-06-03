@@ -4,10 +4,9 @@ using MudBlazor;
 
 namespace HaveFun.Web;
 
-public partial class PlayerSentenceScrambler : ComponentBase, IAsyncDisposable
+public partial class PlayerFormulaScrambler : ComponentBase, IAsyncDisposable
 {
     private CancellationTokenSource? _timerCancellation;
-
     private Task? _timerTask;
 
     private bool IsSessionChecked { get; set; }
@@ -31,19 +30,19 @@ public partial class PlayerSentenceScrambler : ComponentBase, IAsyncDisposable
     private NavigationManager NavigationManager { get; set; } = default!;
 
     [Inject]
-    private IPlayerRegistryService PlayerRegistryService { get; set; } = default!;
+    private IPlayerRegistryService PlayerRegistry { get; set; } = default!;
 
     [Inject]
     private ISessionStorageService UserSessionStorageService { get; set; } = default!;
 
     [Inject]
-    private SentenceScramblerGameStateService GameStateService { get; set; } = default!;
+    private FormulaScramblerGameStateService GameState { get; set; } = default!;
 
     [Inject]
-    private SpellingBeeGameStateService SpellingBeeGameStateService { get; set; } = default!;
+    private SentenceScramblerGameStateService SentenceScramblerGameState { get; set; } = default!;
 
     [Inject]
-    private FormulaScramblerGameStateService FormulaScramblerGameStateService { get; set; } = default!;
+    private SpellingBeeGameStateService SpellingBeeGameState { get; set; } = default!;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -56,7 +55,7 @@ public partial class PlayerSentenceScrambler : ComponentBase, IAsyncDisposable
 
         if (currentUser?.Role == Role.Host)
         {
-            NavigationManager.NavigateTo("/host-sentence-scrambler", replace: true);
+            NavigationManager.NavigateTo("/host-formula-scrambler", replace: true);
             return;
         }
 
@@ -66,13 +65,13 @@ public partial class PlayerSentenceScrambler : ComponentBase, IAsyncDisposable
             return;
         }
 
-        if (!PlayerRegistryService.TryGetPlayerByName(currentUser.Name, out var registeredPlayer) || registeredPlayer is null)
+        if (!PlayerRegistry.TryGetPlayerByName(currentUser.Name, out var registeredPlayer) || registeredPlayer is null)
         {
             await RedirectToRegisterAsync();
             return;
         }
 
-        CurrentRound = GameStateService.CurrentRound;
+        CurrentRound = GameState.CurrentRound;
 
         if (CurrentRound?.Status != RoundStatus.Started)
         {
@@ -83,10 +82,10 @@ public partial class PlayerSentenceScrambler : ComponentBase, IAsyncDisposable
         DisplayName = registeredPlayer.DisplayName;
         PlayerName = registeredPlayer.DisplayName;
         RefreshPlayerRoundState();
-        PlayerRegistryService.PlayerRemoved += HandlePlayerRemoved;
-        GameStateService.CurrentRoundChanged += HandleCurrentRoundChanged;
-        SpellingBeeGameStateService.CurrentRoundChanged += HandleSpellingBeeRoundChanged;
-        FormulaScramblerGameStateService.CurrentRoundChanged += HandleFormulaScramblerRoundChanged;
+        PlayerRegistry.PlayerRemoved += HandlePlayerRemoved;
+        GameState.CurrentRoundChanged += HandleCurrentRoundChanged;
+        SentenceScramblerGameState.CurrentRoundChanged += HandleSentenceScramblerRoundChanged;
+        SpellingBeeGameState.CurrentRoundChanged += HandleSpellingBeeRoundChanged;
         StartTimerIfRoundIsActive();
         IsSessionChecked = true;
         StateHasChanged();
@@ -94,10 +93,10 @@ public partial class PlayerSentenceScrambler : ComponentBase, IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        PlayerRegistryService.PlayerRemoved -= HandlePlayerRemoved;
-        GameStateService.CurrentRoundChanged -= HandleCurrentRoundChanged;
-        SpellingBeeGameStateService.CurrentRoundChanged -= HandleSpellingBeeRoundChanged;
-        FormulaScramblerGameStateService.CurrentRoundChanged -= HandleFormulaScramblerRoundChanged;
+        PlayerRegistry.PlayerRemoved -= HandlePlayerRemoved;
+        GameState.CurrentRoundChanged -= HandleCurrentRoundChanged;
+        SentenceScramblerGameState.CurrentRoundChanged -= HandleSentenceScramblerRoundChanged;
+        SpellingBeeGameState.CurrentRoundChanged -= HandleSpellingBeeRoundChanged;
         StopTimer();
         await ValueTask.CompletedTask;
     }
@@ -123,6 +122,16 @@ public partial class PlayerSentenceScrambler : ComponentBase, IAsyncDisposable
         });
     }
 
+    private void HandleSentenceScramblerRoundChanged(CurrentRound round)
+    {
+        if (round.Status != RoundStatus.Started)
+        {
+            return;
+        }
+
+        _ = InvokeAsync(() => NavigationManager.NavigateTo("/player-sentence-scrambler", replace: true));
+    }
+
     private void HandleSpellingBeeRoundChanged(CurrentRound round)
     {
         if (round.Status != RoundStatus.Started)
@@ -133,16 +142,6 @@ public partial class PlayerSentenceScrambler : ComponentBase, IAsyncDisposable
         _ = InvokeAsync(() => NavigationManager.NavigateTo("/player-spelling-bee", replace: true));
     }
 
-    private void HandleFormulaScramblerRoundChanged(CurrentRound round)
-    {
-        if (round.Status != RoundStatus.Started)
-        {
-            return;
-        }
-
-        _ = InvokeAsync(() => NavigationManager.NavigateTo("/player-formula-scrambler", replace: true));
-    }
-
     private async Task SubmitRound(IReadOnlyList<Tile> selectedTiles)
     {
         if (PlayerName is null || CurrentRound?.Status != RoundStatus.Started)
@@ -150,7 +149,7 @@ public partial class PlayerSentenceScrambler : ComponentBase, IAsyncDisposable
             return;
         }
 
-        PlayerRoundState = GameStateService.SubmitPlayerRound(PlayerName, selectedTiles);
+        PlayerRoundState = GameState.SubmitPlayerRound(PlayerName, selectedTiles);
         await Task.CompletedTask;
     }
 
@@ -228,7 +227,7 @@ public partial class PlayerSentenceScrambler : ComponentBase, IAsyncDisposable
             return;
         }
 
-        PlayerRoundState = GameStateService.GetOrCreatePlayerRoundState(PlayerName);
+        PlayerRoundState = GameState.GetOrCreatePlayerRoundState(PlayerName);
     }
 
     private async Task RedirectToRegisterAsync()

@@ -26,6 +26,9 @@ public partial class WaitingRoom : ComponentBase, IAsyncDisposable
     [Inject]
     private SpellingBeeGameStateService SpellingBeeGameState { get; set; } = default!;
 
+    [Inject]
+    private FormulaScramblerGameStateService FormulaScramblerGameState { get; set; } = default!;
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender)
@@ -60,6 +63,7 @@ public partial class WaitingRoom : ComponentBase, IAsyncDisposable
         PlayerRegistry.PlayerRemoved += HandlePlayerRemoved;
         SentenceScramblerGameState.CurrentRoundChanged += HandleSentenceScramblerRoundChanged;
         SpellingBeeGameState.CurrentRoundChanged += HandleSpellingBeeRoundChanged;
+        FormulaScramblerGameState.CurrentRoundChanged += HandleFormulaScramblerRoundChanged;
         IsSessionChecked = true;
         StateHasChanged();
     }
@@ -69,6 +73,7 @@ public partial class WaitingRoom : ComponentBase, IAsyncDisposable
         PlayerRegistry.PlayerRemoved -= HandlePlayerRemoved;
         SentenceScramblerGameState.CurrentRoundChanged -= HandleSentenceScramblerRoundChanged;
         SpellingBeeGameState.CurrentRoundChanged -= HandleSpellingBeeRoundChanged;
+        FormulaScramblerGameState.CurrentRoundChanged -= HandleFormulaScramblerRoundChanged;
         await ValueTask.CompletedTask;
     }
 
@@ -90,6 +95,11 @@ public partial class WaitingRoom : ComponentBase, IAsyncDisposable
     private void HandleSpellingBeeRoundChanged(CurrentRound round)
     {
         HandleRoundChanged(round, "/player-spelling-bee");
+    }
+
+    private void HandleFormulaScramblerRoundChanged(CurrentRound round)
+    {
+        HandleRoundChanged(round, "/player-formula-scrambler");
     }
 
     private void HandleRoundChanged(CurrentRound round, string path)
@@ -121,6 +131,11 @@ public partial class WaitingRoom : ComponentBase, IAsyncDisposable
             {
                 Round = SpellingBeeGameState.CurrentRound,
                 Path = "/player-spelling-bee"
+            },
+            new
+            {
+                Round = FormulaScramblerGameState.CurrentRound,
+                Path = "/player-formula-scrambler"
             }
         };
 

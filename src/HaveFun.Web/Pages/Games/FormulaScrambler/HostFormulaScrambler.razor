@@ -1,0 +1,176 @@
+@page "/host-formula-scrambler"
+@using HaveFun.Core
+@namespace HaveFun.Web
+
+<PageTitle>Host Formula Scrambler</PageTitle>
+
+@if (!IsSessionChecked)
+{
+    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
+        Checking role
+    </MudAlert>
+}
+else if (ErrorMessage is not null)
+{
+    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined">
+        @ErrorMessage
+    </MudAlert>
+    <MudButton Href="/"
+               Color="Color.Primary"
+               Variant="Variant.Filled"
+               StartIcon="@Icons.Material.Filled.Home">
+        Home
+    </MudButton>
+}
+else
+{
+    <MudStack Spacing="4">
+        <MudPaper Class="pa-6" Elevation="0" Outlined="true">
+            <MudStack Spacing="2">
+                <MudText Typo="Typo.h5">Formula Scrambler Game</MudText>
+                <MudText Typo="Typo.subtitle1" Color="Color.Secondary">
+                    Rule: select a file with formulas, set timeout, start each formula, and players arrange the shuffled characters into a correct equation.
+                </MudText>
+            </MudStack>
+        </MudPaper>
+
+        @if (FileLoadError is not null)
+        {
+            <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+                @FileLoadError
+            </MudAlert>
+        }
+
+        <MudPaper Class="pa-4" Elevation="0" Outlined="true">
+            <MudGrid Spacing="3">
+                <MudItem xs="12">
+                    <MudSelect T="string"
+                               Label="Select file with formulas"
+                               Variant="Variant.Outlined"
+                               Value="@SelectedFileName"
+                               ValueChanged="SelectFormulaFile"
+                               Disabled="@(FormulaFiles.Count == 0 || IsRoundActive)">
+                        @foreach (var file in FormulaFiles)
+                        {
+                            <MudSelectItem T="string" Value="@file.FilePath">
+                                @file.FilePath
+                            </MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="4">
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+                            Timeout the current formula in seconds
+                        </MudText>
+                        <MudNumericField T="int"
+                                         Variant="Variant.Outlined"
+                                         Min="1"
+                                         @bind-Value="TimeLimitInSeconds"
+                                         Disabled="@IsRoundActive"
+                                         Style="max-width: 4rem;max-height:2rem" />
+                        @if (IsRoundActive)
+                        {
+                            <MudChip T="string"
+                                     Color="Color.Secondary"
+                                     Variant="Variant.Outlined"
+                                     Icon="@Icons.Material.Filled.Timer">
+                                @RemainingTimeText remaining
+                            </MudChip>
+                        }
+                        <MudItem>
+                            <MudText Typo="Typo.body2" Color="Color.Primary">Formula of @(DisplayFormulaNumber) of @(TotalFormulaCount)</MudText>
+                        </MudItem>
+                        <MudButton Color="@RoundActionButtonColor"
+                                   Variant="Variant.Filled"
+                                   StartIcon="@RoundActionButtonIcon"
+                                   Disabled="@IsRoundActionDisabled"
+                                   OnClick="ToggleRound">
+                            @RoundActionButtonText
+                        </MudButton>
+                    </MudStack>
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+
+        @if (CurrentRound?.IsCompleted == true)
+        {
+            <MudAlert Severity="Severity.Success" Variant="Variant.Outlined">
+                <MudText>Correct formula:</MudText>
+                <MudText Typo="Typo.h5" Color="Color.Primary">@CurrentRound.SentenceText</MudText>
+            </MudAlert>
+        }
+
+        <MudPaper Class="pa-4" Elevation="0" Outlined="true">
+            <MudStack Spacing="3">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                    <MudText Typo="Typo.h6">Players</MudText>
+                    <MudChip T="string" Color="Color.Primary" Variant="Variant.Outlined">
+                        @Players.Count player@(Players.Count == 1 ? string.Empty : "s")
+                    </MudChip>
+                </MudStack>
+
+                @if (Players.Count == 0)
+                {
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                        No players have registered yet.
+                    </MudText>
+                }
+                else
+                {
+                    <MudTable T="HostPlayerResultRow"
+                              Items="@PlayerResults"
+                              Dense="true"
+                              Hover="true"
+                              AllowUnsorted="false"
+                              Elevation="0">
+                        <HeaderContent>
+                            <MudTh>
+                                <MudTableSortLabel T="HostPlayerResultRow" SortBy="@(row => row.PlayerName)">
+                                    Player
+                                </MudTableSortLabel>
+                            </MudTh>
+                            <MudTh>
+                                <MudTableSortLabel T="HostPlayerResultRow" SortBy="@(row => row.SubmitTimeSeconds)">
+                                    Submit time
+                                </MudTableSortLabel>
+                            </MudTh>
+                            @if (CurrentRound?.IsCompleted == true)
+                            {
+                                <MudTh>Submitted formula</MudTh>
+                            }
+                            <MudTh>
+                                <MudTableSortLabel T="HostPlayerResultRow" SortBy="@(row => row.ScoreSortValue)">
+                                    Score
+                                </MudTableSortLabel>
+                            </MudTh>
+                            <MudTh>
+                                <MudTableSortLabel T="HostPlayerResultRow" SortBy="@(row => row.AggregateScoreSortValue)">
+                                    Total Score
+                                </MudTableSortLabel>
+                            </MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="Player">@context.PlayerName</MudTd>
+                            <MudTd DataLabel="Submit time">@FormatSubmitTime(context.SubmitTime)</MudTd>
+                            @if (CurrentRound?.IsCompleted == true)
+                            {
+                                <MudTd DataLabel="Submitted formula">
+                                    <MudStack Row="true" Spacing="1" Class="flex-wrap">
+                                        @foreach (var character in context.SubmittedFormulaCharacters)
+                                        {
+                                            <span style="@GetSubmittedCharacterStyle(character.IsCorrect)">@character.Text</span>
+                                        }
+                                    </MudStack>
+                                </MudTd>
+                            }
+                            <MudTd DataLabel="Score">@FormatScore(context.Score, context.TotalScore)</MudTd>
+                            <MudTd DataLabel="Total Score">@FormatScore(context.AggregateScore, context.AggregateTotalScore)</MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                }
+            </MudStack>
+        </MudPaper>
+    </MudStack>
+}

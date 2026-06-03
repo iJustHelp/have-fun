@@ -18,10 +18,14 @@ var sentenceScramblerPath = ResolveContentPath(builder, sentenceScramblerOptions
 var spellingBeePath = ResolveContentPath(
     builder,
     builder.Configuration["Game:SpellingBeePath"] ?? Path.Combine("assets", "spelling-bee"));
+var formulaScramblerPath = ResolveContentPath(
+    builder,
+    builder.Configuration["Game:FormulaScramblerPath"] ?? Path.Combine("assets", "formula-scrambler"));
 
 builder.Services.AddSingleton(sentenceScramblerOptions);
 builder.Services.AddSingleton(_ => new SentenceScramblerFileService(sentenceScramblerPath));
 builder.Services.AddSingleton(_ => new SpellingBeeFileService(spellingBeePath));
+builder.Services.AddSingleton(_ => new FormulaScramblerFileService(formulaScramblerPath));
 
 builder.Services.AddCoreServices();
 
