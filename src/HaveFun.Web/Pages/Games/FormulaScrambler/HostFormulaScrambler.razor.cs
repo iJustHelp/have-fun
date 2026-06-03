@@ -256,7 +256,7 @@ public partial class HostFormulaScrambler : ComponentBase, IAsyncDisposable
                 {
                     PlayerName = player.DisplayName,
                     SubmitTime = result?.SpentTime,
-                    SubmittedFormulaCharacters = BuildSubmittedFormulaCharacters(result?.SelectedTiles, CurrentRound?.SentenceText),
+                    SubmittedFormulaCharacters = BuildSubmittedFormulaCharacters(result?.SelectedTiles, CurrentRound?.Text),
                     Score = result?.CorrectnessCount,
                     TotalScore = result?.TotalSentenceCount,
                     AggregateScore = totalScore?.Score,
@@ -282,7 +282,7 @@ public partial class HostFormulaScrambler : ComponentBase, IAsyncDisposable
                 playerRoundState.SpentTime is not null &&
                 playerRoundState.SubmittedAt is not null)
             .ToArray();
-        var totalFormulaCharacterCount = FormulaScramblerService.GetTotalScore(currentRound.SentenceText);
+        var totalFormulaCharacterCount = FormulaScramblerService.GetTotalScore(currentRound.Text);
         var firstSubmittedPlayer = submittedPlayerRoundStates
             .Select(playerRoundState => new
             {
@@ -337,7 +337,7 @@ public partial class HostFormulaScrambler : ComponentBase, IAsyncDisposable
         return new RoundResults
         {
             RoundId = currentRound.Id,
-            CorrectSentence = currentRound.SentenceText,
+            CorrectSentence = currentRound.Text,
             Results = rankedResults
         };
     }

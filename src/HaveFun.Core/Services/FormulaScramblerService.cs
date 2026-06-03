@@ -7,7 +7,7 @@ public sealed class FormulaScramblerService
 
     public IReadOnlyList<Tile> CreateFormulaTiles(CurrentRound round)
     {
-        return CreateFormulaTiles(round.SentenceText);
+        return CreateFormulaTiles(round.Text);
     }
 
     public IReadOnlyList<Tile> CreateFormulaTiles(string formula)
@@ -40,7 +40,7 @@ public sealed class FormulaScramblerService
 
     public int CalculateScore(CurrentRound round, IReadOnlyList<Tile> selectedTiles)
     {
-        return CalculateScore(round.SentenceText, JoinTiles(selectedTiles));
+        return CalculateScore(round.Text, JoinTiles(selectedTiles));
     }
 
     public int CalculateScore(string sourceFormula, string submittedFormula)
@@ -54,13 +54,13 @@ public sealed class FormulaScramblerService
         }
 
         return IsMathematicallyCorrect(normalizedSubmittedFormula)
-            ? normalizedSubmittedFormula.Length
+            ? CountNumbers(normalizedSubmittedFormula)
             : CountPositionMatches(normalizedSourceFormula, normalizedSubmittedFormula);
     }
 
     public int GetTotalScore(string sourceFormula)
     {
-        return NormalizeFormula(sourceFormula).Length;
+        return CountNumbers(NormalizeFormula(sourceFormula));
     }
 
     public string JoinTiles(IReadOnlyList<Tile> tiles)
@@ -77,13 +77,19 @@ public sealed class FormulaScramblerService
 
         for (var index = 0; index < comparedCharacterCount; index++)
         {
-            if (normalizedSubmittedFormula[index] == normalizedSourceFormula[index])
+            if (char.IsDigit(normalizedSourceFormula[index]) &&
+                normalizedSubmittedFormula[index] == normalizedSourceFormula[index])
             {
                 score++;
             }
         }
 
         return score;
+    }
+
+    public int CountNumbers(string formula)
+    {
+        return NormalizeFormula(formula).Count(char.IsDigit);
     }
 
     public bool IsMathematicallyCorrect(string formula)

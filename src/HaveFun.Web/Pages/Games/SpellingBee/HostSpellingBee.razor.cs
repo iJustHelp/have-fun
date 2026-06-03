@@ -248,7 +248,7 @@ public partial class HostSpellingBee : ComponentBase, IAsyncDisposable
                 {
                     PlayerName = player.DisplayName,
                     SubmitTime = result?.SpentTime,
-                    SubmittedLetters = BuildSubmittedLetters(result?.SelectedTiles, CurrentRound?.SentenceText),
+                    SubmittedLetters = BuildSubmittedLetters(result?.SelectedTiles, CurrentRound?.Text),
                     Score = result?.CorrectnessCount,
                     TotalScore = result?.TotalSentenceCount,
                     AggregateScore = totalScore?.Score,
@@ -274,7 +274,7 @@ public partial class HostSpellingBee : ComponentBase, IAsyncDisposable
                 playerRoundState.SpentTime is not null &&
                 playerRoundState.SubmittedAt is not null)
             .ToArray();
-        var totalLetterCount = GetLetters(currentRound.SentenceText).Count;
+        var totalLetterCount = GetLetters(currentRound.Text).Count;
         var firstSubmittedPlayer = submittedPlayerRoundStates
             .Select(playerRoundState => new
             {
@@ -329,7 +329,7 @@ public partial class HostSpellingBee : ComponentBase, IAsyncDisposable
         return new RoundResults
         {
             RoundId = currentRound.Id,
-            CorrectSentence = currentRound.SentenceText,
+            CorrectSentence = currentRound.Text,
             Results = rankedResults
         };
     }
@@ -448,7 +448,7 @@ public partial class HostSpellingBee : ComponentBase, IAsyncDisposable
 
     private static IReadOnlyList<Tile> CreateLetterTiles(CurrentRound round)
     {
-        var letters = GetLetters(round.SentenceText).ToArray();
+        var letters = GetLetters(round.Text).ToArray();
 
         for (var index = letters.Length - 1; index > 0; index--)
         {
@@ -467,7 +467,7 @@ public partial class HostSpellingBee : ComponentBase, IAsyncDisposable
 
     private static int CalculateCorrectness(CurrentRound round, IReadOnlyList<Tile> selectedTiles)
     {
-        var correctLetters = GetLetters(round.SentenceText);
+        var correctLetters = GetLetters(round.Text);
         var submittedLetters = selectedTiles.Select(tile => tile.Text).ToArray();
         var comparedLetterCount = Math.Min(correctLetters.Count, submittedLetters.Length);
         var correctnessCount = 0;

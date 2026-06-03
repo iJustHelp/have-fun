@@ -4,7 +4,7 @@ public sealed record CurrentRound
 {
     public required Guid Id { get; init; }
 
-    public required string SentenceText { get; init; }
+    public required string Text { get; init; }
 
     public required int TimeLimitInSeconds { get; init; }
 

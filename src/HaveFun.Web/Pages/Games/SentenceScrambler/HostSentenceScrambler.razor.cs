@@ -328,7 +328,7 @@ public partial class HostSentenceScrambler : ComponentBase, IAsyncDisposable
         return new RoundResults
         {
             RoundId = currentRound.Id,
-            CorrectSentence = currentRound.SentenceText,
+            CorrectSentence = currentRound.Text,
             Results = rankedResults
         };
     }

@@ -27,25 +27,25 @@ public class GameStateService : IGameStateService
     }
 
     public CurrentRound StartRound(
-        TextDefinition sentence,
+        TextDefinition textDefinition,
         IReadOnlyList<string> expectedPlayerNames,
         Func<CurrentRound, IReadOnlyList<Tile>> createAvailableTiles,
         Func<CurrentRound, IReadOnlyList<Tile>, int> calculateScore)
     {
-        if (string.IsNullOrWhiteSpace(sentence.Text))
+        if (string.IsNullOrWhiteSpace(textDefinition.Text))
         {
-            throw new ArgumentException("Sentence text is required.", nameof(sentence));
+            throw new ArgumentException("Sentence text is required.", nameof(textDefinition));
         }
 
         ArgumentNullException.ThrowIfNull(createAvailableTiles);
         ArgumentNullException.ThrowIfNull(calculateScore);
 
-        if (sentence.TimeLimitInSeconds <= 0)
+        if (textDefinition.TimeLimitInSeconds <= 0)
         {
-            throw new ArgumentException("Sentence time limit must be greater than zero.", nameof(sentence));
+            throw new ArgumentException("Sentence time limit must be greater than zero.", nameof(textDefinition));
         }
 
-        var originalSentences = SplitSentences(sentence.Text);
+        var originalSentences = SplitSentences(textDefinition.Text);
         var shuffledSentences = ShuffleSentences(originalSentences);
         var normalizedExpectedPlayerNames = expectedPlayerNames
             .Select(NormalizePlayerName)
@@ -55,8 +55,8 @@ public class GameStateService : IGameStateService
         var round = new CurrentRound
         {
             Id = Guid.NewGuid(),
-            SentenceText = sentence.Text,
-            TimeLimitInSeconds = sentence.TimeLimitInSeconds,
+            Text = textDefinition.Text,
+            TimeLimitInSeconds = textDefinition.TimeLimitInSeconds,
             OriginalSentences = originalSentences,
             ShuffledSentences = shuffledSentences,
             ExpectedPlayerNames = normalizedExpectedPlayerNames,
@@ -369,7 +369,7 @@ public class GameStateService : IGameStateService
                 playerRoundState.RoundId == round.Id &&
                 playerRoundState.IsSubmitted)
             .ToArray();
-        var roundTotalScore = _createAvailableTiles(round).Count;
+        var roundTotalScore = CalculateRoundTotalScore(round);
         var firstSubmittedPlayer = submittedPlayerRoundStates
             .Select(playerRoundState => new
             {
@@ -417,6 +417,11 @@ public class GameStateService : IGameStateService
     private static string NormalizePlayerName(string playerName)
     {
         return playerName.Trim();
+    }
+
+    protected virtual int CalculateRoundTotalScore(CurrentRound round)
+    {
+        return _createAvailableTiles(round).Count;
     }
 
     private sealed record PlayerRoundKey(Guid RoundId, string PlayerName);
