@@ -35,9 +35,9 @@ The current browser role is kept in session storage, while game state stays in s
 
 ## Create Dist Folders
 
-Distribution builds are created by the scripts in `scripts`.
+Distribution builds are created by the scripts in `scripts` folder.
 
-To rebuild both packaged folders and zip files on Windows:
+To rebuild both Windows and MacOS packaged folders and zip files on Windows:
 
 ```bat
 scripts\dist.bat
@@ -46,9 +46,9 @@ scripts\dist.bat
 This refreshes:
 
 - `dist-win`
-- `dist-win.zip`
+- `dist-win.zip` - for running on Windows 
 - `dist-macos`
-- `dist-macos.zip`
+- `dist-macos.zip` - for running on MacOS
 
 Each publish writes the runnable app into the matching `dist-*` folder's `app` directory.
 Upload the zip files to the GitHub release.
