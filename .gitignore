@@ -59,11 +59,6 @@ logs/
 *.temp
 *.pid
 
-# Local development secrets
-secrets.json
-appsettings.Local.json
-appsettings.*.Local.json
-
 # OS files
 .DS_Store
 Thumbs.db
@@ -80,3 +75,13 @@ pnpm-debug.log*
 dist/
 vite.config.ts.timestamp-*
 vite.config.js.timestamp-*
+
+# Local workspace/tooling
+.dotnet-home/
+dist-win/
+dist-macos/
+*.zip
+.agents/
+.keys/
+src/.dotnet/
+src/artifacts/
