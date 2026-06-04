@@ -78,8 +78,8 @@ vite.config.js.timestamp-*
 
 # Local workspace/tooling
 .dotnet-home/
-dist-win/
-dist-macos/
+dist-win/app/
+dist-macos/app/
 *.zip
 .agents/
 .keys/
