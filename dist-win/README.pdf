@@ -1,0 +1,124 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [ 6 0 R 8 0 R 10 0 R ] /Count 3 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>
+endobj
+6 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 7 0 R >>
+endobj
+7 0 obj
+<< /Length 2033 >>
+stream
+BT /F2 24 Tf 54 738 Td (Have Fun Host Guide) Tj ET
+BT /F1 12 Tf 54 696 Td (This folder contains the Windows version of Have Fun, a local LAN party-game) Tj ET
+BT /F1 12 Tf 54 680 Td (app.) Tj ET
+BT /F2 16 Tf 54 650 Td (Run The App) Tj ET
+BT /F1 12 Tf 54 619 Td (Double-click:) Tj ET
+BT /F3 10 Tf 72 591 Td (app.bat) Tj ET
+BT /F1 12 Tf 54 564 Td (This starts the app, opens the host computer browser, and uses port 3333.) Tj ET
+BT /F1 12 Tf 54 540 Td (> You may need to run app.bat as an administrator from cmd, especially if) Tj ET
+BT /F1 12 Tf 54 524 Td (Windows Firewall blocks other devices from connecting.) Tj ET
+BT /F1 12 Tf 54 500 Td (The browser opened by the launcher becomes the Host automatically. There are no) Tj ET
+BT /F1 12 Tf 54 484 Td (accounts, passwords, or cloud services.) Tj ET
+BT /F2 16 Tf 54 454 Td (Invite Players) Tj ET
+BT /F1 12 Tf 54 423 Td (The home page shows a player registration URL and QR code.) Tj ET
+BT /F1 12 Tf 54 399 Td (Players should:) Tj ET
+BT /F1 12 Tf 72 375 Td (1. Join the same Wi-Fi/LAN as the host computer.) Tj ET
+BT /F1 12 Tf 72 358 Td (2. Open the displayed URL or scan the QR code.) Tj ET
+BT /F1 12 Tf 72 341 Td (3. Enter a display name.) Tj ET
+BT /F1 12 Tf 72 324 Td (4. Wait for the Host to start a round.) Tj ET
+BT /F1 12 Tf 54 301 Td (If players cannot open the link, check:) Tj ET
+BT /F1 12 Tf 72 277 Td (? They are on the same Wi-Fi/LAN as the host computer.) Tj ET
+BT /F1 12 Tf 72 260 Td (? Windows Firewall allows the app or port `3333`.) Tj ET
+BT /F1 12 Tf 72 243 Td (? The network is not blocking device-to-device connections.) Tj ET
+BT /F2 16 Tf 54 214 Td (Start A Game) Tj ET
+BT /F1 12 Tf 54 183 Td (On the host computer:) Tj ET
+BT /F1 12 Tf 72 159 Td (1. Start the app.) Tj ET
+BT /F1 12 Tf 72 142 Td (2. Wait for players to register.) Tj ET
+BT /F1 12 Tf 72 125 Td (3. Open a game from the app menu.) Tj ET
+BT /F1 12 Tf 72 108 Td (4. Select a game file.) Tj ET
+BT /F1 12 Tf 72 91 Td (5. Set the round time limit.) Tj ET
+BT /F1 12 Tf 72 74 Td (6. Click **Start**.) Tj ET
+endstream
+endobj
+8 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 9 0 R >>
+endobj
+9 0 obj
+<< /Length 1861 >>
+stream
+BT /F1 12 Tf 54 732 Td (The Host can watch results, stop the active round, and start the next prompt) Tj ET
+BT /F1 12 Tf 54 716 Td (from the selected file.) Tj ET
+BT /F2 16 Tf 54 686 Td (Sentence Scrambler) Tj ET
+BT /F1 12 Tf 54 655 Td (Open Sentence Scramble from the app menu. Players arrange shuffled words into) Tj ET
+BT /F1 12 Tf 54 639 Td (the original sentence.) Tj ET
+BT /F1 12 Tf 54 615 Td (Files are stored here:) Tj ET
+BT /F3 10 Tf 72 587 Td (assets\\sentence-scrambler) Tj ET
+BT /F1 12 Tf 54 560 Td (Each .txt file is one selectable sentence set. Put one playable sentence on) Tj ET
+BT /F1 12 Tf 54 544 Td (each non-empty line.) Tj ET
+BT /F3 10 Tf 72 516 Td (The quick brown fox jumps over the lazy dog) Tj ET
+BT /F3 10 Tf 72 501 Td (Never jump over the lazy dog quickly) Tj ET
+BT /F2 16 Tf 54 468 Td (Word Scrambler) Tj ET
+BT /F1 12 Tf 54 437 Td (Open Word Scrambler from the app menu. Players arrange shuffled letters into) Tj ET
+BT /F1 12 Tf 54 421 Td (the original word.) Tj ET
+BT /F1 12 Tf 54 397 Td (Files are stored here:) Tj ET
+BT /F3 10 Tf 72 369 Td (assets\\word-scrambler) Tj ET
+BT /F1 12 Tf 54 342 Td (Each .txt file is one selectable word set. Put one playable word on each) Tj ET
+BT /F1 12 Tf 54 326 Td (non-empty line.) Tj ET
+BT /F3 10 Tf 72 298 Td (planet) Tj ET
+BT /F3 10 Tf 72 283 Td (browser) Tj ET
+BT /F3 10 Tf 72 268 Td (keyboard) Tj ET
+BT /F2 16 Tf 54 235 Td (Formula Scrambler) Tj ET
+BT /F1 12 Tf 54 204 Td (Open Formula Scrambler from the app menu. Players arrange shuffled formula) Tj ET
+BT /F1 12 Tf 54 188 Td (characters into the original equation.) Tj ET
+BT /F1 12 Tf 54 164 Td (Files are stored here:) Tj ET
+BT /F3 10 Tf 72 136 Td (assets\\formula-scrambler) Tj ET
+BT /F1 12 Tf 54 109 Td (Each .txt file is one selectable formula set. Put one playable formula on each) Tj ET
+BT /F1 12 Tf 54 93 Td (non-empty line.) Tj ET
+endstream
+endobj
+10 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 11 0 R >>
+endobj
+11 0 obj
+<< /Length 424 >>
+stream
+BT /F3 10 Tf 72 738 Td (2+3=5) Tj ET
+BT /F3 10 Tf 72 723 Td (4*6=24) Tj ET
+BT /F3 10 Tf 72 708 Td (12/3=4) Tj ET
+BT /F1 12 Tf 54 681 Td (Restart the app after adding or changing files.) Tj ET
+BT /F2 16 Tf 54 651 Td (Restart Behavior) Tj ET
+BT /F1 12 Tf 54 620 Td (Have Fun keeps game state in memory. Restarting the app clears registered) Tj ET
+BT /F1 12 Tf 54 604 Td (players, active rounds, submissions, and scores.) Tj ET
+endstream
+endobj
+xref
+0 12
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000130 00000 n 
+0000000200 00000 n 
+0000000275 00000 n 
+0000000343 00000 n 
+0000000489 00000 n 
+0000002574 00000 n 
+0000002720 00000 n 
+0000004633 00000 n 
+0000004781 00000 n 
+trailer
+<< /Size 12 /Root 1 0 R >>
+startxref
+5257
+%%EOF
