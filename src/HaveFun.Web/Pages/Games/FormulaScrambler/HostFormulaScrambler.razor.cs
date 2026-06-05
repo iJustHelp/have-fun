@@ -491,7 +491,7 @@ public partial class HostFormulaScrambler : ComponentBase, IAsyncDisposable
         var submittedCharacters = submittedTiles.Select(tile => tile.Text).ToArray();
         var correctCharacters = correctFormula is null
             ? []
-            : FormulaScramblerService.NormalizeFormula(correctFormula).Select(character => character.ToString()).ToArray();
+            : FormulaScramblerService.TokenizeFormula(correctFormula).ToArray();
 
         return submittedCharacters
             .Select((character, index) => new SubmittedFormulaCharacterPart

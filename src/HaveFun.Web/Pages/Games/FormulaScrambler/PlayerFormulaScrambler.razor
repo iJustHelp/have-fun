@@ -26,7 +26,7 @@
     else if (CurrentRound is not null)
     {
         <PlayerGameBoard Title="Formula Scrambler Game"
-                         Rules="Rule: arrange the available characters into a mathematically correct equation."
+                         Rules="Rule: arrange the available numbers and symbols into a mathematically correct equation."
                          RoundId="@CurrentRound?.Id"
                          AvailableTiles="@(PlayerRoundState?.AvailableTiles ?? [])"
                          SelectedTiles="@(PlayerRoundState?.SelectedTiles ?? [])"

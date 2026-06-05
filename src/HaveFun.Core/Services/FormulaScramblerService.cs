@@ -19,21 +19,20 @@ public sealed class FormulaScramblerService
             throw new ArgumentException("Formula must be a valid equation.", nameof(formula));
         }
 
-        var formulaCharacters = normalizedFormula
-            .Select(character => character.ToString())
+        var formulaParts = TokenizeFormula(normalizedFormula)
             .ToArray();
 
-        for (var index = formulaCharacters.Length - 1; index > 0; index--)
+        for (var index = formulaParts.Length - 1; index > 0; index--)
         {
             var swapIndex = Random.Shared.Next(index + 1);
-            (formulaCharacters[index], formulaCharacters[swapIndex]) = (formulaCharacters[swapIndex], formulaCharacters[index]);
+            (formulaParts[index], formulaParts[swapIndex]) = (formulaParts[swapIndex], formulaParts[index]);
         }
 
-        return formulaCharacters
-            .Select(character => new Tile
+        return formulaParts
+            .Select(part => new Tile
             {
                 Id = Guid.NewGuid(),
-                Text = character
+                Text = part
             })
             .ToArray();
     }
@@ -70,7 +69,63 @@ public sealed class FormulaScramblerService
 
     public int CountNumbers(string formula)
     {
-        return NormalizeFormula(formula).Count(char.IsDigit);
+        return TokenizeFormula(formula).Count(IsNumberToken);
+    }
+
+    public IReadOnlyList<string> TokenizeFormula(string formula)
+    {
+        var normalizedFormula = NormalizeFormula(formula);
+        var parts = new List<string>();
+
+        for (var index = 0; index < normalizedFormula.Length;)
+        {
+            var character = normalizedFormula[index];
+
+            if (character == '=')
+            {
+                index++;
+
+                if (index < normalizedFormula.Length && char.IsDigit(normalizedFormula[index]))
+                {
+                    var numberStartIndex = index;
+
+                    while (index < normalizedFormula.Length && char.IsDigit(normalizedFormula[index]))
+                    {
+                        index++;
+                    }
+
+                    parts.Add("=" + normalizedFormula[numberStartIndex..index]);
+                    continue;
+                }
+
+                if (parts.Count > 0 && IsNumberToken(parts[^1]))
+                {
+                    parts[^1] += "=";
+                    continue;
+                }
+
+                parts.Add(character.ToString());
+                continue;
+            }
+
+            if (!char.IsDigit(character))
+            {
+                parts.Add(character.ToString());
+                index++;
+                continue;
+            }
+
+            var startIndex = index;
+
+            while (index < normalizedFormula.Length && char.IsDigit(normalizedFormula[index]))
+            {
+                index++;
+            }
+
+            parts.Add(normalizedFormula[startIndex..index]);
+        }
+
+        return parts;
     }
 
     public bool IsMathematicallyCorrect(string formula)
@@ -107,6 +162,11 @@ public sealed class FormulaScramblerService
     private static bool IsSupportedCharacter(char character)
     {
         return char.IsDigit(character) || SupportedOperatorCharacters.Contains(character);
+    }
+
+    private static bool IsNumberToken(string part)
+    {
+        return part.Any(char.IsDigit);
     }
 
     private static bool HasEquationAndNumbers(string formula)
