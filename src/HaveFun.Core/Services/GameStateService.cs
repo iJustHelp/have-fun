@@ -273,7 +273,7 @@ public class GameStateService : IGameStateService
     private static IReadOnlyList<string> SplitSentences(string sentenceText)
     {
         return sentenceText
-            .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .ToArray();
     }
 
