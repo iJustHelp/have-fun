@@ -2,7 +2,7 @@
 
 This folder contains the Windows version of Have Fun, a local LAN party-game app.
 
-## Run The App
+## Run the App
 
 Double-click:
 
@@ -10,7 +10,7 @@ Double-click:
 app.bat
 ```
 
-This starts the app, opens the host computer browser, and uses port `3333`.
+This starts the app, opens the host computer's browser, and uses port `3333`.
 
 > You may need to run `app.bat` as an administrator from `cmd`, especially if Windows Firewall blocks other devices from connecting.
 
@@ -26,6 +26,7 @@ Players should:
 2. Open the displayed URL or scan the QR code.
 3. Enter a display name.
 4. Wait for the Host to start a round.
+5. Read the game rules at the top of the page.
 
 If players cannot open the link, check:
 
@@ -33,7 +34,7 @@ If players cannot open the link, check:
 - Windows Firewall allows the app or port `3333`.
 - The network is not blocking device-to-device connections.
 
-## Start A Game
+## Start a Game
 
 On the host computer:
 
@@ -59,9 +60,11 @@ assets\sentence-scrambler
 Each `.txt` file is one selectable sentence set. Put one playable sentence on each non-empty line.
 
 ```text
-The quick brown fox jumps over the lazy dog
+The quick brown fox jumps over the lazy dog.
 Never jump over the lazy dog quickly
 ```
+
+> **Tip:** You can capitalize the first letter and/or add a period at the end of the sentence to make the game easier.
 
 ## Word Scrambler
 
@@ -76,10 +79,12 @@ assets\word-scrambler
 Each `.txt` file is one selectable word set. Put one playable word on each non-empty line.
 
 ```text
-planet
+Planet
 browser
-keyboard
+Keyboard
 ```
+
+> **Tip:** You can capitalize the first letter to make the game easier.
 
 ## Formula Scrambler
 
@@ -94,10 +99,12 @@ assets\formula-scrambler
 Each `.txt` file is one selectable formula set. Put one playable formula on each non-empty line.
 
 ```text
-2+3=5
-4*6=24
-12/3=4
+2 + 3 = 5
+4 * 6 = 24
+12 /3 =4
 ```
+
+> **Tip:** Formulas are split on spaces. All characters without spaces appear together in one tile, making the game easier.
 
 Restart the app after adding or changing files.
 
