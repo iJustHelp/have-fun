@@ -2,4 +2,4 @@
 set -euo pipefail
 
 script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-exec "$script_dir/scripts/run.sh"
+exec /bin/bash "$script_dir/scripts/run.sh"
