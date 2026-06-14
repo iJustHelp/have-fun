@@ -116,7 +116,7 @@ function Resolve-PublishTarget {
             return [PSCustomObject]@{
                 OS = "win"
                 RuntimeIdentifier = $RuntimeIdentifierOverride
-                ExecutableName = "MyClass.Web.exe"
+                ExecutableName = "HaveFun.Web.exe"
             }
         }
 
@@ -124,7 +124,7 @@ function Resolve-PublishTarget {
             return [PSCustomObject]@{
                 OS = "macos"
                 RuntimeIdentifier = $RuntimeIdentifierOverride
-                ExecutableName = "MyClass.Web"
+                ExecutableName = "HaveFun.Web"
             }
         }
 
@@ -136,14 +136,14 @@ function Resolve-PublishTarget {
             return [PSCustomObject]@{
                 OS = "win"
                 RuntimeIdentifier = "win-$TargetArchitecture"
-                ExecutableName = "MyClass.Web.exe"
+                ExecutableName = "HaveFun.Web.exe"
             }
         }
         "macos" {
             return [PSCustomObject]@{
                 OS = "macos"
                 RuntimeIdentifier = "osx-$TargetArchitecture"
-                ExecutableName = "MyClass.Web"
+                ExecutableName = "HaveFun.Web"
             }
         }
     }
@@ -161,17 +161,17 @@ function Set-RepoDotNetCliHome {
     $env:DOTNET_CLI_HOME = $dotnetCliHome
 }
 
-function Stop-MyClassWebProcess {
+function Stop-HaveFunWebProcess {
     param([string]$PidPath)
 
-    $processes = @(Get-Process -Name "MyClass.Web" -ErrorAction SilentlyContinue)
+    $processes = @(Get-Process -Name "HaveFun.Web" -ErrorAction SilentlyContinue)
 
     if (-not $processes) {
         return
     }
 
     foreach ($process in $processes) {
-        Write-Host "Stopping existing MyClass.Web process $($process.Id)."
+        Write-Host "Stopping existing HaveFun.Web process $($process.Id)."
         Stop-Process -Id $process.Id -Force
         Wait-Process -Id $process.Id -Timeout 10 -ErrorAction SilentlyContinue
     }
@@ -188,7 +188,7 @@ function Test-CurrentProcessIsAdministrator {
     return $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 }
 
-function Set-MyClassFirewallRule {
+function Set-HaveFunFirewallRule {
     param([int]$Port)
 
     if (-not $IsWindows -and $PSVersionTable.PSEdition -eq "Core") {
@@ -229,12 +229,12 @@ function Set-MyClassFirewallRule {
 $scriptRoot = if ($PSScriptRoot) { $PSScriptRoot } else { Split-Path -Parent $MyInvocation.MyCommand.Path }
 $repoRoot = Split-Path -Parent $scriptRoot
 $srcRoot = Join-Path $repoRoot "src"
-$webProjectRoot = Join-Path $srcRoot "MyClass.Web"
-$projectPath = Join-Path $webProjectRoot "MyClass.Web.csproj"
+$webProjectRoot = Join-Path $srcRoot "HaveFun.Web"
+$projectPath = Join-Path $webProjectRoot "HaveFun.Web.csproj"
 $publishTarget = Resolve-PublishTarget -TargetOS $OS -TargetArchitecture $Architecture -RuntimeIdentifierOverride $RuntimeIdentifier
 $packageRoot = Join-Path $repoRoot "dist-$($publishTarget.OS)"
 $appOutputPath = Join-Path $packageRoot "app"
-$pidPath = Join-Path $packageRoot "myclass.pid"
+$pidPath = Join-Path $packageRoot "HaveFun.pid"
 
 if (-not (Test-Path -LiteralPath $projectPath)) {
     throw "Project file not found at $projectPath."
@@ -250,10 +250,10 @@ $env:DOTNET_CLI_TELEMETRY_OPTOUT = "1"
 $dotnetPath = Get-DotNetCommand
 Assert-DotNet10SdkInstalled -DotNetPath $dotnetPath
 Assert-SafeAppOutputPath -PackageRoot $packageRoot -AppOutputPath $appOutputPath
-Stop-MyClassWebProcess -PidPath $pidPath
+Stop-HaveFunWebProcess -PidPath $pidPath
 
 if ($publishTarget.OS -eq "win") {
-    Set-MyClassFirewallRule -Port $AppPort
+    Set-HaveFunFirewallRule -Port $AppPort
 }
 
 if (-not $NoClean -and (Test-Path -LiteralPath $appOutputPath)) {
@@ -303,4 +303,4 @@ if (-not $FrameworkDependent -and -not (Test-Path -LiteralPath $exePath)) {
     throw "Publish completed, but expected executable was not found at $exePath."
 }
 
-Write-Host "Published MyClass to $appOutputPath"
+Write-Host "Published HaveFun to $appOutputPath"
