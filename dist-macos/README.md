@@ -10,6 +10,9 @@ Open Terminal in this folder and run:
 bash app.sh
 ```
 
+This command also repairs executable permissions that may have been removed
+while downloading or extracting the package. Afterward, `./app.sh` works too.
+
 This starts the app, opens the host computer's browser, and uses port `3333`.
 
 > On first launch, macOS may ask for permission to accept incoming network connections. Allow it so other devices on the LAN can join.
