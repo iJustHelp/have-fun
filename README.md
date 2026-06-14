@@ -21,7 +21,7 @@ Have-Fun is a local LAN party-game web app for friends playing from browsers on 
 2. Download the latest `dist-win.zip` for Windows or `dist-macos.zip` for macOS from the release assets.
 3. Extract the zip file.
 4. Open the extracted `Have Fun` folder.
-5. Read `README.pdf` for instructions on running and using the app.
+5. Read `README.md` in the extracted folder for instructions on running and using the app.
 
 ## Implementation
 

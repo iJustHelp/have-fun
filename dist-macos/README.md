@@ -1,18 +1,18 @@
 # Have Fun Host Guide
 
-This folder contains the Windows version of Have Fun, a local LAN party-game app.
+This folder contains the macOS version of Have Fun, a local LAN party-game app.
 
 ## Run the App
 
-Double-click:
+Open Terminal in this folder and run:
 
-```bat
-app.bat
+```bash
+bash app.sh
 ```
 
 This starts the app, opens the host computer's browser, and uses port `3333`.
 
-> You may need to run `app.bat` as an administrator from `cmd`, especially if Windows Firewall blocks other devices from connecting.
+> On first launch, macOS may ask for permission to accept incoming network connections. Allow it so other devices on the LAN can join.
 
 The browser opened by the launcher becomes the Host automatically. There are no accounts, passwords, or cloud services.
 
@@ -31,7 +31,7 @@ Players should:
 If players cannot open the link, check:
 
 - They are on the same Wi-Fi/LAN as the host computer.
-- Windows Firewall allows the app or port `3333`.
+- macOS Firewall allows incoming connections for `HaveFun.Web`.
 - The network is not blocking device-to-device connections.
 
 ## Start a Game
@@ -54,7 +54,7 @@ Open `Sentence Scramble` from the app menu. Players arrange shuffled words into 
 Files are stored here:
 
 ```text
-assets\sentence-scrambler
+assets/sentence-scrambler
 ```
 
 Each `.txt` file is one selectable sentence set. Put one playable sentence on each non-empty line.
@@ -73,7 +73,7 @@ Open `Word Scrambler` from the app menu. Players arrange shuffled letters into t
 Files are stored here:
 
 ```text
-assets\word-scrambler
+assets/word-scrambler
 ```
 
 Each `.txt` file is one selectable word set. Put one playable word on each non-empty line.
@@ -93,7 +93,7 @@ Open `Formula Scrambler` from the app menu. Players arrange shuffled formula cha
 Files are stored here:
 
 ```text
-assets\formula-scrambler
+assets/formula-scrambler
 ```
 
 Each `.txt` file is one selectable formula set. Put one playable formula on each non-empty line.

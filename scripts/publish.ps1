@@ -6,7 +6,7 @@ param(
     [ValidateSet("x64", "arm64")]
     [string]$Architecture = "x64",
     [ValidateRange(1, 65535)]
-    [int]$AppPort = 5555,
+    [int]$AppPort = 3333,
     [string]$RuntimeIdentifier,
     [string]$Framework = "net10.0",
     [switch]$NoClean,
