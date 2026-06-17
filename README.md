@@ -52,3 +52,27 @@ This refreshes:
 
 Each publish writes the runnable app into the matching `dist-*` folder's `app` directory.
 Upload the zip files to the GitHub release.
+
+## Game Rules
+
+1. Host opens app in browser 
+
+![Home](./docs/Home.png)
+
+2. Player scans QR using device and goes to Join page
+
+![Join](./docs/Join.png)
+
+3. Host selectes game from menu, select file from dropdown and click on Start buttom. 
+
+4. Player can click on available tiles with word to collect correct word and clicks submit.
+![Game](./docs/Player.png)
+
+5. Host can see results in table and can start next sentence.
+
+![Game](./docs/Game.png)
+
+Similar rules are for `Word Scrambler` and `Formula Scramler` games.
+
+
+
