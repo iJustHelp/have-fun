@@ -35,10 +35,10 @@ Have-Fun is a local LAN party-game web app for friends playing from browsers on 
 
 3. Host selects game from menu, selects file from dropdown, and clicks the Start button.
 
-4. Player can click on available tiles with words to collect the correct word, then clicks submit.
+4. Player can click on available tiles with words to collect the correct sentence, then clicks submit.
 ![Game](./docs/Player.png)
 
-5. Host can see results in a table and can start the next sentence.
+5. Host can see results in a table and can start the next sentence. The first player to submit a correct sentence earns 1 bonus point.
 
 ![Game](./docs/Game.png)
 
