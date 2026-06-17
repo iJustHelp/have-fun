@@ -4,9 +4,8 @@ Have-Fun is a local LAN party-game web app for friends playing from browsers on 
 
 ## Main Features
 
-- Host-controlled Sentence Scrambler rounds.
+- Host-controlled rounds.
 - Players join from phones, tablets, or computers using a local URL or QR code.
-- Timed sentence rounds with shuffled words and click-to-build answers.
 - Live host dashboard with player submissions, scores, and total scores.
 - In-memory game state with no accounts, database, cloud hosting, or public internet requirement.
 
@@ -73,6 +72,11 @@ This refreshes:
 
 Each publish writes the runnable app into the matching `dist-*` folder's `app` directory.
 Upload the zip files to the GitHub release.
+
+## Further Reading
+
+- [Product specification](design/spec.md)
+- [Solution architecture](design/architecture.md)
 
 
 
